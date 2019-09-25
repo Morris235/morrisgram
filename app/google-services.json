@@ -1,0 +1,48 @@
+{
+  "project_info": {
+    "project_number": "860125163815",
+    "firebase_url": "https://morrisgram.firebaseio.com",
+    "project_id": "morrisgram",
+    "storage_bucket": "morrisgram.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:860125163815:android:5b5afd6abf7ea527bfb902",
+        "android_client_info": {
+          "package_name": "com.example.morrisgram"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "860125163815-holpkt7nns3kmbperal63d3jjffpjonu.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.example.morrisgram",
+            "certificate_hash": "248f535a7267fbf03984b2db8d55b662b7ba5ca0"
+          }
+        },
+        {
+          "client_id": "860125163815-8cktvvdi50omdb7nk3haq9g3ekn86ivp.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDxZYhzDMs0oQDZXw5fKPXymMx7MFIoLpY"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "860125163815-8cktvvdi50omdb7nk3haq9g3ekn86ivp.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
