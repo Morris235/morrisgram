@@ -1,8 +1,9 @@
 package com.example.morrisgram.Activity;
 
 import android.content.Intent;
-import android.support.annotation.NonNull;
-import android.support.v7.app.AppCompatActivity;
+
+import androidx.annotation.NonNull;
+import androidx.appcompat.app.AppCompatActivity;
 import android.os.Bundle;
 import android.text.Editable;
 import android.text.TextWatcher;
@@ -43,6 +44,7 @@ public class SignUp extends AppCompatActivity {
     //데이터 베이스 리퍼런스 생성, 데이터 베이스 인스턴스의 리퍼런스 입력
     //다른 탭 메뉴에 참조하기 위해 각각의 게시물 마다 UID(토큰)를 받아서 데이터 베이스에 명시해줘야 한다.
     private DatabaseReference DBref;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -232,6 +234,7 @@ public class SignUp extends AppCompatActivity {
                 final String email = email_join.getText().toString().trim();
                 final String pwd = pwd_join.getText().toString().trim();
                 final String name = name_join.getText().toString().trim();
+
                     //이메일 주소와 비밀번호를 createUserWithEmailAndPassword에 전달하여 신규 계정을 생성한다.
                     firebaseAuth.createUserWithEmailAndPassword(email,pwd).addOnCompleteListener(SignUp.this, new OnCompleteListener<AuthResult>() {
 
@@ -254,6 +257,18 @@ public class SignUp extends AppCompatActivity {
                     });
             }
         });
+//        // Read from the database
+//        DBref.addValueEventListener(new ValueEventListener() {
+//            @Override
+//            public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+//
+//            }
+//
+//            @Override
+//            public void onCancelled(@NonNull DatabaseError databaseError) {
+//
+//            }
+//        });
 
         //로그인 화면으로 이동 버튼
         gotologin.setOnClickListener(new View.OnClickListener() {
@@ -264,14 +279,18 @@ public class SignUp extends AppCompatActivity {
             }
         });
     }
+    //데이터 베이스 업데이트 메소드<회원가입> - 아이디,비밀번호,이름
+    //회원탈퇴시 데이터 삭제 구현해야 함
     public void FirebaseDatabase(boolean add, String email, String pwd, String Pname){
         DBref = FirebaseDatabase.getInstance().getReference();
         Map<String,Object> childUpdates = new HashMap<>();
         Map<String,Object> PostValues = null;
+
         if(add){
             Users_Signup posting = new Users_Signup(email,pwd,Pname);
             PostValues = posting.toMap();
         }
+
         childUpdates.put("/User_list/"+email,PostValues);
         DBref.updateChildren(childUpdates);
     }
