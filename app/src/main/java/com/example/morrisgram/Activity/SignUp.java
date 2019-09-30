@@ -4,13 +4,18 @@ import android.content.Intent;
 
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
+
+import android.content.pm.ActivityInfo;
 import android.os.Bundle;
 import android.text.Editable;
 import android.text.TextWatcher;
+import android.util.Log;
 import android.util.Patterns;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.RadioButton;
+import android.widget.RadioGroup;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -20,6 +25,7 @@ import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.Task;
 import com.google.firebase.auth.AuthResult;
 import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 
@@ -31,6 +37,12 @@ public class SignUp extends AppCompatActivity {
     private EditText email_join;
     private EditText pwd_join;
     private EditText name_join;
+    private EditText phone_join;
+    private RadioGroup sex;
+    private RadioButton male;
+    private RadioButton female;
+    private RadioButton nosex;
+    private String chosex;
 
     private TextView gotologin;
     private TextView checkE;
@@ -39,17 +51,18 @@ public class SignUp extends AppCompatActivity {
     private Button signupB;
     private Button unfillsignupB;
 
+    private FirebaseUser user = FirebaseAuth.getInstance().getCurrentUser();
     private FirebaseAuth firebaseAuth;
-    private FirebaseDatabase database;
-    //데이터 베이스 리퍼런스 생성, 데이터 베이스 인스턴스의 리퍼런스 입력
-    //다른 탭 메뉴에 참조하기 위해 각각의 게시물 마다 UID(토큰)를 받아서 데이터 베이스에 명시해줘야 한다.
-    private DatabaseReference DBref;
-
+    private DatabaseReference RootDBref = FirebaseDatabase.getInstance().getReference();
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        // 화면을 portrait(세로) 화면으로 고정하고 싶은 경우
+        setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_PORTRAIT);
 
         setContentView(R.layout.activity_sign_up);
+
+
         gotologin = (TextView) findViewById(R.id.gotologin);
         checkE = (TextView) findViewById(R.id.checkE);
         checkP = (TextView) findViewById(R.id.checkP);
@@ -57,6 +70,14 @@ public class SignUp extends AppCompatActivity {
         email_join = (EditText) findViewById(R.id.email_signup);
         pwd_join = (EditText) findViewById(R.id.password_signup);
         name_join = (EditText) findViewById(R.id.name_signup);
+        phone_join = (EditText) findViewById(R.id.phone_signup);
+
+        //라디오 그룹
+        sex = (RadioGroup) findViewById(R.id.sex_signup);
+        //라디오 버튼
+        male = (RadioButton) findViewById(R.id.male_signup);
+        female = (RadioButton) findViewById(R.id.female_signup);
+        nosex = (RadioButton) findViewById(R.id.NotToSay_signup);
 
         signupB = (Button) findViewById(R.id.fillSignupB);
         unfillsignupB = (Button) findViewById(R.id.UnfillSignupB);
@@ -72,6 +93,23 @@ public class SignUp extends AppCompatActivity {
         //유효성 텍스트 기본상태
         checkE.setVisibility(View.INVISIBLE);
         checkP.setVisibility(View.INVISIBLE);
+
+        //성별 선택
+        sex.setOnCheckedChangeListener(new RadioGroup.OnCheckedChangeListener() {
+            @Override
+            public void onCheckedChanged(RadioGroup group, int checkedId) {
+                switch (checkedId){
+                    case R.id.male_signup : chosex="남자";
+                    break;
+
+                    case R.id.female_signup : chosex="여자";
+                    break;
+
+                    case R.id.NotToSay_signup : chosex="";
+                    break;
+                }
+            }
+        });
 
         //아이디 공란 검사
         email_join.addTextChangedListener(new TextWatcher() {
@@ -234,6 +272,7 @@ public class SignUp extends AppCompatActivity {
                 final String email = email_join.getText().toString().trim();
                 final String pwd = pwd_join.getText().toString().trim();
                 final String name = name_join.getText().toString().trim();
+                final String phone = phone_join.getText().toString().trim();
 
                     //이메일 주소와 비밀번호를 createUserWithEmailAndPassword에 전달하여 신규 계정을 생성한다.
                     firebaseAuth.createUserWithEmailAndPassword(email,pwd).addOnCompleteListener(SignUp.this, new OnCompleteListener<AuthResult>() {
@@ -243,7 +282,7 @@ public class SignUp extends AppCompatActivity {
                             //회원가입 성공시 메인 화면으로 전환되고 & 데이터 베이스에 아이디,비밀번호,이름을 저장
                             if(task.isSuccessful()){
                                 //가입성공시 데이터베이스에 입력한 정보 저장
-                                FirebaseDatabase(true,email,pwd,name);
+                                FirebaseDatabase(true,email,pwd,name,phone,chosex);
                                 Intent intent = new Intent(SignUp.this, MainActivity.class);
                                 startActivity(intent);
                                 Toast.makeText(SignUp.this,"회원가입 완료",Toast.LENGTH_SHORT).show();
@@ -281,17 +320,27 @@ public class SignUp extends AppCompatActivity {
     }
     //데이터 베이스 업데이트 메소드<회원가입> - 아이디,비밀번호,이름
     //회원탈퇴시 데이터 삭제 구현해야 함
-    public void FirebaseDatabase(boolean add, String email, String pwd, String Pname){
-        DBref = FirebaseDatabase.getInstance().getReference();
+    public void FirebaseDatabase(boolean add, String email, String pwd, String Pname, String phone, String sex){
+        // Create new post at /user-posts/$userid/$postid and at
+        // /posts/$postid simultaneously
+
+//        String UserUID = user.getUid();
+
+        String Key = RootDBref.child("Users").push().getKey();
+
         Map<String,Object> childUpdates = new HashMap<>();
         Map<String,Object> PostValues = null;
 
         if(add){
-            Users_Signup posting = new Users_Signup(email,pwd,Pname);
+            Users_Signup posting = new Users_Signup(email,pwd,Pname,phone,sex);
             PostValues = posting.toMap();
         }
 
-        childUpdates.put("/User_list/"+email,PostValues);
-        DBref.updateChildren(childUpdates);
+//        String UserID ="morris";
+//        String name ="이상모";
+//        RootDBref.child("users").child(UserID).child("Username").setValue(name);
+
+        childUpdates.put("/User_list/" +Key,PostValues);
+        RootDBref.updateChildren(childUpdates);
     }
 }
