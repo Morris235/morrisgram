@@ -28,6 +28,7 @@ import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
+import com.google.firebase.database.core.UserWriteRecord;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -51,7 +52,6 @@ public class SignUp extends AppCompatActivity {
     private Button signupB;
     private Button unfillsignupB;
 
-    private FirebaseUser user = FirebaseAuth.getInstance().getCurrentUser();
     private FirebaseAuth firebaseAuth;
     private DatabaseReference RootDBref = FirebaseDatabase.getInstance().getReference();
     @Override
@@ -281,8 +281,11 @@ public class SignUp extends AppCompatActivity {
                         public void onComplete(@NonNull Task<AuthResult> task) {
                             //회원가입 성공시 메인 화면으로 전환되고 & 데이터 베이스에 아이디,비밀번호,이름을 저장
                             if(task.isSuccessful()){
+                                //계정생성과 동시에 유저정보 루트키로 사용할 UID가져오기
+                                FirebaseUser user = task.getResult().getUser();
+                                String muid = user.getUid();
                                 //가입성공시 데이터베이스에 입력한 정보 저장
-                                FirebaseDatabase(true,email,pwd,name,phone,chosex);
+                                FirebaseDatabase(true,email,pwd,name,phone,chosex,muid);
                                 Intent intent = new Intent(SignUp.this, MainActivity.class);
                                 startActivity(intent);
                                 Toast.makeText(SignUp.this,"회원가입 완료",Toast.LENGTH_SHORT).show();
@@ -320,14 +323,11 @@ public class SignUp extends AppCompatActivity {
     }
     //데이터 베이스 업데이트 메소드<회원가입> - 아이디,비밀번호,이름
     //회원탈퇴시 데이터 삭제 구현해야 함
-    public void FirebaseDatabase(boolean add, String email, String pwd, String Pname, String phone, String sex){
+    public void FirebaseDatabase(boolean add, String email, String pwd, String Pname, String phone, String sex, String uid){
         // Create new post at /user-posts/$userid/$postid and at
         // /posts/$postid simultaneously
 
-//        String UserUID = user.getUid();
-
-        String Key = RootDBref.child("Users").push().getKey();
-
+        Log.i("파베","유저 UID : "+uid);
         Map<String,Object> childUpdates = new HashMap<>();
         Map<String,Object> PostValues = null;
 
@@ -339,8 +339,7 @@ public class SignUp extends AppCompatActivity {
 //        String UserID ="morris";
 //        String name ="이상모";
 //        RootDBref.child("users").child(UserID).child("Username").setValue(name);
-
-        childUpdates.put("/User_list/" +Key,PostValues);
-        RootDBref.updateChildren(childUpdates);
+        childUpdates.put("Profile" ,PostValues);
+        RootDBref.child("UserList").child(uid).updateChildren(childUpdates);
     }
 }

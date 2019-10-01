@@ -253,14 +253,14 @@
         app:layout_constraintVertical_bias="0.0" />
 
     <TextView
-        android:id="@+id/emailTV_signup"
+        android:id="@+id/emailTV_profile"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginStart="8dp"
         android:layout_marginTop="24dp"
         android:layout_marginEnd="8dp"
         android:layout_marginBottom="8dp"
-        android:text="test@"
+        android:text=""
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintHorizontal_bias="0.0"
@@ -269,35 +269,35 @@
         app:layout_constraintVertical_bias="0.0" />
 
     <TextView
-        android:id="@+id/phonTV_signup"
+        android:id="@+id/phonTV_profile"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginStart="8dp"
         android:layout_marginTop="24dp"
         android:layout_marginEnd="8dp"
         android:layout_marginBottom="8dp"
-        android:text="01012341234"
+        android:text=""
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintHorizontal_bias="0.0"
         app:layout_constraintStart_toEndOf="@+id/textView9"
-        app:layout_constraintTop_toBottomOf="@+id/emailTV_signup"
+        app:layout_constraintTop_toBottomOf="@+id/emailTV_profile"
         app:layout_constraintVertical_bias="0.0" />
 
     <TextView
-        android:id="@+id/sexTV_signup"
+        android:id="@+id/sexTV_profile"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginStart="8dp"
         android:layout_marginTop="24dp"
         android:layout_marginEnd="8dp"
         android:layout_marginBottom="8dp"
-        android:text="성별"
+        android:text=""
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintHorizontal_bias="0.0"
         app:layout_constraintStart_toEndOf="@+id/textView10"
-        app:layout_constraintTop_toBottomOf="@+id/phonTV_signup"
+        app:layout_constraintTop_toBottomOf="@+id/phonTV_profile"
         app:layout_constraintVertical_bias="0.0" />
 
 
