@@ -26,8 +26,6 @@ public class Home extends AppCompatActivity implements SwipyRefreshLayout.OnRefr
     //현재 로그인 된 유저 정보를 담을 변수
     private FirebaseUser currentUser;
 
-    Button logoutB;
-
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -46,7 +44,6 @@ public class Home extends AppCompatActivity implements SwipyRefreshLayout.OnRefr
             @Override
             public void onClick(View v) {
                 Intent intent = new Intent(Home.this, Search.class);
-                finish();
                 startActivity(intent);
                 overridePendingTransition(0, 0);
             }
@@ -57,8 +54,8 @@ public class Home extends AppCompatActivity implements SwipyRefreshLayout.OnRefr
             @Override
             public void onClick(View v) {
                 Intent intent = new Intent(Home.this, Myinfo.class);
-                finish();
                 startActivity(intent);
+                finish();
                 overridePendingTransition(0, 0);
             }
         });
@@ -69,7 +66,6 @@ public class Home extends AppCompatActivity implements SwipyRefreshLayout.OnRefr
             @Override
             public void onClick(View v) {
                 Intent intent = new Intent(Home.this, LikeAlarm.class);
-                finish();
                 startActivity(intent);
                 overridePendingTransition(0, 0);
             }
@@ -81,7 +77,6 @@ public class Home extends AppCompatActivity implements SwipyRefreshLayout.OnRefr
             @Override
             public void onClick(View v) {
                 Intent intent = new Intent(Home.this, MessageTerminal.class);
-                finish();
                 startActivity(intent);
             }
         });
@@ -109,8 +104,8 @@ public class Home extends AppCompatActivity implements SwipyRefreshLayout.OnRefr
     }
     public void onPause(){
         super.onPause();
-        overridePendingTransition(0,0);
         Log.i("파베","홈 포즈");
+//        overridePendingTransition(0,0);
     }
     public void onStop(){
         super.onStop();

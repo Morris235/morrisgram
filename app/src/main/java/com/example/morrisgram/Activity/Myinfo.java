@@ -74,7 +74,6 @@ public class Myinfo extends AppCompatActivity implements SwipeRefreshLayout.OnRe
         //네비게이션뷰 리스너
         NavigationView navigationView = (NavigationView) findViewById(R.id.navigationview);
         navigationView.setNavigationItemSelectedListener(this);
-
         //네비게이션바 버튼
         optionB.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -242,7 +241,7 @@ public class Myinfo extends AppCompatActivity implements SwipeRefreshLayout.OnRe
             super.onBackPressed();
         }
     }
-
+    //네비게이션 드로어 메소드
     @Override
     public void onPointerCaptureChanged(boolean hasCapture) {
 
