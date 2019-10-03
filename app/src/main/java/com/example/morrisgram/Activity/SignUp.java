@@ -279,14 +279,14 @@ public class SignUp extends AppCompatActivity {
 
                         @Override
                         public void onComplete(@NonNull Task<AuthResult> task) {
-                            //회원가입 성공시 메인 화면으로 전환되고 & 데이터 베이스에 아이디,비밀번호,이름을 저장
+                            //회원가입 성공시 홈 화면으로 전환되고 & 데이터 베이스에 아이디,비밀번호,이름을 저장
                             if(task.isSuccessful()){
                                 //계정생성과 동시에 유저정보 루트키로 사용할 UID가져오기
                                 FirebaseUser user = task.getResult().getUser();
                                 String muid = user.getUid();
                                 //가입성공시 데이터베이스에 입력한 정보 저장
                                 FirebaseDatabase(true,email,pwd,name,phone,chosex,muid);
-                                Intent intent = new Intent(SignUp.this, MainActivity.class);
+                                Intent intent = new Intent(SignUp.this, Home.class);
                                 startActivity(intent);
                                 Toast.makeText(SignUp.this,"회원가입 완료",Toast.LENGTH_SHORT).show();
                                 finish();
@@ -332,14 +332,14 @@ public class SignUp extends AppCompatActivity {
         Map<String,Object> PostValues = null;
 
         if(add){
-            Users_Signup posting = new Users_Signup(email,pwd,Pname,phone,sex);
+            Users_Signup posting = new Users_Signup(email,Pname,pwd,phone,sex);
             PostValues = posting.toMap();
         }
 
 //        String UserID ="morris";
 //        String name ="이상모";
 //        RootDBref.child("users").child(UserID).child("Username").setValue(name);
-        childUpdates.put("Profile" ,PostValues);
+        childUpdates.put("UserInfo" ,PostValues);
         RootDBref.child("UserList").child(uid).updateChildren(childUpdates);
     }
 }

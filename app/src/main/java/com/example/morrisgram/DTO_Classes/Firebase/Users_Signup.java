@@ -9,14 +9,14 @@ import java.util.Map;
 @IgnoreExtraProperties
 public class Users_Signup {
     private String Email;
-    private String PersonName;
+    private String NickName;
     private String Password;
     private String Phone;
     private String Sex;
 
-    public Users_Signup(String email, String personName, String Password, String Phone, String Sex) {
+    public Users_Signup(String email, String NickName, String Password, String Phone, String Sex) {
         this.Email = email;
-        this.PersonName = personName;
+        this.NickName = NickName;
         this.Password = Password;
         this.Phone = Phone;
         this.Sex = Sex;
@@ -26,8 +26,8 @@ public class Users_Signup {
    public Map<String,Object> toMap() {
         HashMap<String,Object> result = new HashMap<>();
         result.put("Email_ID",Email);
-        result.put("PersonName",Password);
-        result.put("Password",PersonName);
+        result.put("Password",Password);
+        result.put("NickName",NickName);
         result.put("Phone",Phone);
         result.put("Sex",Sex);
         return result;

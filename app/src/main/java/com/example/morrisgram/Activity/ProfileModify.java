@@ -61,9 +61,9 @@ public class ProfileModify extends AppCompatActivity {
             public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
                 String userUID = uid.getUid();
                 //현재 로그인된 유저 정보와 일치하는 데이터를 가져오기.
-                String EmailVal = (String) dataSnapshot.child(userUID).child("Profile").child("Email_ID").getValue();
-                String PhoneVal = (String) dataSnapshot.child(userUID).child("Profile").child("Phone").getValue();
-                String SexVal = (String) dataSnapshot.child(userUID).child("Profile").child("Sex").getValue();
+                String EmailVal = (String) dataSnapshot.child(userUID).child("UserInfo").child("Email_ID").getValue();
+                String PhoneVal = (String) dataSnapshot.child(userUID).child("UserInfo").child("Phone").getValue();
+                String SexVal = (String) dataSnapshot.child(userUID).child("UserInfo").child("Sex").getValue();
 
                email.setText(EmailVal);
                phone.setText(PhoneVal);
@@ -77,6 +77,7 @@ public class ProfileModify extends AppCompatActivity {
         });
 
     }
+    //애니메이션 효과 지우기
     @Override
     public void onPause(){
         super.onPause();

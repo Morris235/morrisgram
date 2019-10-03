@@ -37,19 +37,8 @@ public class Home extends AppCompatActivity implements SwipyRefreshLayout.OnRefr
         setContentView(R.layout.activity_home);
 
         firebaseAuth = FirebaseAuth.getInstance();
-        logoutB = (Button) findViewById(R.id.logoutB_home);
-        logoutB.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                firebaseAuth.signOut();
-                finish();
-                Intent intent1 = new Intent(getApplicationContext(), MainActivity.class);
-                startActivity(intent1);
-                finish();
-                Toast.makeText(Home.this, "로그아웃 되었습니다..", Toast.LENGTH_LONG).show();
-            }
-        });
 
+        Log.i("파베","홈 크리에이트");
 //-----------------------------------화면이동----------------------------------------
         //탐색화면 이동
         searchB = (ImageButton) findViewById(R.id.searchB_home);
@@ -57,6 +46,7 @@ public class Home extends AppCompatActivity implements SwipyRefreshLayout.OnRefr
             @Override
             public void onClick(View v) {
                 Intent intent = new Intent(Home.this, Search.class);
+                finish();
                 startActivity(intent);
                 overridePendingTransition(0, 0);
             }
@@ -67,6 +57,7 @@ public class Home extends AppCompatActivity implements SwipyRefreshLayout.OnRefr
             @Override
             public void onClick(View v) {
                 Intent intent = new Intent(Home.this, Myinfo.class);
+                finish();
                 startActivity(intent);
                 overridePendingTransition(0, 0);
             }
@@ -78,6 +69,7 @@ public class Home extends AppCompatActivity implements SwipyRefreshLayout.OnRefr
             @Override
             public void onClick(View v) {
                 Intent intent = new Intent(Home.this, LikeAlarm.class);
+                finish();
                 startActivity(intent);
                 overridePendingTransition(0, 0);
             }
@@ -89,6 +81,7 @@ public class Home extends AppCompatActivity implements SwipyRefreshLayout.OnRefr
             @Override
             public void onClick(View v) {
                 Intent intent = new Intent(Home.this, MessageTerminal.class);
+                finish();
                 startActivity(intent);
             }
         });
@@ -105,9 +98,30 @@ public class Home extends AppCompatActivity implements SwipyRefreshLayout.OnRefr
         mSwipeRefreshLayout.setRefreshing(false);
     }
 
-    //    @Override
-//  public void onPause(){
-//       super.onPause();
-//        overridePendingTransition(0,0);
-//    }
+    @Override
+    public void onStart(){
+        super.onStart();
+        Log.i("파베","홈 스타트");
+        }
+    public void onResume(){
+        super.onResume();
+        Log.i("파베","홈 리즈메");
+    }
+    public void onPause(){
+        super.onPause();
+        overridePendingTransition(0,0);
+        Log.i("파베","홈 포즈");
+    }
+    public void onStop(){
+        super.onStop();
+        Log.i("파베","홈 스탑");
+    }
+    public void onDestroy(){
+        super.onDestroy();
+        Log.i("파베","홈 디스트로이");
+    }
+    public void onRestart(){
+        super.onRestart();
+        Log.i("파베","홈 리스타트");
+    }
 }

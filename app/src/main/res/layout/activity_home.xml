@@ -195,17 +195,4 @@
 
     </com.orangegangsters.github.swipyrefreshlayout.library.SwipyRefreshLayout>
 
-    <Button
-        android:id="@+id/logoutB_home"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="8dp"
-        android:layout_marginBottom="8dp"
-        android:text="임시 로그아웃 버튼"
-        app:layout_constraintBottom_toTopOf="@+id/view3"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="0.766"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent"
-        app:layout_constraintVertical_bias="0.47" />
 </androidx.constraintlayout.widget.ConstraintLayout>

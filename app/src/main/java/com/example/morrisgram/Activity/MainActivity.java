@@ -9,6 +9,7 @@ import android.content.pm.ActivityInfo;
 import android.os.Bundle;
 import android.text.Editable;
 import android.text.TextWatcher;
+import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
@@ -41,6 +42,8 @@ public class MainActivity extends AppCompatActivity {
         // 화면을 portrait(세로) 화면으로 고정하고 싶은 경우
         setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_PORTRAIT);
         setContentView(R.layout.activity_main);
+
+        Log.i("파베","로그인 크리에이트");
         unfillB = (Button)findViewById(R.id.UnfillLoginB);
         loginB=(Button)findViewById(R.id.fillLogB);
 
@@ -129,6 +132,7 @@ public class MainActivity extends AppCompatActivity {
                             if (task.isSuccessful()) {
                                 Intent intent = new Intent(MainActivity.this, Home.class);
                                 Toast.makeText(MainActivity.this, "환영합니다 로그인 되었습니다.", Toast.LENGTH_SHORT).show();
+                                finish();
                                 startActivity(intent);
                             } else {
                                 Toast.makeText(MainActivity.this, "존재하지 않는 계정입니다.", Toast.LENGTH_SHORT).show();
@@ -171,6 +175,7 @@ public class MainActivity extends AppCompatActivity {
     }
 
     //로그인 되어있으면 메인페이지로 이동 <자동로그인>
+    //조건문 보완필요
     @Override
     public void onStart(){
         super.onStart();
@@ -178,8 +183,33 @@ public class MainActivity extends AppCompatActivity {
         //파베에 값은 있으니까 미리 실행이 되어버림 그래서 처음 로그인 할 때 홈 액티비티가 두개가 뜬다.
         currentUser = firebaseAuth.getCurrentUser();
         if(currentUser!=null){
+            Log.i("파베","스타트 로그인 확인");
             startActivity(new Intent(MainActivity.this,Home.class));
             finish();
+        }else {
+            //로그인된 유저가 없음
+            Log.i("파베","스타트 로그인 없음");
         }
+    }
+    public void onResume(){
+        super.onResume();
+        Log.i("파베","로그인 리즈메");
+    }
+    public void onPause(){
+        super.onPause();
+        overridePendingTransition(0,0);
+        Log.i("파베","로그인 포즈");
+    }
+    public void onStop(){
+        super.onStop();
+        Log.i("파베","로그인 스탑");
+    }
+    public void onDestroy(){
+        super.onDestroy();
+        Log.i("파베","로그인 디스트로이");
+    }
+    public void onRestart(){
+        super.onRestart();
+        Log.i("파베","로그인 리스타트");
     }
 }
