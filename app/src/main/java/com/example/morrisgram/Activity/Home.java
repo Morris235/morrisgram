@@ -1,10 +1,16 @@
 package com.example.morrisgram.Activity;
 
+import android.Manifest;
 import android.content.Intent;
 
+import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.core.app.ActivityCompat;
+import androidx.core.content.ContextCompat;
 
 import android.content.pm.ActivityInfo;
+import android.content.pm.PackageManager;
+import android.os.Build;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
@@ -25,6 +31,14 @@ public class Home extends AppCompatActivity implements SwipyRefreshLayout.OnRefr
     private FirebaseAuth firebaseAuth;
     //현재 로그인 된 유저 정보를 담을 변수
     private FirebaseUser currentUser;
+
+    //카메라 퍼미션
+    private final int MY_PERMISSIONS_REQUEST_CAMERA=1;
+    //갤러리 퍼미션
+    String[] permission_list = {
+            Manifest.permission.WRITE_CONTACTS,
+            Manifest.permission.READ_CONTACTS
+    };
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -92,6 +106,15 @@ public class Home extends AppCompatActivity implements SwipyRefreshLayout.OnRefr
                 + (direction == SwipyRefreshLayoutDirection.TOP ? "top" : "bottom"));
         mSwipeRefreshLayout.setRefreshing(false);
     }
+    // 권한 요청
+    @Override
+    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
+        Log.d("사진", "onRequestPermissionsResult");
+        if (grantResults[0] == PackageManager.PERMISSION_GRANTED && grantResults[1] == PackageManager.PERMISSION_GRANTED) {
+            Log.d("사진", "Permission: " + permissions[0] + "was " + grantResults[0]);
+        }
+    }
 
     @Override
     public void onStart(){
@@ -101,6 +124,32 @@ public class Home extends AppCompatActivity implements SwipyRefreshLayout.OnRefr
     public void onResume(){
         super.onResume();
         Log.i("파베","홈 리즈메");
+        // 6.0 마쉬멜로우 이상일 경우에는 권한 체크 후 권한 요청
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+            if (checkSelfPermission(Manifest.permission.CAMERA) == PackageManager.PERMISSION_GRANTED && checkSelfPermission(Manifest.permission.WRITE_EXTERNAL_STORAGE) == PackageManager.PERMISSION_GRANTED) {
+                Log.d("", "권한 설정 완료");
+            } else {
+                Log.d("", "권한 설정 요청");
+                ActivityCompat.requestPermissions(Home.this, new String[]{Manifest.permission.CAMERA, Manifest.permission.WRITE_EXTERNAL_STORAGE}, 1);
+            }
+        }
+
+        int permssionCheck = ContextCompat.checkSelfPermission(this,Manifest.permission.CAMERA);
+
+        if (permssionCheck!= PackageManager.PERMISSION_GRANTED) {
+
+            Toast.makeText(this,"권한 승인이 필요합니다",Toast.LENGTH_LONG).show();
+
+            if (ActivityCompat.shouldShowRequestPermissionRationale(this,
+                    Manifest.permission.CAMERA)) {
+                Toast.makeText(this,"사용을 위해 카메라 권한이 필요합니다.",Toast.LENGTH_LONG).show();
+            } else {
+                ActivityCompat.requestPermissions(this,
+                        new String[]{Manifest.permission.CAMERA},
+                        MY_PERMISSIONS_REQUEST_CAMERA);
+                Toast.makeText(this,"사용을 위해 카메라 권한이 필요합니다.",Toast.LENGTH_LONG).show();
+            }
+        }
     }
     public void onPause(){
         super.onPause();

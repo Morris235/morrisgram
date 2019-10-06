@@ -43,6 +43,8 @@ public class Myinfo extends AppCompatActivity implements SwipeRefreshLayout.OnRe
    private TextView hname;
    private TextView pname;
    private TextView idtv;
+   private TextView intro;
+   private TextView website;
 
    private DrawerLayout mdrawerLayout;
    private ActionBarDrawerToggle mtoggle;
@@ -65,11 +67,14 @@ public class Myinfo extends AppCompatActivity implements SwipeRefreshLayout.OnRe
         mtoggle = new ActionBarDrawerToggle(this,mdrawerLayout,R.string.open,R.string.close);
         mdrawerLayout.addDrawerListener(mtoggle);
         mtoggle.syncState();
+
+        //내 정보 화면에 표시할 텍스트들
         optionB = (ImageButton) findViewById(R.id.optionB_my);
         hname = (TextView) findViewById(R.id.username_header);
         pname = (TextView) findViewById(R.id.name);
         idtv = (TextView) findViewById(R.id.idtv_my);
-
+        website = (TextView) findViewById(R.id.website_my);
+        intro = (TextView) findViewById(R.id.introduce_my);
 
         //네비게이션뷰 리스너
         NavigationView navigationView = (NavigationView) findViewById(R.id.navigationview);
@@ -157,9 +162,13 @@ public class Myinfo extends AppCompatActivity implements SwipeRefreshLayout.OnRe
             public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
                 //현재 로그인된 유저 정보와 일치하는 데이터를 가져오기.
                 String NameVal = (String) dataSnapshot.child(userUID).child("UserInfo").child("NickName").getValue();
+                String WebsiteVal = (String) dataSnapshot.child(userUID).child("Profile").child("Website").getValue();
+                String IntroVal = (String) dataSnapshot.child(userUID).child("Profile").child("Introduce").getValue();
 
                 pname.setText(NameVal);
                 idtv.setText(NameVal);
+                website.setText(WebsiteVal);
+                intro.setText(IntroVal);
             }
 
             @Override

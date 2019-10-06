@@ -1,21 +1,39 @@
 package com.example.morrisgram.Activity;
 
 import androidx.annotation.NonNull;
+import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.core.content.FileProvider;
 
+import android.app.Activity;
+import android.content.Context;
+import android.content.DialogInterface;
+import android.content.Intent;
 import android.content.pm.ActivityInfo;
+import android.database.Cursor;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.media.Image;
+import android.net.Uri;
 import android.os.Bundle;
+import android.os.Environment;
+import android.provider.MediaStore;
 import android.util.Log;
 import android.util.Printer;
 import android.view.View;
+import android.view.ViewGroup;
 import android.widget.EditText;
 import android.widget.ImageButton;
+import android.widget.ImageView;
 import android.widget.TextView;
+import android.widget.Toast;
 
+import com.example.morrisgram.CameraClass.ImageResizeUtils;
 import com.example.morrisgram.DTO_Classes.Firebase.Users_ProfileModify;
 import com.example.morrisgram.DTO_Classes.Firebase.Users_Signup;
 import com.example.morrisgram.R;
+import com.google.android.gms.tasks.OnFailureListener;
+import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.database.DataSnapshot;
@@ -23,7 +41,14 @@ import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
+import com.google.firebase.storage.FirebaseStorage;
+import com.google.firebase.storage.StorageReference;
+import com.google.firebase.storage.UploadTask;
 
+import java.io.File;
+import java.io.IOException;
+import java.text.SimpleDateFormat;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -33,9 +58,9 @@ public class ProfileModify extends AppCompatActivity {
    private DatabaseReference mdataref = FirebaseDatabase.getInstance().getReference("UserList");
    //현재 접속중인 유저UID가져오기
    private FirebaseUser uid = FirebaseAuth.getInstance().getCurrentUser();
+   private StorageReference mstorageRef;
 
    private ImageButton ProfileModifyB;
-
    private TextView email;
    private TextView phone;
    private TextView sex;
@@ -45,17 +70,31 @@ public class ProfileModify extends AppCompatActivity {
    private EditText edintroduce;
 
    private String userUID = uid.getUid();
+//------------------------------카메라,앨범-----------------------------------------------------
+    //이 변수는 onActivityResult 에서 requestCode 로 반환되는 값입니다
+    private static final int PICK_FROM_ALBUM = 1;
+    //전역변수로 File 타입의 tempFile 을 선언해 주세요. 이 tempFile 에 받아온 이미지를 저장할거에요.
+    private File tempFile;
+    /*Intent 를 통해 카메라화면으로 이동할 수 있습니다.
+    이때 startAcitivtyResult 에는 PICK_FROM_CAMER 를 파라미터로 넣어줍니다.*/
+    private static final int PICK_FROM_CAMERA = 2;
+    //카메라 퍼미션
+    private final int MY_PERMISSIONS_REQUEST_CAMERA=1;
+    //카메라 이미지 회전 적역변수
+    private Boolean isCamera = false;
 
+    public Uri photoUri;
+    public Uri getPhotoUri;
+//---------------------------------------------------------------------------------------------
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         // 화면을 portrait(세로) 화면으로 고정하고 싶은 경우
         setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_PORTRAIT);
-
         setContentView(R.layout.activity_profile_modify);
 
-       //유저 UID 스트링
-
+        final Context context= this;
+        mstorageRef = FirebaseStorage.getInstance().getReference();
 
         //프로필 수정완료 버튼
         ProfileModifyB = (ImageButton) findViewById(R.id.compB);
@@ -114,6 +153,37 @@ public class ProfileModify extends AppCompatActivity {
             }
         });
 
+        //프로필 사진 변경
+        ViewGroup ChangePicB = (ViewGroup) findViewById(R.id.pic_profile);
+        ChangePicB.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                final CharSequence[] items = {"사진촬영","앨범"};
+                AlertDialog.Builder alertDialogBuilder = new AlertDialog.Builder(context);
+
+                alertDialogBuilder.setItems(items, new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+                        switch (which){
+                            //사진촬영
+                            case 0 : takePhoto();
+//                                Toast.makeText(getApplicationContext(),"사진촬영 선택",Toast.LENGTH_SHORT).show();
+                                break;
+                            //앨범
+                            case 1 : goToAlbum();
+//                                Toast.makeText(getApplicationContext(),"앨범 선택",Toast.LENGTH_SHORT).show();
+                                break;
+                        }
+                    }
+                });
+                //다이얼로그 생성
+                AlertDialog alertDialog = alertDialogBuilder.create();
+
+                //다이얼로그 보여주기
+                alertDialog.show();;
+            }
+        });
+
         //프로필 정보 변경 완료
         ProfileModifyB.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -125,6 +195,25 @@ public class ProfileModify extends AppCompatActivity {
 
                 FirebaseDatabase(true,upwebsite,upintro,upname);
                 finish();
+            }
+        });
+
+        //로컬에서 스토리지로 이미지 업로드 소스코드
+        Uri file = Uri.fromFile(new File("path/to/images/rivers.jpg"));
+        StorageReference riversRef = mstorageRef.child("images/"+file.getLastPathSegment());
+       UploadTask uploadTask = riversRef.putFile(file);
+
+// Register observers to listen for when the download is done or if it fails
+        uploadTask.addOnFailureListener(new OnFailureListener() {
+            @Override
+            public void onFailure(@NonNull Exception exception) {
+                // Handle unsuccessful uploads
+            }
+        }).addOnSuccessListener(new OnSuccessListener<UploadTask.TaskSnapshot>() {
+            @Override
+            public void onSuccess(UploadTask.TaskSnapshot taskSnapshot) {
+                // taskSnapshot.getMetadata() contains file metadata such as size, content-type, etc.
+                // ...
             }
         });
     }
@@ -152,5 +241,135 @@ public class ProfileModify extends AppCompatActivity {
 
         //유저이름 업데이트 - UserInfo child
         mdataref.child(userUID).child("UserInfo").child("NickName").setValue(upname);
+    }
+
+//--------------------------------------카메라 메소드--------------------------------------------------------
+    //권한 요청을 거부했다면 예외처리 만들기
+    private void takePhoto() {
+
+        isCamera=true;
+
+        Intent intent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
+        try {
+            tempFile = createImageFile();
+        } catch (IOException e) {
+            Toast.makeText(this, "이미지 처리 오류! 다시 시도해주세요.", Toast.LENGTH_SHORT).show();
+            finish();
+            e.printStackTrace();
+        }
+        if (tempFile != null) {
+            if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.N) {
+                Uri photoUri = FileProvider.getUriForFile(this,
+                        "com.example.morrisgram.provider", tempFile);
+                intent.putExtra(MediaStore.EXTRA_OUTPUT, photoUri);
+                startActivityForResult(intent, PICK_FROM_CAMERA);
+            } else {
+
+                Uri photoUri = Uri.fromFile(tempFile);
+                intent.putExtra(MediaStore.EXTRA_OUTPUT, photoUri);
+                startActivityForResult(intent, PICK_FROM_CAMERA);
+            }
+        }
+    }
+    //권한 요청을 거부했다면 예외처리 만들기
+    private void goToAlbum() {
+        isCamera =false;
+        Intent intent = new Intent(Intent.ACTION_PICK);
+        intent.setType(MediaStore.Images.Media.CONTENT_TYPE);
+        startActivityForResult(intent, PICK_FROM_ALBUM);
+        /*startActivityForResult 를 통해 다른 Activity 로 이동한 후 다시 돌아오게 되면 onActivityResult 가 동작되게 됩니다.
+        이때 startActivityForResult 의 두번 째 파라미터로 보낸 값 {여기서는 PICK_FROM_ALBUM 이겠죠?}이
+        requestCode 로 반환되는 동작을 합니다.*/
+    }
+
+    //카메라에서 찍은 사진을 저장할 파일 만들기
+    private File createImageFile() throws IOException {
+        // 이미지 파일 이름 ( blackJin_{시간}_ )
+        String timeStamp = new SimpleDateFormat("HHmmss").format(new Date());
+        String imageFileName = "morrisgram" + timeStamp + "_";
+
+        // 이미지가 저장될 폴더 이름 ( blackJin )
+        File storageDir = new File(Environment.getExternalStorageDirectory() + "/morrisgram/");
+        if (!storageDir.exists()) storageDir.mkdirs();
+
+        // 빈 파일 생성
+        File image = File.createTempFile(imageFileName, ".jpg", storageDir);
+
+        return image;
+    }
+    //갤러리에서 받아온 이미지 넣기
+    private void setImage() {
+
+//        ImageView imageView = findViewById(R.id.photo);
+        /*첫 번째 파라미터: 변형시킬 tempFile 을 넣었습니다.
+         두 번째 파라미터에는 변형시킨 파일을 다시 tempFile에 저장.
+         세 번째 파라미터는 이미지의 긴 부분을 1280 사이즈로 리사이징 하라는 의미.
+         네 번째 파라미터를 통해 카메라에서 가져온 이미지인 경우 카메라의 회전각도를 적용해 줍니다.(앨범에서 가져온 경우에는 회전각도를 적용 시킬 필요가 없겠죠?)*/
+
+        //이미지 회전 인스턴스
+        ImageResizeUtils.resizeFile(tempFile,tempFile,1280,isCamera);
+
+        BitmapFactory.Options options = new BitmapFactory.Options();
+        Bitmap originalBm = BitmapFactory.decodeFile(tempFile.getAbsolutePath(), options);
+
+        //비트맵을 이미지세트함.
+//        imageView.setImageBitmap(originalBm);
+        Log.i("태그 팝업","이미지 값 확인 : "+originalBm);
+    }
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+        //예외사항 처리 =앨범화면으로 이동 했지만 선택을 하지 않고 뒤로 간 경우 또는 카메라로 촬영한 후 저장하지 않고 뒤로 가기를 간 경우
+        super.onActivityResult(requestCode, resultCode, data);
+        if (resultCode != Activity.RESULT_OK) {
+            Toast.makeText(this, "취소 되었습니다.", Toast.LENGTH_SHORT).show();
+            if (tempFile != null) {
+                if (tempFile.exists()) {
+                    if (tempFile.delete()) {
+                        Log.e("예외사항", tempFile.getAbsolutePath() + " 삭제 성공");
+                        tempFile = null;
+                    }
+                }
+            }
+            return;
+        }
+        if (requestCode == PICK_FROM_ALBUM) {
+
+            photoUri = data.getData();
+            Log.i("태그 팝업", "photouri 값 확인 : " + photoUri);
+            Cursor cursor = null;
+
+            try {
+                /*
+                 *  Uri 스키마를
+                 *  content:/// 에서 file:/// 로  변경한다.
+                 */
+                //절대경로 구하는중
+                String[] proj = {MediaStore.Images.Media.DATA};
+                assert photoUri != null;
+                cursor = getContentResolver().query(photoUri, proj, null, null, null);
+
+                assert cursor != null;
+                int column_index = cursor.getColumnIndexOrThrow(MediaStore.Images.Media.DATA);
+
+                cursor.moveToFirst();
+
+
+                tempFile = new File(cursor.getString(column_index));
+                getPhotoUri = Uri.fromFile(tempFile);
+
+                Log.i("태그", "tempfile 값 확인 : " + tempFile);
+                Log.i("태그", "절대경로 getPhotoUri 값 확인 : " + getPhotoUri);
+            } finally {
+                if (cursor != null) {
+                    cursor.close();
+                }
+            }
+
+            setImage();
+            //onActivityResult 분기 처리
+            //onActivityResult 에서 requestCode 를 앨범에서 온 경우와 카메라에서 온 경우로 나눠서 처리해줍니다.
+        } else if (requestCode == PICK_FROM_CAMERA) {
+            setImage();
+        }
     }
 }
