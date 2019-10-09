@@ -216,7 +216,9 @@ public class Myinfo extends AppCompatActivity implements SwipeRefreshLayout.OnRe
                             Toast.makeText(Myinfo.this,"계정이 삭제 되었습니다.",Toast.LENGTH_LONG).show();
                             //데이터 삭제
                             mdataref.child(userUID).setValue(null);
-                            //로그아웃 처리
+                            //로그아웃 처리 & 회원탈퇴 처리
+                            uid.delete();
+
                             firebaseAuth = FirebaseAuth.getInstance();
                             firebaseAuth.signOut();
                             finish();

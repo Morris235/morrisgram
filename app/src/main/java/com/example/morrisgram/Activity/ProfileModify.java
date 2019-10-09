@@ -28,12 +28,18 @@ import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.bumptech.glide.Glide;
+import com.bumptech.glide.load.resource.drawable.DrawableTransitionOptions;
+import com.example.morrisgram.CameraClass.GlideApp;
 import com.example.morrisgram.CameraClass.ImageResizeUtils;
 import com.example.morrisgram.DTO_Classes.Firebase.Users_ProfileModify;
 import com.example.morrisgram.DTO_Classes.Firebase.Users_Signup;
 import com.example.morrisgram.R;
+import com.google.android.gms.tasks.Continuation;
+import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
+import com.google.android.gms.tasks.Task;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.database.DataSnapshot;
@@ -41,6 +47,7 @@ import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
+import com.google.firebase.storage.FileDownloadTask;
 import com.google.firebase.storage.FirebaseStorage;
 import com.google.firebase.storage.StorageReference;
 import com.google.firebase.storage.UploadTask;
@@ -58,12 +65,13 @@ public class ProfileModify extends AppCompatActivity {
    private DatabaseReference mdataref = FirebaseDatabase.getInstance().getReference("UserList");
    //현재 접속중인 유저UID가져오기
    private FirebaseUser uid = FirebaseAuth.getInstance().getCurrentUser();
-   private StorageReference mstorageRef;
+   private StorageReference mstorageRef = FirebaseStorage.getInstance().getReference();
 
    private ImageButton ProfileModifyB;
    private TextView email;
    private TextView phone;
    private TextView sex;
+   private ImageView profileimg;
 
    private EditText edname;
    private EditText edwebsite;
@@ -74,7 +82,7 @@ public class ProfileModify extends AppCompatActivity {
     //이 변수는 onActivityResult 에서 requestCode 로 반환되는 값입니다
     private static final int PICK_FROM_ALBUM = 1;
     //전역변수로 File 타입의 tempFile 을 선언해 주세요. 이 tempFile 에 받아온 이미지를 저장할거에요.
-    private File tempFile;
+    private static File tempFile;
     /*Intent 를 통해 카메라화면으로 이동할 수 있습니다.
     이때 startAcitivtyResult 에는 PICK_FROM_CAMER 를 파라미터로 넣어줍니다.*/
     private static final int PICK_FROM_CAMERA = 2;
@@ -83,8 +91,12 @@ public class ProfileModify extends AppCompatActivity {
     //카메라 이미지 회전 적역변수
     private Boolean isCamera = false;
 
+    //카메라와 앨범으로부터 얻게 되는 URI
     public Uri photoUri;
+    //파일 위치 절대경로 URI
     public Uri getPhotoUri;
+    //카메라 촬영,앨범에서 얻게 되는 비트맵 이미지 주소값
+    public Bitmap originalBm;
 //---------------------------------------------------------------------------------------------
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -108,6 +120,8 @@ public class ProfileModify extends AppCompatActivity {
         edname = (EditText) findViewById(R.id.inputname);
         edwebsite = (EditText) findViewById(R.id.inputwebsite);
         edintroduce = (EditText) findViewById(R.id.inputintro);
+
+        profileimg = (ImageView) findViewById(R.id.ModifyIMG);
 
         //취소버튼
         ImageButton cancelB;
@@ -153,7 +167,8 @@ public class ProfileModify extends AppCompatActivity {
             }
         });
 
-        //프로필 사진 변경
+
+        //프로필 사진 변경 버튼
         ViewGroup ChangePicB = (ViewGroup) findViewById(R.id.pic_profile);
         ChangePicB.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -184,39 +199,52 @@ public class ProfileModify extends AppCompatActivity {
             }
         });
 
-        //프로필 정보 변경 완료
+        //프로필 이미지 바인딩 - 다른 수단으로 테스트 해보기
+//        Task<Uri> imageRef = mstorageRef.child(userUID+"/ProfileIMG/ProfileIMG").getDownloadUrl().addOnSuccessListener(new OnSuccessListener<Uri>() {
+//            @Override
+//            public void onSuccess(Uri uri) {
+//                // Got the download URL for 'users/me/profile.png'
+//                Log.i("이미지","다운로드 성공!");
+//            }
+//        }).addOnFailureListener(new OnFailureListener() {
+//            @Override
+//            public void onFailure(@NonNull Exception exception) {
+//                // Handle any errors
+//                Log.i("이미지","다운로드 실패!");
+//            }
+//        });
+
+
+        //Glide를 통한 이미지 바인딩
+        StorageReference imageRef = mstorageRef.child(userUID+"/ProfileIMG/ProfileIMG");
+        Log.i("이미지","스토리지 리퍼런스 NOT NULL : "+imageRef);
+            GlideApp.with(this)
+                    .load(imageRef)
+                    .centerCrop()
+                    .into(profileimg);
+
+
+        //          >----------프로필 정보 변경 최종 확인 버튼-------------<
         ProfileModifyB.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-               //프로필 정보
-               String upname = edname.getText().toString();
-               String upwebsite = edwebsite.getText().toString();
-               String upintro = edintroduce.getText().toString();
+                    //프로필 정보
+//                    String IMGuri = photoUri.toString();
+                //스토리지에 저장한 파일명과 일치하게 스트링으로 작성
+                String ProfileIMG ="ProfileIMG";
 
-                FirebaseDatabase(true,upwebsite,upintro,upname);
-                finish();
+//                    Log.i("이미지","IMGuri 값 확인 : "+IMGuri);
+
+                    String upname = edname.getText().toString();
+                    String upwebsite = edwebsite.getText().toString();
+                    String upintro = edintroduce.getText().toString();
+
+                    FirebaseDatabase(true,upwebsite,upintro,upname,ProfileIMG);
+                    finish();
             }
         });
 
-        //로컬에서 스토리지로 이미지 업로드 소스코드
-        Uri file = Uri.fromFile(new File("path/to/images/rivers.jpg"));
-        StorageReference riversRef = mstorageRef.child("images/"+file.getLastPathSegment());
-       UploadTask uploadTask = riversRef.putFile(file);
-
-// Register observers to listen for when the download is done or if it fails
-        uploadTask.addOnFailureListener(new OnFailureListener() {
-            @Override
-            public void onFailure(@NonNull Exception exception) {
-                // Handle unsuccessful uploads
-            }
-        }).addOnSuccessListener(new OnSuccessListener<UploadTask.TaskSnapshot>() {
-            @Override
-            public void onSuccess(UploadTask.TaskSnapshot taskSnapshot) {
-                // taskSnapshot.getMetadata() contains file metadata such as size, content-type, etc.
-                // ...
-            }
-        });
-    }
+    }//-----------------------------------크리에이트--------------------------------------
     //애니메이션 효과 지우기
     @Override
     public void onPause(){
@@ -225,13 +253,13 @@ public class ProfileModify extends AppCompatActivity {
     }
 
     //파이어 베이스 업데이트 메소드 - 프로필 웹사이트,소개
-    public void FirebaseDatabase(boolean add, String website, String intro, String upname){
+    public void FirebaseDatabase(boolean add, String website, String intro, String upname,String ProfileIMG){
         //해쉬맵 생성
         Map<String,Object> childUpdates = new HashMap<>();
         Map<String,Object> PostValues = null;
 
         if(add){
-            Users_ProfileModify posting = new Users_ProfileModify(website,intro);
+            Users_ProfileModify posting = new Users_ProfileModify(website,intro,ProfileIMG);
             PostValues = posting.toMap();
         }
 
@@ -244,33 +272,32 @@ public class ProfileModify extends AppCompatActivity {
     }
 
 //--------------------------------------카메라 메소드--------------------------------------------------------
-    //권한 요청을 거부했다면 예외처리 만들기
-    private void takePhoto() {
+private void takePhoto() {
 
-        isCamera=true;
+    isCamera=true;
 
-        Intent intent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
-        try {
-            tempFile = createImageFile();
-        } catch (IOException e) {
-            Toast.makeText(this, "이미지 처리 오류! 다시 시도해주세요.", Toast.LENGTH_SHORT).show();
-            finish();
-            e.printStackTrace();
-        }
-        if (tempFile != null) {
-            if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.N) {
-                Uri photoUri = FileProvider.getUriForFile(this,
-                        "com.example.morrisgram.provider", tempFile);
-                intent.putExtra(MediaStore.EXTRA_OUTPUT, photoUri);
-                startActivityForResult(intent, PICK_FROM_CAMERA);
-            } else {
+    Intent intent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
+    try {
+        tempFile = createImageFile();
+    } catch (IOException e) {
+        Toast.makeText(this, "이미지 처리 오류! 다시 시도해주세요.", Toast.LENGTH_SHORT).show();
+        finish();
+        e.printStackTrace();
+    }
+    if (tempFile != null) {
+        if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.N) {
+            Uri photoUri = FileProvider.getUriForFile(this,
+                    "com.example.morrisgram.provider", tempFile);
+            intent.putExtra(MediaStore.EXTRA_OUTPUT, photoUri);
+            startActivityForResult(intent, PICK_FROM_CAMERA);
+        } else {
 
-                Uri photoUri = Uri.fromFile(tempFile);
-                intent.putExtra(MediaStore.EXTRA_OUTPUT, photoUri);
-                startActivityForResult(intent, PICK_FROM_CAMERA);
-            }
+            Uri photoUri = Uri.fromFile(tempFile);
+            intent.putExtra(MediaStore.EXTRA_OUTPUT, photoUri);
+            startActivityForResult(intent, PICK_FROM_CAMERA);
         }
     }
+}
     //권한 요청을 거부했다면 예외처리 만들기
     private void goToAlbum() {
         isCamera =false;
@@ -299,8 +326,7 @@ public class ProfileModify extends AppCompatActivity {
     }
     //갤러리에서 받아온 이미지 넣기
     private void setImage() {
-
-//        ImageView imageView = findViewById(R.id.photo);
+        Log.i("이미지"," setImage 실행확인");
         /*첫 번째 파라미터: 변형시킬 tempFile 을 넣었습니다.
          두 번째 파라미터에는 변형시킨 파일을 다시 tempFile에 저장.
          세 번째 파라미터는 이미지의 긴 부분을 1280 사이즈로 리사이징 하라는 의미.
@@ -308,18 +334,23 @@ public class ProfileModify extends AppCompatActivity {
 
         //이미지 회전 인스턴스
         ImageResizeUtils.resizeFile(tempFile,tempFile,1280,isCamera);
+        Log.i("이미지"," setImage tempFile 값 확인 : "+tempFile);
+        //사진촬영 주소URI로 변경
+        photoUri = Uri.fromFile(tempFile);
 
         BitmapFactory.Options options = new BitmapFactory.Options();
-        Bitmap originalBm = BitmapFactory.decodeFile(tempFile.getAbsolutePath(), options);
+        originalBm = BitmapFactory.decodeFile(tempFile.getAbsolutePath(), options);
 
         //비트맵을 이미지세트함.
-//        imageView.setImageBitmap(originalBm);
-        Log.i("태그 팝업","이미지 값 확인 : "+originalBm);
+        profileimg.setImageBitmap(originalBm);
     }
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+        Log.i("이미지"," onActivityResult 실행확인");
+
         //예외사항 처리 =앨범화면으로 이동 했지만 선택을 하지 않고 뒤로 간 경우 또는 카메라로 촬영한 후 저장하지 않고 뒤로 가기를 간 경우
         super.onActivityResult(requestCode, resultCode, data);
+        //예외처리 분기분
         if (resultCode != Activity.RESULT_OK) {
             Toast.makeText(this, "취소 되었습니다.", Toast.LENGTH_SHORT).show();
             if (tempFile != null) {
@@ -332,12 +363,12 @@ public class ProfileModify extends AppCompatActivity {
             }
             return;
         }
+
         if (requestCode == PICK_FROM_ALBUM) {
 
             photoUri = data.getData();
-            Log.i("태그 팝업", "photouri 값 확인 : " + photoUri);
+            Log.i("이미지", "onActivityResult photoUri 값 확인 : " + photoUri);
             Cursor cursor = null;
-
             try {
                 /*
                  *  Uri 스키마를
@@ -355,10 +386,9 @@ public class ProfileModify extends AppCompatActivity {
 
 
                 tempFile = new File(cursor.getString(column_index));
+                Log.i("이미지"," onActivityResult tempFile 값 확인 : "+tempFile);
                 getPhotoUri = Uri.fromFile(tempFile);
 
-                Log.i("태그", "tempfile 값 확인 : " + tempFile);
-                Log.i("태그", "절대경로 getPhotoUri 값 확인 : " + getPhotoUri);
             } finally {
                 if (cursor != null) {
                     cursor.close();
@@ -371,5 +401,38 @@ public class ProfileModify extends AppCompatActivity {
         } else if (requestCode == PICK_FROM_CAMERA) {
             setImage();
         }
+    }
+    //프로필 수정 종료시 사진업로드 ... 사진 변경 없으면 널값예외처리
+    @Override
+    public void onDestroy(){
+        super.onDestroy();
+
+        try {
+            //uri값이 null값이면 일리걸 에러 발생
+            if (photoUri != null) {
+                String UriSTR = "ProfileIMG";
+                //로컬에서 스토리지로 이미지 업로드 소스코드
+                //사진 저장 경로 지정 - userUID - ProfileIMG - IMG
+                StorageReference riversRef = mstorageRef.child(userUID).child("ProfileIMG/" + UriSTR);
+                UploadTask uploadTask = riversRef.putFile(photoUri);
+
+// Register observers to listen for when the download is done or if it fails
+                uploadTask.addOnFailureListener(new OnFailureListener() {
+                    @Override
+                    public void onFailure(@NonNull Exception exception) {
+                        // Handle unsuccessful uploads
+                    }
+                }).addOnSuccessListener(new OnSuccessListener<UploadTask.TaskSnapshot>() {
+                    @Override
+                    public void onSuccess(UploadTask.TaskSnapshot taskSnapshot) {
+                        // taskSnapshot.getMetadata() contains file metadata such as size, content-type, etc.
+                    }
+                });
+            }
+        }catch (NullPointerException e){
+            e.getStackTrace();
+            Log.i("이미지","사진 촬영 phtoUri : "+photoUri);
+        }
+
     }
 }

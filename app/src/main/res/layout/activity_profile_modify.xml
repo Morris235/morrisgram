@@ -79,7 +79,7 @@
         android:layout_marginStart="8dp"
         android:layout_marginTop="20dp"
         android:layout_marginEnd="8dp"
-        android:src="@drawable/person2"
+        android:src="@drawable/noimage"
         app:civ_border_color="#000000"
         app:civ_border_width="2dp" />
 
@@ -134,7 +134,7 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:hint="웹사이트"
-            android:inputType="text" />
+            android:inputType="textWebEmailAddress" />
     </com.google.android.material.textfield.TextInputLayout>
 
     <com.google.android.material.textfield.TextInputLayout
