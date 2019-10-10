@@ -164,7 +164,7 @@
             app:layout_constraintVertical_bias="0.5" />
 
         <de.hdodenhof.circleimageview.CircleImageView
-            android:id="@+id/profileIMG"
+            android:id="@+id/profileIMG_my"
             android:layout_width="80dp"
             android:layout_height="80dp"
             android:layout_marginStart="8dp"
@@ -394,7 +394,7 @@
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintHorizontal_bias="0.0"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@+id/introduce"
+            app:layout_constraintTop_toBottomOf="@+id/introduce_my"
             app:layout_constraintVertical_bias="0.0" />
     </androidx.constraintlayout.widget.ConstraintLayout>
 

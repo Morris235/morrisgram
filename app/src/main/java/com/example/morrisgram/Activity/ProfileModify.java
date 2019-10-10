@@ -4,6 +4,7 @@ import androidx.annotation.NonNull;
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.content.FileProvider;
+import androidx.core.view.GravityCompat;
 
 import android.app.Activity;
 import android.content.Context;
@@ -29,7 +30,9 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import com.bumptech.glide.Glide;
+import com.bumptech.glide.load.engine.DiskCacheStrategy;
 import com.bumptech.glide.load.resource.drawable.DrawableTransitionOptions;
+import com.bumptech.glide.signature.ObjectKey;
 import com.example.morrisgram.CameraClass.GlideApp;
 import com.example.morrisgram.CameraClass.ImageResizeUtils;
 import com.example.morrisgram.DTO_Classes.Firebase.Users_ProfileModify;
@@ -105,8 +108,9 @@ public class ProfileModify extends AppCompatActivity {
         setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_PORTRAIT);
         setContentView(R.layout.activity_profile_modify);
 
+        Log.i("파베","마이 크리에이트 시작");
+
         final Context context= this;
-        mstorageRef = FirebaseStorage.getInstance().getReference();
 
         //프로필 수정완료 버튼
         ProfileModifyB = (ImageButton) findViewById(R.id.compB);
@@ -121,7 +125,21 @@ public class ProfileModify extends AppCompatActivity {
         edwebsite = (EditText) findViewById(R.id.inputwebsite);
         edintroduce = (EditText) findViewById(R.id.inputintro);
 
-        profileimg = (ImageView) findViewById(R.id.ModifyIMG);
+       profileimg = (ImageView) findViewById(R.id.ModifyIMG);
+
+        //Glide를 통한 이미지 바인딩
+        StorageReference imageRef = mstorageRef.child(userUID+"/ProfileIMG/ProfileIMG");
+            Log.i("이미지","스토리지 리퍼런스 NOT NULL : "+imageRef);
+            GlideApp.with(this)
+                    .load(imageRef)
+                    .signature(new ObjectKey(String.valueOf(System.currentTimeMillis())))
+                    .dontAnimate()
+                    .centerCrop()
+                    .circleCrop()
+                    .placeholder(R.drawable.noimage)
+                    .skipMemoryCache(true)
+                    .diskCacheStrategy(DiskCacheStrategy.NONE)
+                    .into(profileimg);
 
         //취소버튼
         ImageButton cancelB;
@@ -129,6 +147,8 @@ public class ProfileModify extends AppCompatActivity {
         cancelB.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
+//                Intent intent = new Intent(ProfileModify.this,Myinfo.class);
+//                startActivity(intent);
                 finish();
             }
         });
@@ -168,8 +188,13 @@ public class ProfileModify extends AppCompatActivity {
         });
 
 
+
         //프로필 사진 변경 버튼
-        ViewGroup ChangePicB = (ViewGroup) findViewById(R.id.pic_profile);
+        final ViewGroup ChangePicB = (ViewGroup) findViewById(R.id.pic_profile);
+        final ViewGroup ChangePicB_be = (ViewGroup) findViewById(R.id.pic_profile_be);
+        ChangePicB.setVisibility(View.VISIBLE);
+        ChangePicB_be.setVisibility(View.INVISIBLE);
+
         ChangePicB.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -179,6 +204,9 @@ public class ProfileModify extends AppCompatActivity {
                 alertDialogBuilder.setItems(items, new DialogInterface.OnClickListener() {
                     @Override
                     public void onClick(DialogInterface dialog, int which) {
+                        ChangePicB.setVisibility(View.INVISIBLE);
+                        ChangePicB_be.setVisibility(View.VISIBLE);
+
                         switch (which){
                             //사진촬영
                             case 0 : takePhoto();
@@ -199,12 +227,43 @@ public class ProfileModify extends AppCompatActivity {
             }
         });
 
+        //이미지 변경 미리보기 버튼
+        ChangePicB_be.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                final CharSequence[] items = {"사진촬영","앨범"};
+                AlertDialog.Builder alertDialogBuilder = new AlertDialog.Builder(context);
+
+                alertDialogBuilder.setItems(items, new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+
+                        switch (which){
+                            //사진촬영
+                            case 0 : takePhoto();
+//                                Toast.makeText(getApplicationContext(),"사진촬영 선택",Toast.LENGTH_SHORT).show();
+                                break;
+                            //앨범
+                            case 1 : goToAlbum();
+//                                Toast.makeText(getApplicationContext(),"앨범 선택",Toast.LENGTH_SHORT).show();
+                                break;
+                        }
+                    }
+                });
+                //다이얼로그 생성
+                AlertDialog alertDialog = alertDialogBuilder.create();
+
+                //다이얼로그 보여주기
+                alertDialog.show();;
+            }
+        });
         //프로필 이미지 바인딩 - 다른 수단으로 테스트 해보기
 //        Task<Uri> imageRef = mstorageRef.child(userUID+"/ProfileIMG/ProfileIMG").getDownloadUrl().addOnSuccessListener(new OnSuccessListener<Uri>() {
 //            @Override
 //            public void onSuccess(Uri uri) {
 //                // Got the download URL for 'users/me/profile.png'
 //                Log.i("이미지","다운로드 성공!");
+//
 //            }
 //        }).addOnFailureListener(new OnFailureListener() {
 //            @Override
@@ -214,16 +273,6 @@ public class ProfileModify extends AppCompatActivity {
 //            }
 //        });
 
-
-        //Glide를 통한 이미지 바인딩
-        StorageReference imageRef = mstorageRef.child(userUID+"/ProfileIMG/ProfileIMG");
-        Log.i("이미지","스토리지 리퍼런스 NOT NULL : "+imageRef);
-            GlideApp.with(this)
-                    .load(imageRef)
-                    .centerCrop()
-                    .into(profileimg);
-
-
         //          >----------프로필 정보 변경 최종 확인 버튼-------------<
         ProfileModifyB.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -231,6 +280,7 @@ public class ProfileModify extends AppCompatActivity {
                     //프로필 정보
 //                    String IMGuri = photoUri.toString();
                 //스토리지에 저장한 파일명과 일치하게 스트링으로 작성
+                Intent intent = new Intent(ProfileModify.this,Myinfo.class);
                 String ProfileIMG ="ProfileIMG";
 
 //                    Log.i("이미지","IMGuri 값 확인 : "+IMGuri);
@@ -240,6 +290,7 @@ public class ProfileModify extends AppCompatActivity {
                     String upintro = edintroduce.getText().toString();
 
                     FirebaseDatabase(true,upwebsite,upintro,upname,ProfileIMG);
+                    startActivity(intent);
                     finish();
             }
         });
@@ -327,6 +378,7 @@ private void takePhoto() {
     //갤러리에서 받아온 이미지 넣기
     private void setImage() {
         Log.i("이미지"," setImage 실행확인");
+        ImageView profileimg_be = (ImageView) findViewById(R.id.ModifyIMG_be);
         /*첫 번째 파라미터: 변형시킬 tempFile 을 넣었습니다.
          두 번째 파라미터에는 변형시킨 파일을 다시 tempFile에 저장.
          세 번째 파라미터는 이미지의 긴 부분을 1280 사이즈로 리사이징 하라는 의미.
@@ -342,7 +394,7 @@ private void takePhoto() {
         originalBm = BitmapFactory.decodeFile(tempFile.getAbsolutePath(), options);
 
         //비트맵을 이미지세트함.
-        profileimg.setImageBitmap(originalBm);
+        profileimg_be.setImageBitmap(originalBm);
     }
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
@@ -353,6 +405,7 @@ private void takePhoto() {
         //예외처리 분기분
         if (resultCode != Activity.RESULT_OK) {
             Toast.makeText(this, "취소 되었습니다.", Toast.LENGTH_SHORT).show();
+
             if (tempFile != null) {
                 if (tempFile.exists()) {
                     if (tempFile.delete()) {
@@ -434,5 +487,12 @@ private void takePhoto() {
             Log.i("이미지","사진 촬영 phtoUri : "+photoUri);
         }
 
+    }
+    //뒤로가기 버튼 -> Myinfo로 이동
+    @Override
+    public void onBackPressed(){
+        Intent intent = new Intent(ProfileModify.this, Myinfo.class);
+        startActivity(intent);
+        finish();
     }
 }

@@ -69,7 +69,7 @@ public class Home extends AppCompatActivity implements SwipyRefreshLayout.OnRefr
             public void onClick(View v) {
                 Intent intent = new Intent(Home.this, Myinfo.class);
                 startActivity(intent);
-                finish();
+//                finish();
                 overridePendingTransition(0, 0);
             }
         });

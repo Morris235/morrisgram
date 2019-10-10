@@ -61,38 +61,6 @@
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent"
         app:layout_constraintVertical_bias="0.5" />
-<LinearLayout
-    android:id="@+id/pic_profile"
-    android:layout_width="wrap_content"
-    android:layout_height="wrap_content"
-    android:orientation="vertical"
-    app:layout_constraintEnd_toEndOf="parent"
-    app:layout_constraintHorizontal_bias="0.498"
-    app:layout_constraintStart_toStartOf="parent"
-    app:layout_constraintTop_toTopOf="@+id/view3"
-    app:layout_constraintVertical_bias="0.0">
-
-    <de.hdodenhof.circleimageview.CircleImageView
-        android:id="@+id/ModifyIMG"
-        android:layout_width="120dp"
-        android:layout_height="120dp"
-        android:layout_marginStart="8dp"
-        android:layout_marginTop="20dp"
-        android:layout_marginEnd="8dp"
-        android:src="@drawable/noimage"
-        app:civ_border_color="#000000"
-        app:civ_border_width="2dp" />
-
-    <TextView
-        android:id="@+id/imgchangeB"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="프로필 사진 변경"
-        android:textColor="#0067a3"
-        android:textSize="20dp" />
-
-</LinearLayout>
-
 
 
     <com.google.android.material.textfield.TextInputLayout
@@ -280,6 +248,67 @@
         app:layout_constraintStart_toEndOf="@+id/textView10"
         app:layout_constraintTop_toBottomOf="@+id/phonTV_profile"
         app:layout_constraintVertical_bias="0.0" />
+
+    <FrameLayout
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintVertical_bias="0.110000014">
+
+        <LinearLayout
+            android:id="@+id/pic_profile"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:orientation="vertical">
+            <de.hdodenhof.circleimageview.CircleImageView
+                android:id="@+id/ModifyIMG"
+                android:layout_width="120dp"
+                android:layout_height="120dp"
+                android:layout_marginStart="8dp"
+                android:layout_marginTop="20dp"
+                android:layout_marginEnd="8dp"
+                android:scaleType="centerCrop"
+                android:src="@drawable/noimage"
+                app:civ_border_color="#000000"
+                app:civ_border_width="2dp" />
+            <TextView
+                android:id="@+id/imgchangeB"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="프로필 사진 변경"
+                android:textColor="#0067a3"
+                android:textSize="20dp" />
+        </LinearLayout>
+
+        <LinearLayout
+            android:id="@+id/pic_profile_be"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:orientation="vertical">
+            <de.hdodenhof.circleimageview.CircleImageView
+                android:id="@+id/ModifyIMG_be"
+                android:layout_width="120dp"
+                android:layout_height="120dp"
+                android:layout_marginStart="8dp"
+                android:layout_marginTop="20dp"
+                android:layout_marginEnd="8dp"
+                android:scaleType="centerCrop"
+                android:src="@drawable/noimage"
+                app:civ_border_color="#000000"
+                app:civ_border_width="2dp" />
+
+            <TextView
+                android:id="@+id/imgchangeB_be"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="프로필 사진 변경"
+                android:textColor="#0067a3"
+                android:textSize="20dp" />
+        </LinearLayout>
+    </FrameLayout>
 
 
 </androidx.constraintlayout.widget.ConstraintLayout>
