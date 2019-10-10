@@ -7,6 +7,7 @@ import androidx.core.content.FileProvider;
 import androidx.core.view.GravityCompat;
 
 import android.app.Activity;
+import android.app.ProgressDialog;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
@@ -52,6 +53,8 @@ import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
 import com.google.firebase.storage.FileDownloadTask;
 import com.google.firebase.storage.FirebaseStorage;
+import com.google.firebase.storage.OnPausedListener;
+import com.google.firebase.storage.OnProgressListener;
 import com.google.firebase.storage.StorageReference;
 import com.google.firebase.storage.UploadTask;
 
@@ -108,7 +111,7 @@ public class ProfileModify extends AppCompatActivity {
         setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_PORTRAIT);
         setContentView(R.layout.activity_profile_modify);
 
-        Log.i("파베","마이 크리에이트 시작");
+        Log.i("파베","프로필수정 크리에이트 시작");
 
         final Context context= this;
 
@@ -132,13 +135,11 @@ public class ProfileModify extends AppCompatActivity {
             Log.i("이미지","스토리지 리퍼런스 NOT NULL : "+imageRef);
             GlideApp.with(this)
                     .load(imageRef)
-                    .signature(new ObjectKey(String.valueOf(System.currentTimeMillis())))
-                    .dontAnimate()
-                    .centerCrop()
-                    .circleCrop()
-                    .placeholder(R.drawable.noimage)
                     .skipMemoryCache(true)
                     .diskCacheStrategy(DiskCacheStrategy.NONE)
+                    .dontAnimate()
+                    .circleCrop()
+                    .placeholder(R.drawable.noimage)
                     .into(profileimg);
 
         //취소버튼
@@ -273,35 +274,90 @@ public class ProfileModify extends AppCompatActivity {
 //            }
 //        });
 
-        //          >----------프로필 정보 변경 최종 확인 버튼-------------<
+        //          >-----------------프로필 정보 변경 최종 확인 버튼-------------<
         ProfileModifyB.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                     //프로필 정보
 //                    String IMGuri = photoUri.toString();
                 //스토리지에 저장한 파일명과 일치하게 스트링으로 작성
-                Intent intent = new Intent(ProfileModify.this,Myinfo.class);
+//                Intent intent = new Intent(ProfileModify.this,Myinfo.class);
                 String ProfileIMG ="ProfileIMG";
-
-//                    Log.i("이미지","IMGuri 값 확인 : "+IMGuri);
 
                     String upname = edname.getText().toString();
                     String upwebsite = edwebsite.getText().toString();
                     String upintro = edintroduce.getText().toString();
 
                     FirebaseDatabase(true,upwebsite,upintro,upname,ProfileIMG);
-                    startActivity(intent);
-                    finish();
+//                    startActivity(intent);
+                //이미지 uri 업로드 작업
+                try {
+                    //uri값이 null값이면 일리걸 에러 발생
+                    if (photoUri != null) {
+                        String UriSTR = "ProfileIMG";
+                        //로컬에서 스토리지로 이미지 업로드 소스코드
+                        //사진 저장 경로 지정 - userUID - ProfileIMG - IMG
+                        StorageReference riversRef = mstorageRef.child(userUID).child("ProfileIMG/" + UriSTR);
+                        UploadTask uploadTask = riversRef.putFile(photoUri);
+                        uploadTask.addOnProgressListener(new OnProgressListener<UploadTask.TaskSnapshot>() {
+                            @Override
+                            public void onProgress(@NonNull UploadTask.TaskSnapshot taskSnapshot) {
+                                final double progress = (100.0 * taskSnapshot.getBytesTransferred()) / taskSnapshot.getTotalByteCount();
+                                System.out.println("Upload is " + progress + "% done");
+                                new android.os.Handler().postDelayed(
+                                        new Runnable() {
+                                            public void run() {
+                                                final ProgressDialog progressDialog = new ProgressDialog(ProfileModify.this);
+                                                progressDialog.setIndeterminate(true);
+                                                progressDialog.setMessage("읽어들이는 중...");
+                                                progressDialog.show();
+                                            }
+                                        }, (long) progress);
+                                //100%가 될 때까지 액티비티 전환 대기
+                                if(progress == 100.0){
+                                    finish();
+                                }
+                            }
+                        }).addOnPausedListener(new OnPausedListener<UploadTask.TaskSnapshot>() {
+                            @Override
+                            public void onPaused(UploadTask.TaskSnapshot taskSnapshot) {
+                                System.out.println("Upload is paused");
+                            }
+                        }).addOnFailureListener(new OnFailureListener() {
+                            @Override
+                            public void onFailure(@NonNull Exception exception) {
+                                // Handle unsuccessful uploads
+                                Log.i("파베","이미지 업로드 실패");
+                            }
+                        }).addOnSuccessListener(new OnSuccessListener<UploadTask.TaskSnapshot>() {
+                            @Override
+                            public void onSuccess(UploadTask.TaskSnapshot taskSnapshot) {
+                                // Handle successful uploads on complete
+                                Log.i("파베","이미지 업로드 성공");
+                            }
+                        });
+
+// Register observers to listen for when the download is done or if it fails
+                        uploadTask.addOnFailureListener(new OnFailureListener() {
+                            @Override
+                            public void onFailure(@NonNull Exception exception) {
+                                // Handle unsuccessful uploads
+                            }
+                        }).addOnSuccessListener(new OnSuccessListener<UploadTask.TaskSnapshot>() {
+                            @Override
+                            public void onSuccess(UploadTask.TaskSnapshot taskSnapshot) {
+                                // taskSnapshot.getMetadata() contains file metadata such as size, content-type, etc.
+                            }
+                        });
+                    }
+                }catch (NullPointerException e){
+                    e.getStackTrace();
+                    Log.i("이미지","사진 촬영 phtoUri : "+photoUri);
+                }
             }
         });
 
     }//-----------------------------------크리에이트--------------------------------------
-    //애니메이션 효과 지우기
-    @Override
-    public void onPause(){
-        super.onPause();
-        overridePendingTransition(0,0);
-    }
 
     //파이어 베이스 업데이트 메소드 - 프로필 웹사이트,소개
     public void FirebaseDatabase(boolean add, String website, String intro, String upname,String ProfileIMG){
@@ -455,37 +511,19 @@ private void takePhoto() {
             setImage();
         }
     }
+    //애니메이션 효과 지우기
+    @Override
+    public void onPause(){
+        super.onPause();
+        overridePendingTransition(0,0);
+
+    }
+
     //프로필 수정 종료시 사진업로드 ... 사진 변경 없으면 널값예외처리
     @Override
     public void onDestroy(){
         super.onDestroy();
-
-        try {
-            //uri값이 null값이면 일리걸 에러 발생
-            if (photoUri != null) {
-                String UriSTR = "ProfileIMG";
-                //로컬에서 스토리지로 이미지 업로드 소스코드
-                //사진 저장 경로 지정 - userUID - ProfileIMG - IMG
-                StorageReference riversRef = mstorageRef.child(userUID).child("ProfileIMG/" + UriSTR);
-                UploadTask uploadTask = riversRef.putFile(photoUri);
-
-// Register observers to listen for when the download is done or if it fails
-                uploadTask.addOnFailureListener(new OnFailureListener() {
-                    @Override
-                    public void onFailure(@NonNull Exception exception) {
-                        // Handle unsuccessful uploads
-                    }
-                }).addOnSuccessListener(new OnSuccessListener<UploadTask.TaskSnapshot>() {
-                    @Override
-                    public void onSuccess(UploadTask.TaskSnapshot taskSnapshot) {
-                        // taskSnapshot.getMetadata() contains file metadata such as size, content-type, etc.
-                    }
-                });
-            }
-        }catch (NullPointerException e){
-            e.getStackTrace();
-            Log.i("이미지","사진 촬영 phtoUri : "+photoUri);
-        }
+        ProgressDialog dialog;
 
     }
     //뒤로가기 버튼 -> Myinfo로 이동

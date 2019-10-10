@@ -12,6 +12,7 @@ import androidx.swiperefreshlayout.widget.SwipeRefreshLayout;
 import androidx.appcompat.app.AppCompatActivity;
 
 import android.content.pm.ActivityInfo;
+import android.net.Uri;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.MenuItem;
@@ -24,7 +25,11 @@ import android.widget.TextView;
 import android.widget.Toast;
 import android.widget.Toolbar;
 
+import com.bumptech.glide.Glide;
+import com.bumptech.glide.Priority;
+import com.bumptech.glide.annotation.GlideModule;
 import com.bumptech.glide.load.engine.DiskCacheStrategy;
+import com.bumptech.glide.request.RequestListener;
 import com.bumptech.glide.request.RequestOptions;
 import com.bumptech.glide.signature.ObjectKey;
 import com.example.morrisgram.CameraClass.GlideApp;
@@ -41,6 +46,7 @@ import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
 import com.google.firebase.storage.FirebaseStorage;
 import com.google.firebase.storage.StorageReference;
+import com.google.firebase.storage.network.UpdateMetadataNetworkRequest;
 import com.google.protobuf.StringValue;
 
 public class Myinfo extends AppCompatActivity implements SwipeRefreshLayout.OnRefreshListener,NavigationView.OnNavigationItemSelectedListener{
@@ -165,18 +171,7 @@ public class Myinfo extends AppCompatActivity implements SwipeRefreshLayout.OnRe
             }
         });
 //---------------------------------------------------------------------------------
-        //Glide를 통한 이미지 바인딩
-        StorageReference imageRef = mstorageRef.child(userUID+"/ProfileIMG/ProfileIMG");
-            Log.i("이미지","스토리지 리퍼런스 NOT NULL : "+imageRef);
-            GlideApp.with(this)
-                    .load(imageRef)
-                    .signature(new ObjectKey(String.valueOf(System.currentTimeMillis())))
-                    .override(100,100)
-                    .centerCrop()
-                    .skipMemoryCache(true)
-                    .diskCacheStrategy(DiskCacheStrategy.NONE)
-                    .placeholder(R.drawable.noimage)
-                    .into(profileimg);
+
 
         //처음 앱을 실행하고 버튼을 눌렀을 때만 값을 읽어옴 addListenerForSingleValueEvent
         //수시로 해당 디비의 하위값들이 변화를 감지하고 그떄마다 값을 불러오려면 addValueEventListener를 사용
@@ -284,23 +279,21 @@ public class Myinfo extends AppCompatActivity implements SwipeRefreshLayout.OnRe
     public void onStart(){
         super.onStart();
         Log.i("파베","마이 스타트");
+        //Glide를 통한 이미지 바인딩
+            StorageReference imageRef = mstorageRef.child(userUID+"/ProfileIMG/ProfileIMG");
+            Log.i("파베","마이 스타트 이미지수신");
+            GlideApp.with(Myinfo.this)
+                    .load(imageRef)
+                    .skipMemoryCache(true)
+                    .diskCacheStrategy(DiskCacheStrategy.NONE)
+                    .dontAnimate()
+                    .placeholder(R.drawable.noimage)
+                    .into(profileimg);
     }
     public void onResume(){
         super.onResume();
         Log.i("파베","마이 리즈메");
-        //Glide를 통한 이미지 바인딩
-        StorageReference imageRef = mstorageRef.child(userUID+"/ProfileIMG/ProfileIMG");
-            Log.i("이미지","스토리지 리퍼런스 NOT NULL : "+imageRef);
-            GlideApp.with(this)
-                    .load(imageRef)
-                    .signature(new ObjectKey(String.valueOf(System.currentTimeMillis())))
-                    .dontAnimate()
-                    .centerCrop()
-                    .circleCrop()
-                    .skipMemoryCache(true)
-                    .diskCacheStrategy(DiskCacheStrategy.NONE)
-                    .placeholder(R.drawable.noimage)
-                    .into(profileimg);
+
     }
     //애니메이션 효과 지우기
     @Override
@@ -308,8 +301,8 @@ public class Myinfo extends AppCompatActivity implements SwipeRefreshLayout.OnRe
         super.onPause();
         overridePendingTransition(0,0);
         Log.i("파베","마이 포즈");
-
     }
+
     public void onStop(){
         super.onStop();
         Log.i("파베","마이 스탑");
@@ -321,6 +314,6 @@ public class Myinfo extends AppCompatActivity implements SwipeRefreshLayout.OnRe
     public void onRestart(){
         super.onRestart();
         Log.i("파베","마이 리스타트");
-
     }
+
 }
