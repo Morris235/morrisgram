@@ -2,9 +2,9 @@ package com.example.morrisgram.Activity;
 
 import android.content.Intent;
 
+import com.example.morrisgram.Activity.BaseActivity.AddingPoster_BaseAct;
 import com.google.android.material.tabs.TabLayout;
 import androidx.viewpager.widget.ViewPager;
-import androidx.appcompat.app.AppCompatActivity;
 
 import android.content.pm.ActivityInfo;
 import android.os.Bundle;
@@ -14,7 +14,7 @@ import android.widget.ImageButton;
 import com.example.morrisgram.R;
 import com.example.morrisgram.Adapter.ViewPagerAdapter.ViewPagerAdapter;
 
-public class Followers_AND_Following extends AppCompatActivity {
+public class Followers_AND_Following extends AddingPoster_BaseAct {
     private ViewPager viewPager;
     private ViewPagerAdapter pagerAdapter;
     @Override

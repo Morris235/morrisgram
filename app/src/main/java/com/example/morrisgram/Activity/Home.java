@@ -4,7 +4,6 @@ import android.Manifest;
 import android.content.Intent;
 
 import androidx.annotation.NonNull;
-import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
 
@@ -14,17 +13,17 @@ import android.os.Build;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
-import android.widget.Button;
 import android.widget.ImageButton;
 import android.widget.Toast;
 
+import com.example.morrisgram.Activity.BaseActivity.AddingPoster_BaseAct;
 import com.example.morrisgram.R;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 import com.orangegangsters.github.swipyrefreshlayout.library.SwipyRefreshLayout;
 import com.orangegangsters.github.swipyrefreshlayout.library.SwipyRefreshLayoutDirection;
 
-public class Home extends AppCompatActivity implements SwipyRefreshLayout.OnRefreshListener {
+public class Home extends AddingPoster_BaseAct implements SwipyRefreshLayout.OnRefreshListener {
     SwipyRefreshLayout mSwipeRefreshLayout;
     ImageButton myinfoB;
     ImageButton searchB;

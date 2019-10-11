@@ -3,16 +3,16 @@ package com.example.morrisgram.Activity;
 import android.content.Intent;
 
 import androidx.swiperefreshlayout.widget.SwipeRefreshLayout;
-import androidx.appcompat.app.AppCompatActivity;
 
 import android.content.pm.ActivityInfo;
 import android.os.Bundle;
 import android.view.View;
 import android.widget.ImageButton;
 
+import com.example.morrisgram.Activity.BaseActivity.AddingPoster_BaseAct;
 import com.example.morrisgram.R;
 
-public class Search extends AppCompatActivity implements SwipeRefreshLayout.OnRefreshListener{
+public class Search extends AddingPoster_BaseAct implements SwipeRefreshLayout.OnRefreshListener{
     SwipeRefreshLayout mSwipeRefreshLayout;
     @Override
     protected void onCreate(Bundle savedInstanceState) {

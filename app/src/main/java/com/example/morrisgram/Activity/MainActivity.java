@@ -1,5 +1,6 @@
 package com.example.morrisgram.Activity;
 
+import android.app.ProgressDialog;
 import android.content.Intent;
 
 import androidx.annotation.NonNull;
@@ -35,7 +36,8 @@ public class MainActivity extends AppCompatActivity {
    private FirebaseUser currentUser;
     //이메일 비밀번호 로그인 모듈 변수
    private FirebaseAuth firebaseAuth;
-
+   //로딩 프로그래스바 변수
+   private ProgressDialog progressDialog;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -141,6 +143,7 @@ public class MainActivity extends AppCompatActivity {
                     });
             }
         });
+        //더블탭
 //        final GestureDetector gd = new GestureDetector(this,new GestureDetector.SimpleOnGestureListener(){
 //            @Override
 //            public boolean onDoubleTap(MotionEvent e) {
@@ -173,7 +176,28 @@ public class MainActivity extends AppCompatActivity {
 //            }
 //        });
     }
+    public void loading(long time) {
+        //로딩
+        new android.os.Handler().postDelayed(
+                new Runnable() {
+                    public void run() {
+                        progressDialog = new ProgressDialog(MainActivity.this);
+                        progressDialog.setIndeterminate(true);
+                        progressDialog.setMessage("잠시만 기다려 주세요");
+                        progressDialog.show();
+                    }
+                }, time);
+    }
 
+    public void loadingEnd() {
+        new android.os.Handler().postDelayed(
+                new Runnable() {
+                    @Override
+                    public void run() {
+                        progressDialog.dismiss();
+                    }
+                }, 0);
+    }
     //로그인 되어있으면 메인페이지로 이동 <자동로그인>
     //조건문 보완필요
     @Override

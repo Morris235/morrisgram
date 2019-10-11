@@ -9,10 +9,8 @@ import androidx.appcompat.app.AlertDialog;
 import androidx.core.view.GravityCompat;
 import androidx.drawerlayout.widget.DrawerLayout;
 import androidx.swiperefreshlayout.widget.SwipeRefreshLayout;
-import androidx.appcompat.app.AppCompatActivity;
 
 import android.content.pm.ActivityInfo;
-import android.net.Uri;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.MenuItem;
@@ -23,15 +21,9 @@ import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
-import android.widget.Toolbar;
 
-import com.bumptech.glide.Glide;
-import com.bumptech.glide.Priority;
-import com.bumptech.glide.annotation.GlideModule;
 import com.bumptech.glide.load.engine.DiskCacheStrategy;
-import com.bumptech.glide.request.RequestListener;
-import com.bumptech.glide.request.RequestOptions;
-import com.bumptech.glide.signature.ObjectKey;
+import com.example.morrisgram.Activity.BaseActivity.AddingPoster_BaseAct;
 import com.example.morrisgram.CameraClass.GlideApp;
 import com.example.morrisgram.R;
 import com.google.android.gms.tasks.OnCompleteListener;
@@ -46,15 +38,12 @@ import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
 import com.google.firebase.storage.FirebaseStorage;
 import com.google.firebase.storage.StorageReference;
-import com.google.firebase.storage.network.UpdateMetadataNetworkRequest;
-import com.google.protobuf.StringValue;
 
-public class Myinfo extends AppCompatActivity implements SwipeRefreshLayout.OnRefreshListener,NavigationView.OnNavigationItemSelectedListener{
+public class Myinfo extends AddingPoster_BaseAct implements SwipeRefreshLayout.OnRefreshListener,NavigationView.OnNavigationItemSelectedListener{
    private SwipeRefreshLayout mSwipeRefreshLayout;
    private ImageButton homeB;
    private ImageButton optionB;
    private Button profilemodifyB;
-   private TextView hname;
    private TextView pname;
    private TextView idtv;
    private TextView intro;
@@ -63,6 +52,7 @@ public class Myinfo extends AppCompatActivity implements SwipeRefreshLayout.OnRe
 
    private DrawerLayout mdrawerLayout;
    private ActionBarDrawerToggle mtoggle;
+
 
     //데이터베이스의 주소를 지정 필수
     private DatabaseReference mdataref = FirebaseDatabase.getInstance().getReference("UserList");
@@ -86,7 +76,6 @@ public class Myinfo extends AppCompatActivity implements SwipeRefreshLayout.OnRe
 
         //내 정보 화면에 표시할 텍스트들
         optionB = (ImageButton) findViewById(R.id.optionB_my);
-        hname = (TextView) findViewById(R.id.username_header);
         pname = (TextView) findViewById(R.id.name);
         idtv = (TextView) findViewById(R.id.idtv_my);
         website = (TextView) findViewById(R.id.website_my);
@@ -96,6 +85,11 @@ public class Myinfo extends AppCompatActivity implements SwipeRefreshLayout.OnRe
         //네비게이션뷰 리스너
         NavigationView navigationView = (NavigationView) findViewById(R.id.navigationview);
         navigationView.setNavigationItemSelectedListener(this);
+        //헤더제어
+        View nav_header_view = navigationView.getHeaderView(0);
+        final TextView hname;
+        hname = (TextView) nav_header_view.findViewById(R.id.username_header);
+
         //네비게이션바 버튼
         optionB.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -183,7 +177,7 @@ public class Myinfo extends AppCompatActivity implements SwipeRefreshLayout.OnRe
                 String WebsiteVal = (String) dataSnapshot.child(userUID).child("Profile").child("Website").getValue();
                 String IntroVal = (String) dataSnapshot.child(userUID).child("Profile").child("Introduce").getValue();
 
-
+                hname.setText(NameVal);
                 pname.setText(NameVal);
                 idtv.setText(NameVal);
                 website.setText(WebsiteVal);

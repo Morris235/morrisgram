@@ -5,9 +5,10 @@ import androidx.appcompat.app.AppCompatActivity;
 import android.content.pm.ActivityInfo;
 import android.os.Bundle;
 
+import com.example.morrisgram.Activity.BaseActivity.AddingPoster_BaseAct;
 import com.example.morrisgram.R;
 
-public class Posting extends AppCompatActivity {
+public class Posting extends AddingPoster_BaseAct {
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {

@@ -258,21 +258,6 @@ public class ProfileModify extends AppCompatActivity {
                 alertDialog.show();;
             }
         });
-        //프로필 이미지 바인딩 - 다른 수단으로 테스트 해보기
-//        Task<Uri> imageRef = mstorageRef.child(userUID+"/ProfileIMG/ProfileIMG").getDownloadUrl().addOnSuccessListener(new OnSuccessListener<Uri>() {
-//            @Override
-//            public void onSuccess(Uri uri) {
-//                // Got the download URL for 'users/me/profile.png'
-//                Log.i("이미지","다운로드 성공!");
-//
-//            }
-//        }).addOnFailureListener(new OnFailureListener() {
-//            @Override
-//            public void onFailure(@NonNull Exception exception) {
-//                // Handle any errors
-//                Log.i("이미지","다운로드 실패!");
-//            }
-//        });
 
         //          >-----------------프로필 정보 변경 최종 확인 버튼-------------<
         ProfileModifyB.setOnClickListener(new View.OnClickListener() {
@@ -299,6 +284,8 @@ public class ProfileModify extends AppCompatActivity {
                         //사진 저장 경로 지정 - userUID - ProfileIMG - IMG
                         StorageReference riversRef = mstorageRef.child(userUID).child("ProfileIMG/" + UriSTR);
                         UploadTask uploadTask = riversRef.putFile(photoUri);
+
+                        //이미지 업로드 모니터링
                         uploadTask.addOnProgressListener(new OnProgressListener<UploadTask.TaskSnapshot>() {
                             @Override
                             public void onProgress(@NonNull UploadTask.TaskSnapshot taskSnapshot) {
@@ -327,7 +314,7 @@ public class ProfileModify extends AppCompatActivity {
                             @Override
                             public void onFailure(@NonNull Exception exception) {
                                 // Handle unsuccessful uploads
-                                Log.i("파베","이미지 업로드 실패");
+                                Toast.makeText(getApplicationContext(),"이미지 업로드 실패!",Toast.LENGTH_SHORT).show();
                             }
                         }).addOnSuccessListener(new OnSuccessListener<UploadTask.TaskSnapshot>() {
                             @Override
@@ -349,6 +336,9 @@ public class ProfileModify extends AppCompatActivity {
                                 // taskSnapshot.getMetadata() contains file metadata such as size, content-type, etc.
                             }
                         });
+                        //이미지 업로드 널값
+                    }else {
+                        finish();
                     }
                 }catch (NullPointerException e){
                     e.getStackTrace();
