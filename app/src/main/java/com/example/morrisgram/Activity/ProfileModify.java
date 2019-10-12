@@ -278,7 +278,7 @@ public class ProfileModify extends AppCompatActivity {
                 try {
                     //uri값이 null값이면 일리걸 에러 발생
                     if (photoUri != null) {
-
+                        Log.i("파베","프로필 수정 photoUri 값 확인 : "+photoUri);
                         //이미지 이름 강제 지정
                         String UriSTR = "ProfileIMG";
 
@@ -299,6 +299,7 @@ public class ProfileModify extends AppCompatActivity {
                                                 final ProgressDialog progressDialog = new ProgressDialog(ProfileModify.this);
                                                 progressDialog.setIndeterminate(true);
                                                 progressDialog.setMessage("읽어들이는 중...");
+                                                progressDialog.setCancelable(false);
                                                 progressDialog.show();
                                             }
                                         }, (long) progress);
@@ -306,6 +307,7 @@ public class ProfileModify extends AppCompatActivity {
                                 if(progress == 100.0){
                                     finish();
                                 }
+
                             }
                         }).addOnPausedListener(new OnPausedListener<UploadTask.TaskSnapshot>() {
                             @Override
@@ -340,6 +342,7 @@ public class ProfileModify extends AppCompatActivity {
                         });
                         //이미지 업로드 널값
                     }else {
+                        //널값이면 종료
                         finish();
                     }
                 }catch (NullPointerException e){

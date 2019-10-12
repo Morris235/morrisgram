@@ -33,7 +33,7 @@ public class Posting extends AddingPoster_BaseAct {
 
         //이미지 고르면 스토리지로 업로드가 되는데 게시물 작성 취소를 누르면 스토리지의 이미지도 삭제
         //Glide를 통한 이미지 바인딩
-        StorageReference imageRef = mstorageRef.child(PosterPicList+"/"+PosterUID+"/"+PosterIMGname);
+        StorageReference imageRef = mstorageRef.child(PosterPicList+"/"+"test"+"/"+PosterIMGname);
         GlideApp.with(this)
                 .load(imageRef)
                 .thumbnail()
@@ -43,6 +43,13 @@ public class Posting extends AddingPoster_BaseAct {
                 .centerCrop()
                 .placeholder(R.drawable.noimage)
                 .into(thumbIMG);
+    }
 
+    //뒤로가기 버튼제어
+    @Override
+    public void onBackPressed(){
+        Intent intent = new Intent(this,Home.class);
+        startActivity(intent);
+        finish();
     }
 }

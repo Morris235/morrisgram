@@ -116,6 +116,7 @@
             android:layout_height="wrap_content"
             android:background="@null"
             android:hint="문구 입력..."
+            android:inputType="text"
             android:textSize="15sp" />
     </com.google.android.material.textfield.TextInputLayout>
 
