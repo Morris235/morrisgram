@@ -9,10 +9,11 @@ import android.os.Bundle;
 import android.view.View;
 import android.widget.ImageButton;
 
+import com.example.morrisgram.Activity.BaseActivity.AddingPoster_BaseAct;
 import com.example.morrisgram.R;
 
 //게시물 액티비티
-public class PosterViewer extends AppCompatActivity {
+public class PosterViewer extends AddingPoster_BaseAct {
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -62,6 +63,15 @@ public class PosterViewer extends AppCompatActivity {
             public void onClick(View v) {
                 Intent intent = new Intent(PosterViewer.this, Myinfo.class);
                 startActivity(intent);
+            }
+        });
+
+        //포스팅 화면 이동
+        ImageButton addposterB = (ImageButton) findViewById(R.id.addB_poster);
+        addposterB.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                goToAlbum();
             }
         });
 //---------------------------------------------------------------------------------

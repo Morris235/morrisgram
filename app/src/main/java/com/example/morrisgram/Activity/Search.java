@@ -56,6 +56,15 @@ public class Search extends AddingPoster_BaseAct implements SwipeRefreshLayout.O
                 overridePendingTransition(0,0);
             }
         });
+
+        //포스팅 화면 이동
+        ImageButton addposterB = (ImageButton) findViewById(R.id.addB_search);
+        addposterB.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                goToAlbum();
+            }
+        });
 //---------------------------------------------------------------------------------
         mSwipeRefreshLayout = (SwipeRefreshLayout) findViewById(R.id.refresh_search);
         mSwipeRefreshLayout.setOnRefreshListener(this);

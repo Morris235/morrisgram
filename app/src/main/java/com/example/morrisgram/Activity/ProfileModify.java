@@ -189,7 +189,6 @@ public class ProfileModify extends AppCompatActivity {
         });
 
 
-
         //프로필 사진 변경 버튼
         final ViewGroup ChangePicB = (ViewGroup) findViewById(R.id.pic_profile);
         final ViewGroup ChangePicB_be = (ViewGroup) findViewById(R.id.pic_profile_be);
@@ -267,19 +266,22 @@ public class ProfileModify extends AppCompatActivity {
 //                    String IMGuri = photoUri.toString();
                 //스토리지에 저장한 파일명과 일치하게 스트링으로 작성
 //                Intent intent = new Intent(ProfileModify.this,Myinfo.class);
-                String ProfileIMG ="ProfileIMG";
 
                     String upname = edname.getText().toString();
                     String upwebsite = edwebsite.getText().toString();
                     String upintro = edintroduce.getText().toString();
 
-                    FirebaseDatabase(true,upwebsite,upintro,upname,ProfileIMG);
+                    FirebaseDatabase(true,upwebsite,upintro,upname);
 //                    startActivity(intent);
-                //이미지 uri 업로드 작업
+
+                //>----------------이미지 uri 업로드 작업------------------<
                 try {
                     //uri값이 null값이면 일리걸 에러 발생
                     if (photoUri != null) {
+
+                        //이미지 이름 강제 지정
                         String UriSTR = "ProfileIMG";
+
                         //로컬에서 스토리지로 이미지 업로드 소스코드
                         //사진 저장 경로 지정 - userUID - ProfileIMG - IMG
                         StorageReference riversRef = mstorageRef.child(userUID).child("ProfileIMG/" + UriSTR);
@@ -350,13 +352,13 @@ public class ProfileModify extends AppCompatActivity {
     }//-----------------------------------크리에이트--------------------------------------
 
     //파이어 베이스 업데이트 메소드 - 프로필 웹사이트,소개
-    public void FirebaseDatabase(boolean add, String website, String intro, String upname,String ProfileIMG){
+    public void FirebaseDatabase(boolean add, String website, String intro, String upname){
         //해쉬맵 생성
         Map<String,Object> childUpdates = new HashMap<>();
         Map<String,Object> PostValues = null;
 
         if(add){
-            Users_ProfileModify posting = new Users_ProfileModify(website,intro,ProfileIMG);
+            Users_ProfileModify posting = new Users_ProfileModify(website,intro);
             PostValues = posting.toMap();
         }
 

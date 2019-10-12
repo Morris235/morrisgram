@@ -75,6 +75,15 @@ public class UserProfile extends AddingPoster_BaseAct {
                 Intent intent = new Intent(UserProfile.this,MessageWindow.class);
             }
         });
+
+        //포스팅 화면 이동
+        ImageButton addposterB = (ImageButton) findViewById(R.id.addB_user);
+        addposterB.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                goToAlbum();
+            }
+        });
 //---------------------------------------------------------------------------------
     }
 }

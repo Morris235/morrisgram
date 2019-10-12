@@ -164,6 +164,15 @@ public class Myinfo extends AddingPoster_BaseAct implements SwipeRefreshLayout.O
                 startActivity(intent);
             }
         });
+
+        //포스팅 화면 이동
+        ImageButton addposterB = (ImageButton) findViewById(R.id.addB_my);
+        addposterB.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                goToAlbum();
+            }
+        });
 //---------------------------------------------------------------------------------
 
 

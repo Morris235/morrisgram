@@ -9,6 +9,7 @@ import androidx.core.content.ContextCompat;
 
 import android.content.pm.ActivityInfo;
 import android.content.pm.PackageManager;
+import android.media.Image;
 import android.os.Build;
 import android.os.Bundle;
 import android.util.Log;
@@ -25,8 +26,12 @@ import com.orangegangsters.github.swipyrefreshlayout.library.SwipyRefreshLayoutD
 
 public class Home extends AddingPoster_BaseAct implements SwipyRefreshLayout.OnRefreshListener {
     SwipyRefreshLayout mSwipeRefreshLayout;
-    ImageButton myinfoB;
-    ImageButton searchB;
+    private ImageButton myinfoB;
+    private ImageButton searchB;
+    private ImageButton addposterB;
+    private ImageButton likealarmB;
+    private ImageButton messageB;
+
     private FirebaseAuth firebaseAuth;
     //현재 로그인 된 유저 정보를 담을 변수
     private FirebaseUser currentUser;
@@ -73,7 +78,6 @@ public class Home extends AddingPoster_BaseAct implements SwipyRefreshLayout.OnR
             }
         });
         //좋아요 알람 화면 이동
-        ImageButton likealarmB;
         likealarmB = (ImageButton) findViewById(R.id.likeB_home);
         likealarmB.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -84,13 +88,21 @@ public class Home extends AddingPoster_BaseAct implements SwipyRefreshLayout.OnR
             }
         });
         //채팅 화면 이동
-        ImageButton messageB;
         messageB = (ImageButton) findViewById(R.id.messageB);
         messageB.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 Intent intent = new Intent(Home.this, MessageTerminal.class);
                 startActivity(intent);
+            }
+        });
+
+        //포스팅 화면 이동
+        ImageButton addposterB = (ImageButton) findViewById(R.id.addB_home);
+        addposterB.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                goToAlbum();
             }
         });
 //---------------------------------------------------------------------------------

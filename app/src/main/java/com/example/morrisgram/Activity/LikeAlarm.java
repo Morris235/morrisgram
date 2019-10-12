@@ -52,6 +52,15 @@ public class LikeAlarm extends AddingPoster_BaseAct {
                 overridePendingTransition(0,0);
             }
         });
+
+        //포스팅 화면 이동
+        ImageButton addposterB = (ImageButton) findViewById(R.id.addB_like);
+        addposterB.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                goToAlbum();
+            }
+        });
 //---------------------------------------------------------------------------------
     }
     @Override
