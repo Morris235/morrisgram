@@ -24,6 +24,9 @@ dependencies {
     annotationProcessor 'com.github.bumptech.glide:compiler:4.10.0'
     implementation 'com.github.bumptech.glide:glide:4.10.0'
 
+    //metadata extractor - 사진의 메타데이터를 얻는걸 도와주는 라이브러리
+    implementation 'com.drewnoakes:metadata-extractor:2.8.1'
+
     //기타 라이브러리
     implementation 'com.github.orangegangsters:swipy:1.2.3@aar'
     implementation 'com.github.jd-alexander:LikeButton:0.2.3'

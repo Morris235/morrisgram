@@ -34,6 +34,13 @@ import com.bumptech.glide.Glide;
 import com.bumptech.glide.load.engine.DiskCacheStrategy;
 import com.bumptech.glide.load.resource.drawable.DrawableTransitionOptions;
 import com.bumptech.glide.signature.ObjectKey;
+import com.drew.imaging.ImageMetadataReader;
+import com.drew.imaging.ImageProcessingException;
+import com.drew.lang.GeoLocation;
+import com.drew.metadata.Metadata;
+import com.drew.metadata.exif.ExifSubIFDDirectory;
+import com.drew.metadata.exif.GpsDescriptor;
+import com.drew.metadata.exif.GpsDirectory;
 import com.example.morrisgram.CameraClass.GlideApp;
 import com.example.morrisgram.CameraClass.ImageResizeUtils;
 import com.example.morrisgram.DTO_Classes.Firebase.Users_ProfileModify;
@@ -55,10 +62,12 @@ import com.google.firebase.storage.FileDownloadTask;
 import com.google.firebase.storage.FirebaseStorage;
 import com.google.firebase.storage.OnPausedListener;
 import com.google.firebase.storage.OnProgressListener;
+import com.google.firebase.storage.StorageMetadata;
 import com.google.firebase.storage.StorageReference;
 import com.google.firebase.storage.UploadTask;
 
 import java.io.File;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
@@ -103,6 +112,7 @@ public class ProfileModify extends AppCompatActivity {
     public Uri getPhotoUri;
     //카메라 촬영,앨범에서 얻게 되는 비트맵 이미지 주소값
     public Bitmap originalBm;
+
 //---------------------------------------------------------------------------------------------
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -130,6 +140,25 @@ public class ProfileModify extends AppCompatActivity {
 
        profileimg = (ImageView) findViewById(R.id.ModifyIMG);
 
+//        //메타데이터 얻기
+//        if(tempFile != null){
+//            try {
+//                Metadata metadata = ImageMetadataReader.readMetadata(tempFile);
+//                ExifSubIFDDirectory directory = metadata.getFirstDirectoryOfType(ExifSubIFDDirectory.class);
+//                Date date = directory.getDate(ExifSubIFDDirectory.TAG_DATETIME_ORIGINAL);
+//
+//                String ImageMetaData = date.toString();
+//                Log.i("메타데이터","imgaeLocation : "+ImageMetaData);
+//
+//            } catch (ImageProcessingException e) {
+//                e.printStackTrace();
+//            } catch (IOException e) {
+//                e.printStackTrace();
+//            }
+//        }
+
+
+        Log.i("메타데이터","tempFile : "+tempFile);
         //Glide를 통한 이미지 바인딩
         StorageReference imageRef = mstorageRef.child(userUID+"/ProfileIMG/ProfileIMG");
             Log.i("이미지","스토리지 리퍼런스 NOT NULL : "+imageRef);
@@ -141,6 +170,21 @@ public class ProfileModify extends AppCompatActivity {
                     .circleCrop()
                     .placeholder(R.drawable.noimage)
                     .into(profileimg);
+
+            //파베 메타 데이터 다운로드
+        imageRef.getMetadata().addOnSuccessListener(new OnSuccessListener<StorageMetadata>() {
+            @Override
+            public void onSuccess(StorageMetadata storageMetadata) {
+//                String imgaeLocation = storageMetadata.;
+//                Log.i("메타데이터","imgaeLocation : "+imgaeLocation);
+            }
+        }).addOnFailureListener(new OnFailureListener() {
+            @Override
+            public void onFailure(@NonNull Exception e) {
+
+            }
+        });
+
 
         //취소버튼
         ImageButton cancelB;
@@ -499,6 +543,29 @@ private void takePhoto() {
                 }
             }
 
+//            //메타데이터 얻기 - 코드는 제대로 작동함
+//            // *Exif는 JPEG파일에서만 제공된다*
+//            try {
+//                Log.i("메타데이터", "try 통과 확인");
+//                Metadata metadata = ImageMetadataReader.readMetadata(tempFile);
+//                Log.i("메타데이터", "tempFile 값 확인 : " + tempFile);
+//
+//                //사진에 메타데이터 포함 여부 조건문
+//
+//                    GpsDirectory gpsDirectory = metadata.getFirstDirectoryOfType(GpsDirectory.class);
+//                    //GPS경도값 가져오기
+//                   GeoLocation geoLocation = gpsDirectory.getGeoLocation();
+//                    Log.i("메타데이터", "geoLocation : " + geoLocation);
+//
+//                    //GPS Directory (tags)
+//                    String ImageMetaDataGPS = gpsDirectory.toString();
+//                    Log.i("메타데이터", "ImageMetaDataGPS : " + ImageMetaDataGPS);
+//
+//            } catch (ImageProcessingException | NullPointerException | IOException e) {
+//                e.printStackTrace();
+//                Log.i("메타데이터", "에러발생! : " + e);
+//            }
+
             setImage();
             //onActivityResult 분기 처리
             //onActivityResult 에서 requestCode 를 앨범에서 온 경우와 카메라에서 온 경우로 나눠서 처리해줍니다.
@@ -528,4 +595,14 @@ private void takePhoto() {
         startActivity(intent);
         finish();
     }
+    //파일변환 메소드
+//    public File convert(MultipartFile multipartFile) {
+//        File file= new File(multipartFile.getOriginalFilename());
+//        file.createNewFile();
+//        FileOutputStream fos = new FileOutputStream(file);
+//        fos.write(multipartFile.getBytes());
+//        fos.close();
+//        return file;
+//    }
+
 }

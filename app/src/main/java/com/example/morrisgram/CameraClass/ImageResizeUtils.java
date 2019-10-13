@@ -22,7 +22,7 @@ public class ImageResizeUtils {
      */
     public static void resizeFile(File file, File newFile, int newWidth, Boolean isCamera) {
 
-        String TAG = "blackjin";
+        String TAG = "morrisgrem";
 
         Bitmap originalBm = null;
         Bitmap resizedBitmap = null;

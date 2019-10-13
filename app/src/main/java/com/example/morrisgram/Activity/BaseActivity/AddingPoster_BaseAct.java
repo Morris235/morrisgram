@@ -17,6 +17,11 @@ import android.widget.Toast;
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 
+import com.drew.imaging.ImageMetadataReader;
+import com.drew.imaging.ImageProcessingException;
+import com.drew.lang.GeoLocation;
+import com.drew.metadata.Metadata;
+import com.drew.metadata.exif.GpsDirectory;
 import com.example.morrisgram.Activity.Home;
 import com.example.morrisgram.Activity.Posting;
 import com.example.morrisgram.Activity.ProfileModify;
@@ -26,14 +31,18 @@ import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
+import com.google.firebase.database.DatabaseReference;
+import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.firestore.DocumentReference;
 import com.google.firebase.storage.FirebaseStorage;
 import com.google.firebase.storage.OnPausedListener;
 import com.google.firebase.storage.OnProgressListener;
+import com.google.firebase.storage.StorageMetadata;
 import com.google.firebase.storage.StorageReference;
 import com.google.firebase.storage.UploadTask;
 
 import java.io.File;
+import java.io.IOException;
 
 //앨범열기 - 사진 업로드
 public class AddingPoster_BaseAct extends AppCompatActivity {
@@ -50,11 +59,13 @@ public class AddingPoster_BaseAct extends AppCompatActivity {
     //카메라 촬영,앨범에서 얻게 되는 비트맵 이미지 주소값
     public Bitmap originalBm;
     //전역변수로 File 타입의 tempFile 을 선언해 주세요. 이 tempFile 에 받아온 이미지를 저장할거에요.
-    private static File tempFile;
+    public static File tempFile;
 
     //현재 접속중인 유저UID가져오기
     public FirebaseUser uid = FirebaseAuth.getInstance().getCurrentUser();
     public StorageReference mstorageRef = FirebaseStorage.getInstance().getReference();
+    public DatabaseReference mdataref;
+
     public String userUID = uid.getUid();
     public StorageReference riversRef;
     public String PosterIMGname = "PosterIMG";
@@ -110,7 +121,6 @@ public class AddingPoster_BaseAct extends AppCompatActivity {
 
                 cursor.moveToFirst();
 
-
                 tempFile = new File(cursor.getString(column_index));
                 Log.i("이미지"," 베이스 클래스 onActivityResult tempFile 값 확인 : "+tempFile);
                 getPhotoUri = Uri.fromFile(tempFile);
@@ -120,6 +130,8 @@ public class AddingPoster_BaseAct extends AppCompatActivity {
                     cursor.close();
                 }
             }
+            //이미지 회전 인스턴스
+            ImageResizeUtils.resizeFile(tempFile,tempFile,1280,isCamera);
 
 //            setImage();
             upLoadImage();
@@ -131,6 +143,7 @@ public class AddingPoster_BaseAct extends AppCompatActivity {
     //선택한 이미지 URL 업로드 메소드
     //어떻게 작동시키지?
     public void upLoadImage (){
+        Log.i("이미지", "이미지 업로드 메소드 실행 확인");
 //>----------------이미지 uri 업로드 작업------------------<
         try {
             //uri값이 null값이면 일리걸 에러 발생
@@ -142,10 +155,11 @@ public class AddingPoster_BaseAct extends AppCompatActivity {
                 //사진 저장 경로 지정 - PosterPicList - PosterUID - IMG
 
                 //게시물 UID를 만들어서 포스팅 클래스에 인텐트로 전달한다.
-
-//                Log.i("이미지", "베이스 클래스 PosterUID 값 확인 : " +  PosterUID);
-
-                riversRef = mstorageRef.child(PosterPicList).child("test/"+"/" + PosterIMGname); //게시물 UID 만들기 -> 포스팅 페이지에 전달
+                final DatabaseReference mdataref = FirebaseDatabase.getInstance().getReference();
+                final String PosterKey = mdataref.push().getKey();
+                Log.i("이미지", "베이스 클래스 Posterkey 값 확인 : " +PosterKey);
+                Log.i("이미지", "베이스 클래스 mdataref 값 확인 : " +mdataref);
+                riversRef = mstorageRef.child(PosterPicList).child(PosterKey+ "/" + PosterIMGname); //게시물 UID 만들기 -> 포스팅 페이지에 전달
                 Log.i("이미지", "베이스 클래스  riversRef 값 확인 : " +   riversRef);
                 UploadTask uploadTask = riversRef.putFile(photoUri);
 
@@ -166,7 +180,7 @@ public class AddingPoster_BaseAct extends AppCompatActivity {
 
                                         if(progress == 100.0){
                                             Intent intent = new Intent(AddingPoster_BaseAct.this , Posting.class);
-//                            intent.putExtra("PosterUID",PosterUID);
+                                            intent.putExtra("PosterKey",PosterKey);
                                             startActivity(intent);
                                             finish();
                                            Log.i("이미지", "베이스 클래스 progress 값 확인 : " +progress);
@@ -207,19 +221,14 @@ public class AddingPoster_BaseAct extends AppCompatActivity {
                         // taskSnapshot.getMetadata() contains file metadata such as size, content-type, etc.
                     }
                 });
-                //이미지 업로드 널값
+
+
             }
         }catch (NullPointerException e){
             e.getStackTrace();
             Log.i("이미지","사진 촬영 phtoUri : "+photoUri);
         }
+
+
     }
-//    @Override
-//    public boolean onTouchEvent(MotionEvent event){
-//        //바깥레이어 클릭시 안닫히게
-//        if(event.getAction()==MotionEvent.ACTION_OUTSIDE){
-//            return false;
-//        }
-//        return true;
-//    }
 }
