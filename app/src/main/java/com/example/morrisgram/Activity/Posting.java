@@ -3,6 +3,7 @@ package com.example.morrisgram.Activity;
 import androidx.annotation.NonNull;
 
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.content.pm.ActivityInfo;
 import android.net.Uri;
 import android.os.Bundle;
@@ -71,13 +72,14 @@ public class Posting extends AddingPoster_BaseAct {
         thumbIMG = (ImageView) findViewById(R.id.thumbIMG_posting);
         postingB = (TextView) findViewById(R.id.postingB_posting);
         body = (EditText) findViewById(R.id.inputtext_posting);
-        cancelB = (ImageButton) findViewById(R.id.cancelB_posting);
+        cancelB = (ImageButton) findViewById(R.id.backB_posting);
 
         //이미지 고르면 스토리지로 업로드가 되는데 게시물 작성 취소를 누르면 스토리지의 이미지도 삭제
         //Glide를 통한 이미지 바인딩
-        //게시물 이미지 랜덤 키값 받기
+
+        //게시물 스토리지 이미지 랜덤 키값 받기
         Intent intent = getIntent();
-        final String PosterKey = intent.getStringExtra("PosterKey");
+        final String PosterKey = intent.getStringExtra("PosterKey"); // = 게시물 데이터 키값
 
         final StorageReference imageRef = mstorageRef.child(PosterPicList+"/"+PosterKey+"/"+PosterIMGname);
         GlideApp.with(this)
@@ -125,7 +127,7 @@ public class Posting extends AddingPoster_BaseAct {
                             //게시물 내용
                             String Body = body.getText().toString();
                             //업데이트 메소드
-                            UpFirebaseDatabase(true,PosterKey,userUID,NickName,Body,DATE);
+                            UpFirebaseDatabase(true,PosterKey,userUID,NickName,Body,DATE,0,0);
 
                             //위치 메타데이터 업로드 메소드
                             getMetaData(PosterKey);
@@ -148,13 +150,13 @@ public class Posting extends AddingPoster_BaseAct {
     }
 
     //파이어 베이스 업데이트 메소드 - 게시물 포스팅 클래스에서 입력받아야 하는 모든 데이터들
-    public void UpFirebaseDatabase(boolean add, String PosterKey, String UserUID, String UserNicName, String Body,String Time){
+    public void UpFirebaseDatabase(boolean add, String PosterKey, String UserUID, String UserNicName, String Body,String Time, int LikeCount, int ReplyCount){
         //해쉬맵 생성
         Map<String,Object> childUpdates = new HashMap<>();
         Map<String,Object> PostValues = null;
 
         if(add){
-            Posting_DTO posting = new Posting_DTO(UserUID,UserNicName,Body,Time);
+            Posting_DTO posting = new Posting_DTO(UserUID,UserNicName,Body,Time,LikeCount,ReplyCount);
             PostValues = posting.toMap();
         }
 
@@ -163,7 +165,7 @@ public class Posting extends AddingPoster_BaseAct {
         mdataref.child("PosterList").updateChildren(childUpdates);
 
         //유저의 게시물 따로 업데이트
-        mdataref.child("UserList").child(userUID).child("UserPostList").updateChildren(childUpdates);
+        mdataref.child("UserList").child(userUID).child("UserPosterList").updateChildren(childUpdates);
     }
 
     //위치 메타데이터 추출 메소드
@@ -188,7 +190,7 @@ public class Posting extends AddingPoster_BaseAct {
         } catch (ImageProcessingException | NullPointerException | IOException e) {
             e.printStackTrace();
             Log.i("메타데이터", "에러발생! : " + e);
-            Toast.makeText(getApplicationContext(),"업로드 실패! 사진 메타데이터 없음",Toast.LENGTH_LONG).show();
+            Toast.makeText(getApplicationContext(),"위치 메타데이터 없음",Toast.LENGTH_LONG).show();
         }
 
     }

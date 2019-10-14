@@ -188,7 +188,7 @@ public class ProfileModify extends AppCompatActivity {
 
         //취소버튼
         ImageButton cancelB;
-        cancelB=(ImageButton)findViewById(R.id.cancelB);
+        cancelB=(ImageButton)findViewById(R.id.cancelB_profileModify);
         cancelB.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {

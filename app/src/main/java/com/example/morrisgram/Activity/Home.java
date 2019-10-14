@@ -106,6 +106,8 @@ public class Home extends AddingPoster_BaseAct implements SwipyRefreshLayout.OnR
             }
         });
 //---------------------------------------------------------------------------------
+
+
         mSwipeRefreshLayout = (SwipyRefreshLayout) findViewById(R.id.refresh_home);
         mSwipeRefreshLayout.setOnRefreshListener(this);
         mSwipeRefreshLayout.setDirection(SwipyRefreshLayoutDirection.BOTH);

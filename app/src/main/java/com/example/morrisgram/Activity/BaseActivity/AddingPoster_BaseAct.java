@@ -4,6 +4,7 @@ import android.app.Activity;
 import android.app.ProgressDialog;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.database.Cursor;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
@@ -26,6 +27,7 @@ import com.example.morrisgram.Activity.Home;
 import com.example.morrisgram.Activity.Posting;
 import com.example.morrisgram.Activity.ProfileModify;
 import com.example.morrisgram.CameraClass.ImageResizeUtils;
+import com.example.morrisgram.DTO_Classes.UserPosterList_Dataset;
 import com.example.morrisgram.R;
 import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
@@ -40,9 +42,21 @@ import com.google.firebase.storage.OnProgressListener;
 import com.google.firebase.storage.StorageMetadata;
 import com.google.firebase.storage.StorageReference;
 import com.google.firebase.storage.UploadTask;
+import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
+import com.google.gson.JsonObject;
+import com.google.gson.reflect.TypeToken;
+
+import org.json.JSONArray;
+import org.json.JSONException;
+import org.json.JSONObject;
 
 import java.io.File;
 import java.io.IOException;
+import java.lang.reflect.Array;
+import java.lang.reflect.Type;
+import java.util.ArrayList;
+import java.util.Collections;
 
 //앨범열기 - 사진 업로드
 public class AddingPoster_BaseAct extends AppCompatActivity {
@@ -50,10 +64,8 @@ public class AddingPoster_BaseAct extends AppCompatActivity {
     private Boolean isCamera = false;
     //이 변수는 onActivityResult 에서 requestCode 로 반환되는 값입니다
     private static final int PICK_FROM_ALBUM = 1;
-
     //카메라와 앨범으로부터 얻게 되는 URI ->>스토리지로 업로드!!
     public Uri photoUri;
-
     //파일 위치 절대경로 URI
     public Uri getPhotoUri;
     //카메라 촬영,앨범에서 얻게 되는 비트맵 이미지 주소값
@@ -65,11 +77,12 @@ public class AddingPoster_BaseAct extends AppCompatActivity {
     public FirebaseUser uid = FirebaseAuth.getInstance().getCurrentUser();
     public StorageReference mstorageRef = FirebaseStorage.getInstance().getReference();
     public DatabaseReference mdataref;
-
-    public String userUID = uid.getUid();
     public StorageReference riversRef;
+    public String userUID = uid.getUid();
+
     public String PosterIMGname = "PosterIMG";
     public String PosterPicList = "PosterPicList";
+
 
     //앨범열기 메소드
     public void goToAlbum() {
@@ -157,8 +170,10 @@ public class AddingPoster_BaseAct extends AppCompatActivity {
                 //게시물 UID를 만들어서 포스팅 클래스에 인텐트로 전달한다.
                 final DatabaseReference mdataref = FirebaseDatabase.getInstance().getReference();
                 final String PosterKey = mdataref.push().getKey();
-                Log.i("이미지", "베이스 클래스 Posterkey 값 확인 : " +PosterKey);
-                Log.i("이미지", "베이스 클래스 mdataref 값 확인 : " +mdataref);
+
+                //유저 게시물 키값 저장용 메소드 - 이미지 업로드 실패시 분기 처리
+                SavePosterKey(PosterKey);
+
                 riversRef = mstorageRef.child(PosterPicList).child(PosterKey+ "/" + PosterIMGname); //게시물 UID 만들기 -> 포스팅 페이지에 전달
                 Log.i("이미지", "베이스 클래스  riversRef 값 확인 : " +   riversRef);
                 UploadTask uploadTask = riversRef.putFile(photoUri);
@@ -228,7 +243,59 @@ public class AddingPoster_BaseAct extends AppCompatActivity {
             e.getStackTrace();
             Log.i("이미지","사진 촬영 phtoUri : "+photoUri);
         }
+    }
+    //유저 게시물 키값 저장용 메소드
+    public void SavePosterKey (String PosterKey){
+        SharedPreferences MY_POSTER_KEYS = getSharedPreferences("POSTER_KEYS",MODE_PRIVATE);
+        SharedPreferences.Editor KEY_EDITOR = MY_POSTER_KEYS.edit();
 
+        //데이터 타입 설명
+        Type UserPosterList_Type = new TypeToken<UserPosterList_Dataset>() {}.getType();
+        //게시물 키값 DTO클래스 객체 - PosterKey ; PosterKey
+        UserPosterList_Dataset MyPosterList = new UserPosterList_Dataset(PosterKey);
 
+        //json 변환 도구 gson
+        Gson gson =new GsonBuilder().create();
+        JSONArray jsonArray = new JSONArray();
+
+        //게시물 키값들 로드용
+        JSONObject jsonObject;
+
+        //MY_POSTER_KEYS에 데이터가 있다면 로드해서 쌓이게 담기 로직
+        if(!MY_POSTER_KEYS.getString(userUID,"null").isEmpty()){
+            String TEMP_KEYS = MY_POSTER_KEYS.getString(userUID,"null");
+            try {
+                jsonArray = new JSONArray(TEMP_KEYS);
+            } catch (JSONException e) {
+                e.printStackTrace();
+            }
+        }
+        String json = gson.toJson(MyPosterList,UserPosterList_Type);
+        jsonArray.put(json);
+        KEY_EDITOR.putString(userUID,jsonArray.toString());
+        KEY_EDITOR.apply();
+    }
+
+    //유저 키값 얻는 메소드
+    public ArrayList GetPosterKey(){
+        SharedPreferences MY_POSTER_KEYS = getSharedPreferences("POSTER_KEYS",MODE_PRIVATE);
+        String GetPosterKey = MY_POSTER_KEYS.getString(userUID,"null");
+
+        //메모리 공간에 할당 선언 - try와 for문 스코프 회피 후 리턴
+        ArrayList<String> PosterKeyArray = new ArrayList<>();
+        try {
+           JSONArray jsonArray = new JSONArray(GetPosterKey);
+
+            for (int i = 0; i < jsonArray.length(); i++){
+               String GetKey = jsonArray.getString(i);
+               JSONObject jsonObject = new JSONObject(GetKey);
+               String PosterKey = jsonObject.getString("PosterKey");
+               PosterKeyArray.add(PosterKey);
+//                Log.i("포스터키", "Posterkey 출력 확인 : "+jsonObject.getString("PosterKey"));
+            }
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
+        return PosterKeyArray;
     }
 }

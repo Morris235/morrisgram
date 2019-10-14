@@ -8,9 +8,12 @@ import androidx.appcompat.app.ActionBarDrawerToggle;
 import androidx.appcompat.app.AlertDialog;
 import androidx.core.view.GravityCompat;
 import androidx.drawerlayout.widget.DrawerLayout;
+import androidx.recyclerview.widget.LinearLayoutManager;
+import androidx.recyclerview.widget.RecyclerView;
 import androidx.swiperefreshlayout.widget.SwipeRefreshLayout;
 
 import android.content.pm.ActivityInfo;
+import android.net.Uri;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.MenuItem;
@@ -19,6 +22,7 @@ import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.ImageButton;
 import android.widget.ImageView;
+import android.widget.LinearLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -26,6 +30,7 @@ import com.bumptech.glide.load.engine.DiskCacheStrategy;
 import com.example.morrisgram.Activity.BaseActivity.AddingPoster_BaseAct;
 import com.example.morrisgram.CameraClass.GlideApp;
 import com.example.morrisgram.R;
+import com.firebase.ui.database.FirebaseRecyclerAdapter;
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.Task;
 import com.google.android.material.navigation.NavigationView;
@@ -61,6 +66,12 @@ public class Myinfo extends AddingPoster_BaseAct implements SwipeRefreshLayout.O
     private FirebaseAuth firebaseAuth;
     private StorageReference mstorageRef = FirebaseStorage.getInstance().getReference();
     private String userUID = uid.getUid();
+
+    //리사이클러뷰
+    private RecyclerView recyclerView;
+    private LinearLayoutManager linearLayoutManager;
+    private FirebaseRecyclerAdapter adapter;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -100,6 +111,14 @@ public class Myinfo extends AddingPoster_BaseAct implements SwipeRefreshLayout.O
 
         mSwipeRefreshLayout = (SwipeRefreshLayout) findViewById(R.id.refresh_my);
         mSwipeRefreshLayout.setOnRefreshListener(this);
+
+
+
+        recyclerView = findViewById(R.id.recyclerView_myinfo);
+        linearLayoutManager = new LinearLayoutManager(this);
+        recyclerView.setLayoutManager(linearLayoutManager);
+        recyclerView.setHasFixedSize(true);
+
 //-----------------------------------화면이동----------------------------------------
         homeB = (ImageButton)findViewById(R.id.homeB_my);
         homeB.setOnClickListener(new View.OnClickListener() {
@@ -317,6 +336,49 @@ public class Myinfo extends AddingPoster_BaseAct implements SwipeRefreshLayout.O
     public void onRestart(){
         super.onRestart();
         Log.i("파베","마이 리스타트");
+    }
+}
+
+class ViewHolder extends RecyclerView.ViewHolder{
+
+    public LinearLayout root;
+    public TextView UserNicName;
+    public TextView Body;
+    public TextView PostedTime;
+    public TextView LikeCount;
+    public TextView ReplyCount;
+    public ImageView Pic;
+
+    public ViewHolder(@NonNull View itemView) {
+        super(itemView);
+        UserNicName = itemView.findViewById(R.id.nicknameTV);
+        Body = itemView.findViewById(R.id.bodyTV);
+        PostedTime = itemView.findViewById(R.id.timeTV);
+        LikeCount = itemView.findViewById(R.id.like_counter);
+        ReplyCount = itemView.findViewById(R.id.reply_counter);
+        Pic = itemView.findViewById(R.id.imageView_posteritem);
+    }
+
+   public void setUserNicName(String string){
+        UserNicName.setText(string);
+   }
+
+    public void Body(String string){
+        Body.setText(string);
+    }
+
+    public void Pic(Uri uri){
+        Pic.setImageURI(uri);
+    }
+
+    public void PostedTime(String string){
+        PostedTime.setText(string);
+    }
+    public void LikeCount(String string){
+        LikeCount.setText(string);
+    }
+    public void ReplyCount(String string){
+        ReplyCount.setText(string);
     }
 
 }
