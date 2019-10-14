@@ -127,7 +127,7 @@ public class Posting extends AddingPoster_BaseAct {
                             //게시물 내용
                             String Body = body.getText().toString();
                             //업데이트 메소드
-                            UpFirebaseDatabase(true,PosterKey,userUID,NickName,Body,DATE,0,0);
+                            UpFirebaseDatabase(true,userUID,NickName,Body,DATE,PosterKey);
 
                             //위치 메타데이터 업로드 메소드
                             getMetaData(PosterKey);
@@ -150,13 +150,13 @@ public class Posting extends AddingPoster_BaseAct {
     }
 
     //파이어 베이스 업데이트 메소드 - 게시물 포스팅 클래스에서 입력받아야 하는 모든 데이터들
-    public void UpFirebaseDatabase(boolean add, String PosterKey, String UserUID, String UserNicName, String Body,String Time, int LikeCount, int ReplyCount){
+    public void UpFirebaseDatabase(boolean add, String UserUID, String UserNicName, String Body,String Time, String PosterKey){
         //해쉬맵 생성
         Map<String,Object> childUpdates = new HashMap<>();
         Map<String,Object> PostValues = null;
 
         if(add){
-            Posting_DTO posting = new Posting_DTO(UserUID,UserNicName,Body,Time,LikeCount,ReplyCount);
+            Posting_DTO posting = new Posting_DTO(UserUID,UserNicName,Body,Time,null,null,PosterKey);
             PostValues = posting.toMap();
         }
 

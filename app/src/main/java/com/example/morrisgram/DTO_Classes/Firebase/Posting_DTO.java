@@ -7,13 +7,14 @@ import java.util.HashMap;
 import java.util.Map;
 
 public class Posting_DTO  {
-    public Posting_DTO(String userUID, String userNickName, String body,String PostedTime, int likeCount, int replyCount) {
+    public Posting_DTO(String userUID, String userNickName, String body,String PostedTime, String likeCount, String replyCount, String posterKey) {
         this.UserUID = userUID;
         this.UserNickName = userNickName;
         this.Body = body;
         this.PostedTime = PostedTime;
         this.LikeCount = likeCount;
         this.ReplyCount = replyCount;
+        this.PosterKey = posterKey;
     }
 
     public String getUserUID() {
@@ -48,28 +49,36 @@ public class Posting_DTO  {
         PostedTime = postedTime;
     }
 
-    public int getLikeCount() {
+    public String getLikeCount() {
         return LikeCount;
     }
 
-    public void setLikeCount(int likeCount) {
+    public void setLikeCount(String likeCount) {
         LikeCount = likeCount;
     }
 
-    public int getReplyCount() {
+    public String getReplyCount() {
         return ReplyCount;
     }
 
-    public void setReplyCount(int replyCount) {
+    public void setReplyCount(String replyCount) {
         ReplyCount = replyCount;
     }
-
+    public String getPosterKey() {
+        return PosterKey;
+    }
     private String UserUID;
     private String UserNickName;
     private String Body;
     private String PostedTime;
-    private int LikeCount;
-    private int ReplyCount;
+    private String LikeCount;
+    private String ReplyCount;
+
+    public void setPosterKey(String posterKey) {
+        PosterKey = posterKey;
+    }
+
+    private String PosterKey;
 
     @Exclude
     public Map<String,Object> toMap() {
@@ -78,6 +87,7 @@ public class Posting_DTO  {
         result.put("UserNicName",UserNickName);
         result.put("Body",Body);
         result.put("PostedTime",PostedTime);
+        result.put("PosterKey",PosterKey);
         result.put("LikeCount",LikeCount);
         result.put("ReplyCount",ReplyCount);
         return result;
