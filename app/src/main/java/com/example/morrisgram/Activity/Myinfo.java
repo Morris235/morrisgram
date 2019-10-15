@@ -8,7 +8,7 @@ import androidx.appcompat.app.ActionBarDrawerToggle;
 import androidx.appcompat.app.AlertDialog;
 import androidx.core.view.GravityCompat;
 import androidx.drawerlayout.widget.DrawerLayout;
-import androidx.recyclerview.widget.LinearLayoutManager;
+import androidx.recyclerview.widget.GridLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 import androidx.swiperefreshlayout.widget.SwipeRefreshLayout;
 
@@ -21,16 +21,16 @@ import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
+import android.widget.GridLayout;
 import android.widget.ImageButton;
 import android.widget.ImageView;
-import android.widget.LinearLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
 import com.bumptech.glide.load.engine.DiskCacheStrategy;
 import com.example.morrisgram.Activity.BaseActivity.AddingPoster_BaseAct;
 import com.example.morrisgram.CameraClass.GlideApp;
-import com.example.morrisgram.DTO_Classes.Firebase.Posting_DTO;
+import com.example.morrisgram.DTO_Classes.Firebase.PreView;
 import com.example.morrisgram.R;
 import com.firebase.ui.database.FirebaseRecyclerAdapter;
 import com.firebase.ui.database.FirebaseRecyclerOptions;
@@ -48,6 +48,8 @@ import com.google.firebase.database.Query;
 import com.google.firebase.database.ValueEventListener;
 import com.google.firebase.storage.FirebaseStorage;
 import com.google.firebase.storage.StorageReference;
+
+import java.util.Objects;
 
 public class Myinfo extends AddingPoster_BaseAct implements SwipeRefreshLayout.OnRefreshListener,NavigationView.OnNavigationItemSelectedListener {
     private SwipeRefreshLayout mSwipeRefreshLayout;
@@ -74,7 +76,7 @@ public class Myinfo extends AddingPoster_BaseAct implements SwipeRefreshLayout.O
 
     //리사이클러뷰
     private RecyclerView recyclerView;
-    private LinearLayoutManager linearLayoutManager;
+    private GridLayoutManager gridLayoutManager;
     private FirebaseRecyclerAdapter adapter;
 
     @Override
@@ -98,6 +100,8 @@ public class Myinfo extends AddingPoster_BaseAct implements SwipeRefreshLayout.O
         intro = (TextView) findViewById(R.id.introduce_my);
 
         profileimg = (ImageView) findViewById(R.id.profileIMG_my);
+        recyclerView = findViewById(R.id.recyclerView_myinfo);
+
         //네비게이션뷰 리스너
         NavigationView navigationView = (NavigationView) findViewById(R.id.navigationview);
         navigationView.setNavigationItemSelectedListener(this);
@@ -114,13 +118,13 @@ public class Myinfo extends AddingPoster_BaseAct implements SwipeRefreshLayout.O
             }
         });
 
-        mSwipeRefreshLayout = (SwipeRefreshLayout) findViewById(R.id.refresh_my);
-        mSwipeRefreshLayout.setOnRefreshListener(this);
+//        mSwipeRefreshLayout = (SwipeRefreshLayout) findViewById(R.id.refresh_my);
+//        mSwipeRefreshLayout.setOnRefreshListener(this);
 
 
-        recyclerView = findViewById(R.id.recyclerView_myinfo);
-        linearLayoutManager = new LinearLayoutManager(this);
-        recyclerView.setLayoutManager(linearLayoutManager);
+
+        gridLayoutManager = new GridLayoutManager(this,3);
+        recyclerView.setLayoutManager(gridLayoutManager);
         recyclerView.setHasFixedSize(true);
         fetch();
 //-----------------------------------화면이동----------------------------------------
@@ -313,7 +317,6 @@ public class Myinfo extends AddingPoster_BaseAct implements SwipeRefreshLayout.O
         Log.i("파베", "마이 스타트");
         //Glide를 통한 이미지 바인딩
         StorageReference imageRef = mstorageRef.child(userUID + "/ProfileIMG/ProfileIMG");
-        Log.i("파베", "마이 스타트 이미지수신");
         GlideApp.with(Myinfo.this)
                 .load(imageRef)
                 .skipMemoryCache(true)
@@ -321,11 +324,13 @@ public class Myinfo extends AddingPoster_BaseAct implements SwipeRefreshLayout.O
                 .dontAnimate()
                 .placeholder(R.drawable.noimage)
                 .into(profileimg);
+
+        adapter.startListening();
     }
 
     public void onResume() {
         super.onResume();
-        Log.i("파베", "마이 리즈메");
+//        Log.i("파베", "마이 리즈메");
 
     }
 
@@ -334,115 +339,102 @@ public class Myinfo extends AddingPoster_BaseAct implements SwipeRefreshLayout.O
     public void onPause() {
         super.onPause();
         overridePendingTransition(0, 0);
-        Log.i("파베", "마이 포즈");
+//        Log.i("파베", "마이 포즈");
     }
 
     public void onStop() {
         super.onStop();
         Log.i("파베", "마이 스탑");
+        adapter.stopListening();
     }
 
     public void onDestroy() {
         super.onDestroy();
-        Log.i("파베", "마이 디스트로이");
+//        Log.i("파베", "마이 디스트로이");
     }
 
     public void onRestart() {
         super.onRestart();
-        Log.i("파베", "마이 리스타트");
+//        Log.i("파베", "마이 리스타트");
     }
-
-    private void fetch() {
-        Query query = FirebaseDatabase.getInstance()
-                .getReference()
-                .child("posts");
-
-        FirebaseRecyclerOptions<Posting_DTO> options =
-                new FirebaseRecyclerOptions.Builder<Posting_DTO>()
-                        .setQuery(query, new SnapshotParser<Posting_DTO>() {
-                            @NonNull
-                            @Override
-                            public Posting_DTO parseSnapshot(@NonNull DataSnapshot snapshot) {
-                                return new Posting_DTO(snapshot.child("UserUID").getValue().toString(),
-                                        snapshot.child("UserNicName").getValue().toString(),
-                                        snapshot.child("Body").getValue().toString(),
-                                        snapshot.child("PostedTime").getValue().toString(),
-                                        snapshot.child("LikeCount").getValue().toString(), snapshot.child("ReplyCount").getValue().toString(),
-                                        snapshot.child("PosterKey").getValue().toString());
-                            }
-                        })
-                        .build();
-        adapter = new FirebaseRecyclerAdapter<Posting_DTO, ViewHolder>(options) {
-            @Override
-            public ViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
-                View view = LayoutInflater.from(parent.getContext())
-                        .inflate(R.layout.poster_item, parent, false);
-                return new ViewHolder(view);
-            }
-
-            @Override
-            protected void onBindViewHolder(@NonNull ViewHolder Holder, int i, @NonNull Posting_DTO posting_dto) {
-                Holder.setUserNicName(posting_dto.getUserNickName());
-                Holder.setUserUID(Uri.parse(posting_dto.getUserUID()));
-                Holder.setBody(posting_dto.getBody());
-                Holder.setPic(Uri.parse(posting_dto.getPosterKey()));
-                Holder.setPostedTime(posting_dto.getPostedTime());
-
-                Holder.setLikeCount(posting_dto.getLikeCount());
-                Holder.setReplyCount(posting_dto.getReplyCount());
-            }
-        };
-
-    }
-}//---------------myinfo class---------------
-
-    class ViewHolder extends RecyclerView.ViewHolder {
-
-        public LinearLayout root;
-        public TextView UserNicName;
-        public TextView Body;
-        public TextView PostedTime;
-        public TextView LikeCount;
-        public TextView ReplyCount;
-        public ImageView UserUID;
+    public class ViewHolder extends RecyclerView.ViewHolder {
+        public GridLayout root;
         public ImageView Pic;
 
         public ViewHolder(@NonNull View itemView) {
             super(itemView);
-            UserNicName = itemView.findViewById(R.id.nicknameTV);
-            Body = itemView.findViewById(R.id.bodyTV);
-            PostedTime = itemView.findViewById(R.id.timeTV);
-            LikeCount = itemView.findViewById(R.id.like_counter);
-            ReplyCount = itemView.findViewById(R.id.reply_counter);
-            Pic = itemView.findViewById(R.id.imageView_posteritem);
-            UserUID = itemView.findViewById(R.id.profileIMG_posteritem);
-        }
-
-        public void setUserNicName(String string) {
-            UserNicName.setText(string);
-        }
-
-        public void setUserUID(Uri uri) {
-            UserUID.setImageURI(uri);
-        }
-
-        public void setBody(String string) {
-            Body.setText(string);
+            Log.i("파베", "ViewHolder 메소드 작동 확인");
+            Pic = itemView.findViewById(R.id.preview_IMG);
         }
 
         public void setPic(Uri uri) {
+            Log.i("파베", "setPic 메소드 작동 확인");
             Pic.setImageURI(uri);
         }
-
-        public void setPostedTime(String string) {
-            PostedTime.setText(string);
-        }
-
-        public void setLikeCount(String string) {
-            LikeCount.setText(string);
-        }
-
-        public void setReplyCount(String string) {
-            ReplyCount.setText(string);
-        }
     }
+
+    private void fetch() {
+        //DB 레퍼런스, 쿼리 설정
+        final Query basequery = FirebaseDatabase.getInstance()
+                .getReference()
+                .child("UserList")
+                .child(userUID)
+                .child("UserPosterList"); //UserPosterList의 모든 데이터 요구??
+        Log.i("파베", "query 경로 확인 : "+basequery.toString());
+
+        //DTO를 통한 DB 스냅샷 쿼리 - 이부분 깡그리 무시
+        FirebaseRecyclerOptions<PreView> options =
+                new FirebaseRecyclerOptions.Builder<PreView>()
+                        .setQuery(basequery, new SnapshotParser<PreView>() {
+                            @NonNull
+                            @Override
+                            //메소드 자체가 작동하지 않음 왜??.
+                            public PreView parseSnapshot(@NonNull DataSnapshot snapshot) {
+                                Log.i("파베", "스냅샷 메소드 작동 확인");
+                                return new PreView((snapshot.child("PosterKey").getValue().toString()));
+                            }
+                        })
+                        .build();
+
+        Log.i("파베", "fetch 메소드 흐름 확인");
+
+        //리사이클러뷰에 아이템 생성
+        adapter = new FirebaseRecyclerAdapter<PreView, ViewHolder>(options) {
+            @Override
+            public ViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
+                Log.i("파베", "ViewHolder 메소드 작동 확인");
+                View view = LayoutInflater.from(parent.getContext())
+                        .inflate(R.layout.preview_item, parent, false);
+                return new ViewHolder(view);
+            }
+
+            //이미지뷰에 바인딩
+            @Override
+            protected void onBindViewHolder(@NonNull ViewHolder Holder, final int position, @NonNull PreView preView_dto) {
+                //스트링으로 받아서 uri로 파싱??
+                Log.i("파베", "onBindViewHolder 메소드 작동 확인");
+//                Holder.setPic(Uri.parse(preView_dto.getPosterKey()));
+
+                StorageReference imageRef = mstorageRef.child("PosterPicList/"+GetPosterKey().get(3).toString()+"/PosterIMG");
+                GlideApp.with(Myinfo.this)
+                        .load(preView_dto.getPosterKey())
+                        .skipMemoryCache(true)
+                        .thumbnail()
+                        .diskCacheStrategy(DiskCacheStrategy.NONE)
+                        .dontAnimate()
+                        .placeholder(R.drawable.noimage)
+                        .into(Holder.Pic);
+
+                Holder.root.setOnClickListener(new View.OnClickListener() {
+                    @Override
+                    public void onClick(View view) {
+                        Toast.makeText(Myinfo.this, String.valueOf(position), Toast.LENGTH_SHORT).show();
+                    }
+                });
+                recyclerView.setAdapter(adapter);
+            }
+        };
+    }
+
+}//---------------myinfo class---------------
+

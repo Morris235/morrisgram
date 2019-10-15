@@ -123,10 +123,12 @@ public class Posting extends AddingPoster_BaseAct {
                             String DATE = SDF.format(date);
 
                             //현재 로그인된 유저 정보와 일치하는 데이터를 가져오기.
-                            String NickName = (String) dataSnapshot.child(userUID).child("UserInfo").child("NickName").getValue();
+                            String NickName = (String) dataSnapshot.child("UserList").child(userUID).child("UserInfo").child("NickName").getValue();
+                            Log.i("파베","유저 닉네임 확인 : "+NickName);
                             //게시물 내용
                             String Body = body.getText().toString();
-                            //업데이트 메소드
+
+                            //----------------DTO 클래스를 통한 DB 업데이트 메소드-------------------
                             UpFirebaseDatabase(true,userUID,NickName,Body,DATE,PosterKey);
 
                             //위치 메타데이터 업로드 메소드
@@ -156,7 +158,7 @@ public class Posting extends AddingPoster_BaseAct {
         Map<String,Object> PostValues = null;
 
         if(add){
-            Posting_DTO posting = new Posting_DTO(UserUID,UserNicName,Body,Time,null,null,PosterKey);
+            Posting_DTO posting = new Posting_DTO(UserUID,UserNicName,Body,Time,0,0,PosterKey);
             PostValues = posting.toMap();
         }
 
@@ -222,8 +224,6 @@ public class Posting extends AddingPoster_BaseAct {
                 @Override
                 public void onFailure(@NonNull Exception exception) {
                     // Uh-oh, an error occurred!
-                    Log.i("메타데이타","메타 데이타 업로드 실패ㅠㅠ 왜?? :"+exception);
-                    Log.i("메타데이타","imageRef 경로값 확인 :"+imageRef);
                     Toast.makeText(getApplicationContext(),"메타데이터 없음",Toast.LENGTH_LONG).show();
                 }
             });

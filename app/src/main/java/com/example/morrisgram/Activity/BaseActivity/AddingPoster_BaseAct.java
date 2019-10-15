@@ -249,6 +249,10 @@ public class AddingPoster_BaseAct extends AppCompatActivity {
         SharedPreferences MY_POSTER_KEYS = getSharedPreferences("POSTER_KEYS",MODE_PRIVATE);
         SharedPreferences.Editor KEY_EDITOR = MY_POSTER_KEYS.edit();
 
+        //강제삭제용
+//        KEY_EDITOR.clear();
+//        KEY_EDITOR.apply();
+
         //데이터 타입 설명
         Type UserPosterList_Type = new TypeToken<UserPosterList_Dataset>() {}.getType();
         //게시물 키값 DTO클래스 객체 - PosterKey ; PosterKey
