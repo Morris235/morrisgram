@@ -14,6 +14,7 @@
     <androidx.constraintlayout.widget.ConstraintLayout
         android:layout_width="match_parent"
         android:layout_height="match_parent">
+
         <View
             android:id="@+id/view3"
             android:layout_width="match_parent"
@@ -244,9 +245,9 @@
             android:orientation="vertical"
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintHorizontal_bias="0.65"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toTopOf="parent"
-            app:layout_constraintHorizontal_bias="0.65"
             app:layout_constraintVertical_bias="0.12">
 
             <TextView
@@ -254,17 +255,17 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:gravity="center"
-                android:textStyle="bold"
+                android:text="0"
                 android:textSize="15dp"
-                android:text="0" />
+                android:textStyle="bold" />
 
             <TextView
                 android:id="@+id/followers"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:gravity="center"
-                android:textSize="15dp"
-                android:text="팔로워" />
+                android:text="팔로워"
+                android:textSize="15dp" />
         </LinearLayout>
 
         <LinearLayout
@@ -278,9 +279,9 @@
             android:orientation="vertical"
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintHorizontal_bias="0.9"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toTopOf="parent"
-            app:layout_constraintHorizontal_bias="0.9"
             app:layout_constraintVertical_bias="0.12">
 
             <TextView
@@ -288,9 +289,9 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:gravity="center"
-                android:textStyle="bold"
+                android:text="0"
                 android:textSize="15dp"
-                android:text="0" />
+                android:textStyle="bold" />
 
             <TextView
                 android:id="@+id/followings"
@@ -361,15 +362,15 @@
             app:layout_constraintTop_toBottomOf="@+id/profileB"
             app:layout_constraintVertical_bias="0.0">
 
-<!--            <androidx.swiperefreshlayout.widget.SwipeRefreshLayout-->
-<!--                android:id="@+id/refresh_my"-->
-<!--                android:layout_width="match_parent"-->
-<!--                android:layout_height="match_parent"-->
-<!--                android:layout_marginStart="8dp"-->
-<!--                android:layout_marginTop="8dp"-->
-<!--                android:layout_marginEnd="8dp"-->
-<!--                android:layout_marginBottom="8dp"-->
-<!--                app:layout_constraintVertical_bias="0.0">-->
+            <androidx.swiperefreshlayout.widget.SwipeRefreshLayout
+                android:id="@+id/refresh_my"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:layout_marginStart="8dp"
+                android:layout_marginTop="8dp"
+                android:layout_marginEnd="8dp"
+                android:layout_marginBottom="8dp"
+                app:layout_constraintVertical_bias="0.0">
 
                 <androidx.recyclerview.widget.RecyclerView
                     android:id="@+id/recyclerView_myinfo"
@@ -381,7 +382,7 @@
                     android:layout_marginBottom="8dp"
                     tools:listitem="@layout/preview_item" />
 
-<!--            </androidx.swiperefreshlayout.widget.SwipeRefreshLayout>-->
+            </androidx.swiperefreshlayout.widget.SwipeRefreshLayout>
 
         </ScrollView>
 
@@ -392,9 +393,9 @@
             android:layout_marginStart="8dp"
             android:layout_marginTop="8dp"
             android:layout_marginBottom="472dp"
-            android:text=""
-            android:linksClickable="true"
             android:autoLink="web"
+            android:linksClickable="true"
+            android:text=""
             android:textColorLink="#0067a3"
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintEnd_toEndOf="parent"

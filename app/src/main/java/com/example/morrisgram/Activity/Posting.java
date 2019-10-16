@@ -139,7 +139,9 @@ public class Posting extends AddingPoster_BaseAct {
 
                     }
                 });
+                finish();
             }
+
         });
 
         //포스팅 취소 - 업로드된 스토리지 사진 디렉토리 삭제

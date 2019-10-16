@@ -6,6 +6,7 @@ import android.content.Intent;
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.ActionBarDrawerToggle;
 import androidx.appcompat.app.AlertDialog;
+import androidx.constraintlayout.widget.ConstraintLayout;
 import androidx.core.view.GravityCompat;
 import androidx.drawerlayout.widget.DrawerLayout;
 import androidx.recyclerview.widget.GridLayoutManager;
@@ -74,7 +75,7 @@ public class Myinfo extends AddingPoster_BaseAct implements SwipeRefreshLayout.O
     private StorageReference mstorageRef = FirebaseStorage.getInstance().getReference();
     private String userUID = uid.getUid();
 
-    //리사이클러뷰
+    //파이어베이스 리사이클러뷰
     private RecyclerView recyclerView;
     private GridLayoutManager gridLayoutManager;
     private FirebaseRecyclerAdapter adapter;
@@ -118,11 +119,12 @@ public class Myinfo extends AddingPoster_BaseAct implements SwipeRefreshLayout.O
             }
         });
 
-//        mSwipeRefreshLayout = (SwipeRefreshLayout) findViewById(R.id.refresh_my);
-//        mSwipeRefreshLayout.setOnRefreshListener(this);
+        mSwipeRefreshLayout = (SwipeRefreshLayout) findViewById(R.id.refresh_my);
+        mSwipeRefreshLayout.setOnRefreshListener(this);
 
 
 
+        //파이어베이스 리사이클러뷰
         gridLayoutManager = new GridLayoutManager(this,3);
         recyclerView.setLayoutManager(gridLayoutManager);
         recyclerView.setHasFixedSize(true);
@@ -357,83 +359,89 @@ public class Myinfo extends AddingPoster_BaseAct implements SwipeRefreshLayout.O
         super.onRestart();
 //        Log.i("파베", "마이 리스타트");
     }
+    //------------------------뷰홀더------------------------------
     public class ViewHolder extends RecyclerView.ViewHolder {
-        public GridLayout root;
-        public ImageView Pic;
+        public ConstraintLayout root;
+        public ImageView PosterKey;
+        public TextView PosterKeyText;
 
         public ViewHolder(@NonNull View itemView) {
             super(itemView);
+
             Log.i("파베", "ViewHolder 메소드 작동 확인");
-            Pic = itemView.findViewById(R.id.preview_IMG);
+            root = itemView.findViewById(R.id.preview_root);
+            PosterKey = itemView.findViewById(R.id.preview_IMG);
         }
 
-        public void setPic(Uri uri) {
+        public void setPosterKey(String uri) {
             Log.i("파베", "setPic 메소드 작동 확인");
-            Pic.setImageURI(uri);
+
+            //스토리지에서 이미지 받아오기
+            StorageReference imageRef = mstorageRef.child("PosterPicList/"+uri+"/PosterIMG");
+            GlideApp.with(Myinfo.this)
+                    .load(imageRef)
+                    .skipMemoryCache(false)
+                    .thumbnail()
+                    .centerCrop()
+                    .diskCacheStrategy(DiskCacheStrategy.ALL)
+                    .dontAnimate()
+                    .placeholder(R.drawable.ic_insert_photo_black_24dp)
+                    .into(PosterKey);
         }
     }
 
+    //----------------------------파이어베이스 어댑터---------------------------------------
     private void fetch() {
-        //DB 레퍼런스, 쿼리 설정
-        final Query basequery = FirebaseDatabase.getInstance()
+        Query query = FirebaseDatabase.getInstance()
+                //BaseQuery
                 .getReference()
                 .child("UserList")
                 .child(userUID)
-                .child("UserPosterList"); //UserPosterList의 모든 데이터 요구??
-        Log.i("파베", "query 경로 확인 : "+basequery.toString());
+                .child("UserPosterList");
 
-        //DTO를 통한 DB 스냅샷 쿼리 - 이부분 깡그리 무시
+        Log.i("파베", "query 경로 확인 : "+query.toString());
+
+        //DB에 정보를 받아서 가져오는 스냅샷 - 스트링형식으로 받아와야함
         FirebaseRecyclerOptions<PreView> options =
                 new FirebaseRecyclerOptions.Builder<PreView>()
-                        .setQuery(basequery, new SnapshotParser<PreView>() {
+                        .setQuery(query, new SnapshotParser<PreView>() {
                             @NonNull
                             @Override
-                            //메소드 자체가 작동하지 않음 왜??.
                             public PreView parseSnapshot(@NonNull DataSnapshot snapshot) {
                                 Log.i("파베", "스냅샷 메소드 작동 확인");
-                                return new PreView((snapshot.child("PosterKey").getValue().toString()));
+                                Log.i("파베", "snapshot.child(\"PosterKey\").getValue().toString() : "+snapshot.child("PosterKey").getValue().toString());
+                                return new PreView(
+                                        snapshot.child("PosterKey").getValue().toString());
                             }
                         })
                         .build();
 
-        Log.i("파베", "fetch 메소드 흐름 확인");
-
-        //리사이클러뷰에 아이템 생성
         adapter = new FirebaseRecyclerAdapter<PreView, ViewHolder>(options) {
             @Override
             public ViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
-                Log.i("파베", "ViewHolder 메소드 작동 확인");
                 View view = LayoutInflater.from(parent.getContext())
                         .inflate(R.layout.preview_item, parent, false);
                 return new ViewHolder(view);
             }
 
-            //이미지뷰에 바인딩
+
             @Override
-            protected void onBindViewHolder(@NonNull ViewHolder Holder, final int position, @NonNull PreView preView_dto) {
-                //스트링으로 받아서 uri로 파싱??
-                Log.i("파베", "onBindViewHolder 메소드 작동 확인");
-//                Holder.setPic(Uri.parse(preView_dto.getPosterKey()));
+            protected void onBindViewHolder(ViewHolder holder, final int position, PreView preView) {
+                holder.setPosterKey(preView.getPosterKey());
 
-                StorageReference imageRef = mstorageRef.child("PosterPicList/"+GetPosterKey().get(3).toString()+"/PosterIMG");
-                GlideApp.with(Myinfo.this)
-                        .load(preView_dto.getPosterKey())
-                        .skipMemoryCache(true)
-                        .thumbnail()
-                        .diskCacheStrategy(DiskCacheStrategy.NONE)
-                        .dontAnimate()
-                        .placeholder(R.drawable.noimage)
-                        .into(Holder.Pic);
-
-                Holder.root.setOnClickListener(new View.OnClickListener() {
+                holder.root.setOnClickListener(new View.OnClickListener() {
                     @Override
                     public void onClick(View view) {
                         Toast.makeText(Myinfo.this, String.valueOf(position), Toast.LENGTH_SHORT).show();
+                        //해당 포지션으로 포커스 주기 - 포스터뷰어로 이동
+                        Intent intent = new Intent(Myinfo.this,PosterViewer.class);
+                        startActivity(intent);
                     }
                 });
-                recyclerView.setAdapter(adapter);
             }
+
         };
+        recyclerView.setAdapter(adapter);
     }
 
 }//---------------myinfo class---------------

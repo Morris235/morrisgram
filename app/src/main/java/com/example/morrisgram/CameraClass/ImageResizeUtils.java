@@ -20,7 +20,7 @@ public class ImageResizeUtils {
      * @param newWidth
      * @param isCamera
      */
-    public static void resizeFile(File file, File newFile, int newWidth, Boolean isCamera) {
+    public static void resizeFile(File file, File newFile, int newWidth, Boolean isCamera, Boolean isAlbum) {
 
         String TAG = "morrisgrem";
 
@@ -52,6 +52,20 @@ public class ImageResizeUtils {
                     e.printStackTrace();
                 }
 
+            } else if (isAlbum){
+                // 카메라인 경우 이미지를 상황에 맞게 회전시킨다
+                try {
+                    ExifInterface exif = new ExifInterface(file.getAbsolutePath());
+                    int exifOrientation = exif.getAttributeInt(
+                            ExifInterface.TAG_ORIENTATION, ExifInterface.ORIENTATION_NORMAL);
+                    int exifDegree = exifOrientationToDegrees(exifOrientation);
+                    Log.d(TAG,"exifDegree : " + exifDegree);
+
+                    originalBm = rotate(originalBm, exifDegree);
+
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
             }
 
             if(originalBm == null) {
