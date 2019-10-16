@@ -154,6 +154,7 @@
         app:srcCompat="@drawable/my1" />
 
     <androidx.recyclerview.widget.RecyclerView
+        android:id="@+id/recyclerView_posterviewer"
         android:layout_width="match_parent"
         android:layout_height="620dp"
         app:layout_constraintBottom_toTopOf="@+id/bottomview2"

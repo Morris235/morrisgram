@@ -4,7 +4,9 @@ import android.content.Intent;
 
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.constraintlayout.widget.ConstraintLayout;
 import androidx.recyclerview.widget.GridLayoutManager;
+import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import android.content.pm.ActivityInfo;
@@ -20,8 +22,11 @@ import android.widget.LinearLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.bumptech.glide.load.engine.DiskCacheStrategy;
 import com.example.morrisgram.Activity.BaseActivity.AddingPoster_BaseAct;
+import com.example.morrisgram.CameraClass.GlideApp;
 import com.example.morrisgram.DTO_Classes.Firebase.Posting_DTO;
+import com.example.morrisgram.DTO_Classes.Firebase.PreView;
 import com.example.morrisgram.R;
 import com.firebase.ui.database.FirebaseRecyclerAdapter;
 import com.firebase.ui.database.FirebaseRecyclerOptions;
@@ -46,10 +51,11 @@ public class PosterViewer extends AddingPoster_BaseAct {
     private StorageReference mstorageRef = FirebaseStorage.getInstance().getReference();
     private String userUID = uid.getUid();
 
-    //리사이클러뷰
+    //파이어베이스 리사이클러뷰
     private RecyclerView recyclerView;
-    private GridLayoutManager gridLayoutManager;
+    private LinearLayoutManager linearLayoutManager;
     private FirebaseRecyclerAdapter adapter;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -58,9 +64,9 @@ public class PosterViewer extends AddingPoster_BaseAct {
 
         setContentView(R.layout.activity_poster_viewer);
 
-        recyclerView = findViewById(R.id.recyclerView_myinfo);
-        gridLayoutManager = new GridLayoutManager(this,3);
-        recyclerView.setLayoutManager(gridLayoutManager);
+        recyclerView = findViewById(R.id.recyclerView_posterviewer);
+        linearLayoutManager = new LinearLayoutManager(this);
+        recyclerView.setLayoutManager(linearLayoutManager);
         recyclerView.setHasFixedSize(true);
         fetch();
 //-----------------------------------화면이동----------------------------------------
@@ -116,99 +122,65 @@ public class PosterViewer extends AddingPoster_BaseAct {
         });
 //---------------------------------------------------------------------------------
     }
-    private void fetch() {
-        Query query = FirebaseDatabase.getInstance()
-                .getReference()
-                .child("UserList")
-                .child(userUID)
-                .child("UserPosterList")
-                .child(GetPosterKey().get(3).toString());
-        Log.i("파베", "query 경로 확인 : "+query.toString());
-        FirebaseRecyclerOptions<Posting_DTO> options =
-                new FirebaseRecyclerOptions.Builder<Posting_DTO>()
-                        .setQuery(query, new SnapshotParser<Posting_DTO>() {
-                            @NonNull
-                            @Override
-                            public Posting_DTO parseSnapshot(@NonNull DataSnapshot snapshot) {
-                                return new Posting_DTO(snapshot.child(GetPosterKey().toString()).child("UserUID").getValue().toString(),
-                                        snapshot.child("UserNicName").getValue().toString(),
-                                        snapshot.child("Body").getValue().toString(),
-                                        snapshot.child("PostedTime").getValue().toString(),
-                                        snapshot.child("LikeCount").getValue().toString(),
-                                        snapshot.child("ReplyCount").getValue().toString(),
-                                        snapshot.child("PosterKey").getValue().toString());
-                            }
-                        })
-                        .build();
-        adapter = new FirebaseRecyclerAdapter<Posting_DTO, ViewHolder>(options) {
-            @Override
-            public ViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
-                View view = LayoutInflater.from(parent.getContext())
-                        .inflate(R.layout.poster_item, parent, false);
-                return new ViewHolder(view);
-            }
-
-            @Override
-            protected void onBindViewHolder(@NonNull ViewHolder Holder, final int position, @NonNull Posting_DTO posting_dto) {
-                Holder.setUserNicName(posting_dto.getUserNickName());
-                Holder.setUserUID(Uri.parse(posting_dto.getUserUID()));
-                Holder.setBody(posting_dto.getBody());
-
-                //스트링으로 받아서 uri로 파싱??
-                Holder.setPic(Uri.parse(posting_dto.getPosterKey()));
-                Holder.setPostedTime(posting_dto.getPostedTime());
-
-                //스트링으로로 받아서 숫자로 파싱?
-                //숫자로 받아서 스트링으로 파싱
-                Holder.setLikeCount(String.valueOf(posting_dto.getLikeCount()));
-                Holder.setReplyCount(String.valueOf(posting_dto.getReplyCount()));
-
-                Holder.root.setOnClickListener(new View.OnClickListener() {
-                    @Override
-                    public void onClick(View view) {
-                        Toast.makeText(PosterViewer.this, String.valueOf(position), Toast.LENGTH_SHORT).show();
-                    }
-                });
-                recyclerView.setAdapter(adapter);
-            }
-        };
+    public void onStart() {
+        super.onStart();
+        Log.i("파베", "마이 스타트");
+        adapter.startListening();
     }
+
+    public void onStop() {
+        super.onStop();
+        Log.i("파베", "마이 스탑");
+        adapter.stopListening();
+    }
+
+    //------------------------뷰홀더------------------------------
    public class ViewHolder extends RecyclerView.ViewHolder {
 
-        public LinearLayout root;
+        public ConstraintLayout root;
         public TextView UserNicName;
         public TextView Body;
         public TextView PostedTime;
         public TextView LikeCount;
         public TextView ReplyCount;
-        public ImageView UserUID;
-        public ImageView Pic;
+        public TextView NickName_Reply;
+        public ImageView profileIMG;
+        public ImageView PosterKey;
 
         public ViewHolder(@NonNull View itemView) {
             super(itemView);
-            UserNicName = itemView.findViewById(R.id.nicknameTV);
+
+            root = itemView.findViewById(R.id.poster_posterviewer);
+            UserNicName = itemView.findViewById(R.id.nicknameTV_posteritem);
             Body = itemView.findViewById(R.id.bodyTV);
             PostedTime = itemView.findViewById(R.id.timeTV);
             LikeCount = itemView.findViewById(R.id.like_counter);
             ReplyCount = itemView.findViewById(R.id.reply_counter);
-            Pic = itemView.findViewById(R.id.imageView_posteritem);
-            UserUID = itemView.findViewById(R.id.profileIMG_posteritem);
+            PosterKey = itemView.findViewById(R.id.imageView_posteritem);
+            profileIMG = itemView.findViewById(R.id.profileIMG_posteritem);
+            NickName_Reply = itemView.findViewById(R.id.nicknameTV_posteritem_body);
         }
 
-        public void setUserNicName(String string) {
+        public void setUserNickName(String string) {
             UserNicName.setText(string);
         }
 
-        public void setUserUID(Uri uri) {
-            UserUID.setImageURI(uri);
+        public void setUserUID(String uri) {
+            //스토리지에서 프로필 이미지 받아오기
+            StorageReference imageRef = mstorageRef.child(uri+"/ProfileIMG/ProfileIMG");
+            GlideApp.with(PosterViewer.this)
+                    .load(imageRef)
+                    .skipMemoryCache(false)
+                    .thumbnail()
+                    .circleCrop()
+                    .diskCacheStrategy(DiskCacheStrategy.ALL)
+                    .dontAnimate()
+                    .placeholder(R.drawable.ic_insert_photo_black_24dp)
+                    .into(profileIMG);
         }
 
         public void setBody(String string) {
             Body.setText(string);
-        }
-
-        public void setPic(Uri uri) {
-            Pic.setImageURI(uri);
         }
 
         public void setPostedTime(String string) {
@@ -222,6 +194,87 @@ public class PosterViewer extends AddingPoster_BaseAct {
         public void setReplyCount(String string) {
             ReplyCount.setText(string);
         }
+
+        public void setPosterKey(String uri){
+            //스토리지에서 이미지 받아오기
+            StorageReference imageRef = mstorageRef.child("PosterPicList/"+uri+"/PosterIMG");
+            GlideApp.with(PosterViewer.this)
+                    .load(imageRef)
+                    .skipMemoryCache(false)
+                    .thumbnail()
+                    .centerCrop()
+                    .diskCacheStrategy(DiskCacheStrategy.ALL)
+                    .dontAnimate()
+                    .placeholder(R.drawable.ic_insert_photo_black_24dp)
+                    .into(PosterKey);
+        }
+
+        public void setNickName_Reply(String string){
+            NickName_Reply.setText(string);
+        }
+    }
+    //----------------------------파이어베이스 어댑터---------------------------------------
+    private void fetch() {
+        Query query = FirebaseDatabase.getInstance()
+                //BaseQuery
+                .getReference()
+                .child("UserList")
+                .child(userUID)
+                .child("UserPosterList");
+
+        Log.i("파베", "포스터 뷰어 query 경로 확인 : "+query.toString());
+
+        //DB에 정보를 받아서 가져오는 스냅샷 - 스트링형식으로 받아와야함
+        FirebaseRecyclerOptions<Posting_DTO> options =
+                new FirebaseRecyclerOptions.Builder<Posting_DTO>()
+                        .setQuery(query, new SnapshotParser<Posting_DTO>() {
+                            @NonNull
+                            @Override
+                            public Posting_DTO parseSnapshot(@NonNull DataSnapshot snapshot) {
+                                Log.i("파베", "포스터 뷰어 스냅샷 메소드 작동 확인");
+                                Log.i("파베", "snapshot.child(\"PosterKey\").getValue().toString() : "+snapshot.child("PosterKey").getValue().toString());
+                                return new Posting_DTO(
+                                        snapshot.child("UserUID").getValue().toString(),     //프로필 이미지
+                                        snapshot.child("UserNickName").getValue().toString(), //유저 닉네임
+                                        snapshot.child("Body").getValue().toString(),        //게시물 글
+                                        snapshot.child("PostedTime").getValue().toString(),  //게시물 만든 시간
+                                        snapshot.child("LikeCount").getValue().toString(),   //좋아요 개수
+                                        snapshot.child("ReplyCount").getValue().toString(),  //댓글 개수
+                                        snapshot.child("PosterKey").getValue().toString());  //게시물 이미지
+                            }
+                        })
+                        .build();
+
+        adapter = new FirebaseRecyclerAdapter<Posting_DTO, ViewHolder>(options) {
+            @Override
+            public PosterViewer.ViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
+                View view = LayoutInflater.from(parent.getContext())
+                        .inflate(R.layout.poster_item, parent, false);
+                return new ViewHolder(view);
+            }
+
+            @Override
+            protected void onBindViewHolder(PosterViewer.ViewHolder holder, final int position, Posting_DTO posting_dto) {
+                holder.setPosterKey(posting_dto.getPosterKey());
+                holder.setBody(posting_dto.getBody());
+                holder.setUserNickName(posting_dto.getUserNickName());
+                holder.setUserUID(posting_dto.getUserUID());
+                holder.setLikeCount(posting_dto.getLikeCount());
+                holder.setReplyCount(posting_dto.getReplyCount());
+                holder.setPostedTime(posting_dto.getPostedTime());
+                holder.setNickName_Reply(posting_dto.getUserNickName());
+
+                holder.root.setOnClickListener(new View.OnClickListener() {
+                    @Override
+                    public void onClick(View view) {
+                        Toast.makeText(PosterViewer.this, String.valueOf(position), Toast.LENGTH_SHORT).show();
+                        //해당 포지션으로 포커스 주기 - 포스터뷰어로 이동
+                    }
+                });
+            }
+
+        };
+        recyclerView.setAdapter(adapter);
     }
 }
 

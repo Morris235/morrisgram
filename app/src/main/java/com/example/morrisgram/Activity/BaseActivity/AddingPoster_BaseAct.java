@@ -62,7 +62,6 @@ import java.util.Collections;
 public class AddingPoster_BaseAct extends AppCompatActivity {
     //카메라 이미지 회전 적역변수
     private Boolean isCamera = false;
-    private Boolean isAlbum = false;
     //이 변수는 onActivityResult 에서 requestCode 로 반환되는 값입니다
     private static final int PICK_FROM_ALBUM = 1;
     //카메라와 앨범으로부터 얻게 되는 URI ->>스토리지로 업로드!!
@@ -88,7 +87,6 @@ public class AddingPoster_BaseAct extends AppCompatActivity {
     //앨범열기 메소드
     public void goToAlbum() {
         isCamera =false;
-        isAlbum = true;
         Intent intent = new Intent(Intent.ACTION_PICK);
         intent.setType(MediaStore.Images.Media.CONTENT_TYPE);
         startActivityForResult(intent, PICK_FROM_ALBUM);
@@ -146,7 +144,7 @@ public class AddingPoster_BaseAct extends AppCompatActivity {
                 }
             }
             //이미지 회전 인스턴스
-            ImageResizeUtils.resizeFile(tempFile,tempFile,1280,isCamera,isAlbum);
+            ImageResizeUtils.resizeFile(tempFile,tempFile,1280,isCamera);
 
 //            setImage();
             upLoadImage();
@@ -217,6 +215,7 @@ public class AddingPoster_BaseAct extends AppCompatActivity {
                     public void onFailure(@NonNull Exception exception) {
                         // Handle unsuccessful uploads
                         Toast.makeText(getApplicationContext(),"이미지 업로드 실패!",Toast.LENGTH_LONG).show();
+                        Toast.makeText(getApplicationContext(),""+exception,Toast.LENGTH_LONG).show();
                     }
                 }).addOnSuccessListener(new OnSuccessListener<UploadTask.TaskSnapshot>() {
                     @Override

@@ -105,7 +105,6 @@ public class ProfileModify extends AppCompatActivity {
     private final int MY_PERMISSIONS_REQUEST_CAMERA=1;
     //카메라 이미지 회전 적역변수
     private Boolean isCamera = false;
-    private Boolean isAlbum = false;
 
     //카메라와 앨범으로부터 얻게 되는 URI
     public Uri photoUri;
@@ -448,7 +447,6 @@ private void takePhoto() {
     //권한 요청을 거부했다면 예외처리 만들기
     private void goToAlbum() {
         isCamera =false;
-        isAlbum = true;
         Intent intent = new Intent(Intent.ACTION_PICK);
         intent.setType(MediaStore.Images.Media.CONTENT_TYPE);
         startActivityForResult(intent, PICK_FROM_ALBUM);
@@ -482,7 +480,7 @@ private void takePhoto() {
          네 번째 파라미터를 통해 카메라에서 가져온 이미지인 경우 카메라의 회전각도를 적용해 줍니다.(앨범에서 가져온 경우에는 회전각도를 적용 시킬 필요가 없겠죠?)*/
 
         //이미지 회전 인스턴스
-        ImageResizeUtils.resizeFile(tempFile,tempFile,1280,isCamera,isAlbum);
+        ImageResizeUtils.resizeFile(tempFile,tempFile,1280,isCamera);
         Log.i("이미지"," setImage tempFile 값 확인 : "+tempFile);
         //사진촬영 주소URI로 변경
         photoUri = Uri.fromFile(tempFile);
