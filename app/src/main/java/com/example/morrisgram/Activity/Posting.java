@@ -92,19 +92,6 @@ public class Posting extends AddingPoster_BaseAct {
                 .placeholder(R.drawable.noimage)
                 .into(thumbIMG);
 
-        //파베 메타 데이터 다운로드
-//        imageRef.getMetadata().addOnSuccessListener(new OnSuccessListener<StorageMetadata>() {
-//            @Override
-//            public void onSuccess(StorageMetadata storageMetadata) {
-//               final String Loction = storageMetadata.toString();
-//            }
-//        }).addOnFailureListener(new OnFailureListener() {
-//            @Override
-//            public void onFailure(@NonNull Exception e) {
-//
-//            }
-//        });
-
         //포스팅 완료 버튼
         postingB.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -139,6 +126,9 @@ public class Posting extends AddingPoster_BaseAct {
 
                     }
                 });
+                //자연스럽게 화면전환 변경 필요
+                Intent intent = new Intent(Posting.this,Home.class);
+                startActivity(intent);
                 finish();
             }
 
@@ -179,9 +169,10 @@ public class Posting extends AddingPoster_BaseAct {
             Log.i("메타데이터", "tempFile 값 확인 : " + tempFile);
 
             GpsDirectory gpsDirectory = metadata.getFirstDirectoryOfType(GpsDirectory.class);
+            Log.i("메타데이터", "geoLocation : " + gpsDirectory);
+
             //GPS경도값 가져오기
             GeoLocation geoLocation = gpsDirectory.getGeoLocation();
-
             Log.i("메타데이터", "geoLocation : " + geoLocation);
 
             //GPS Directory (tags)

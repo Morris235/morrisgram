@@ -31,6 +31,8 @@ import com.example.morrisgram.R;
 import com.firebase.ui.database.FirebaseRecyclerAdapter;
 import com.firebase.ui.database.FirebaseRecyclerOptions;
 import com.firebase.ui.database.SnapshotParser;
+import com.google.android.gms.tasks.OnFailureListener;
+import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.database.DataSnapshot;
@@ -38,7 +40,9 @@ import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.Query;
 import com.google.firebase.storage.FirebaseStorage;
+import com.google.firebase.storage.StorageMetadata;
 import com.google.firebase.storage.StorageReference;
+import com.like.LikeButton;
 
 //게시물 액티비티
 public class PosterViewer extends AddingPoster_BaseAct {
@@ -68,6 +72,12 @@ public class PosterViewer extends AddingPoster_BaseAct {
         linearLayoutManager = new LinearLayoutManager(this);
         recyclerView.setLayoutManager(linearLayoutManager);
         recyclerView.setHasFixedSize(true);
+
+//        //아이템 역순 추가정렬 = true
+//        linearLayoutManager.setReverseLayout(false);
+//        linearLayoutManager.setStackFromEnd(false);
+//        recyclerView.setLayoutManager(linearLayoutManager); //setLayoutManager 메소드를 사용해서 매니저를 리사이클러뷰에 설정
+
         fetch();
 //-----------------------------------화면이동----------------------------------------
 //홈 화면 이동
@@ -144,8 +154,11 @@ public class PosterViewer extends AddingPoster_BaseAct {
         public TextView LikeCount;
         public TextView ReplyCount;
         public TextView NickName_Reply;
+        public TextView LocationData;
         public ImageView profileIMG;
         public ImageView PosterKey;
+
+        public LikeButton likeButton;
 
         public ViewHolder(@NonNull View itemView) {
             super(itemView);
@@ -159,6 +172,26 @@ public class PosterViewer extends AddingPoster_BaseAct {
             PosterKey = itemView.findViewById(R.id.imageView_posteritem);
             profileIMG = itemView.findViewById(R.id.profileIMG_posteritem);
             NickName_Reply = itemView.findViewById(R.id.nicknameTV_posteritem_body);
+            LocationData = itemView.findViewById(R.id.location_posterviewer);
+        }
+
+        public void setMetadata(String uri){
+            //파베 메타 데이터 다운로드
+            StorageReference imageRef = mstorageRef.child("PosterPicList/"+uri+"/PosterIMG");
+            imageRef.getMetadata().addOnSuccessListener(new OnSuccessListener<StorageMetadata>() {
+                @Override
+                public void onSuccess(StorageMetadata storageMetadata) {
+                    final String Loction = storageMetadata.getCustomMetadata("location");
+                    Log.i("파베", "포스터 뷰어 위치데이터 확인 : "+Loction);
+
+                    LocationData.setText(Loction);
+                }
+            }).addOnFailureListener(new OnFailureListener() {
+                @Override
+                public void onFailure(@NonNull Exception e) {
+                    Log.i("파베", "포스터 뷰어 위치데이터 겟 실패");
+                }
+            });
         }
 
         public void setUserNickName(String string) {
@@ -263,6 +296,8 @@ public class PosterViewer extends AddingPoster_BaseAct {
                 holder.setReplyCount(posting_dto.getReplyCount());
                 holder.setPostedTime(posting_dto.getPostedTime());
                 holder.setNickName_Reply(posting_dto.getUserNickName());
+                //위치 메타데이터
+                holder.setMetadata(posting_dto.getPosterKey());
 
                 holder.root.setOnClickListener(new View.OnClickListener() {
                     @Override

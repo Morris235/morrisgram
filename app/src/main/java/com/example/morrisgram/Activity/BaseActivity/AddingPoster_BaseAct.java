@@ -9,6 +9,7 @@ import android.database.Cursor;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.net.Uri;
+import android.os.Environment;
 import android.provider.MediaStore;
 import android.util.Log;
 import android.view.MotionEvent;
@@ -17,6 +18,7 @@ import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.core.content.FileProvider;
 
 import com.drew.imaging.ImageMetadataReader;
 import com.drew.imaging.ImageProcessingException;
@@ -55,23 +57,29 @@ import java.io.File;
 import java.io.IOException;
 import java.lang.reflect.Array;
 import java.lang.reflect.Type;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Date;
 
 //앨범열기 - 사진 업로드
 public class AddingPoster_BaseAct extends AppCompatActivity {
     //카메라 이미지 회전 적역변수
-    private Boolean isCamera = false;
+    public Boolean isCamera = false;
+    //전역변수로 File 타입의 tempFile 을 선언해 주세요. 이 tempFile 에 받아온 이미지를 저장할거에요.
+    public static File tempFile;
+    /*Intent 를 통해 카메라화면으로 이동할 수 있습니다.
+    이때 startAcitivtyResult 에는 PICK_FROM_CAMER 를 파라미터로 넣어줍니다.*/
+    public static final int PICK_FROM_CAMERA = 2;
+
     //이 변수는 onActivityResult 에서 requestCode 로 반환되는 값입니다
-    private static final int PICK_FROM_ALBUM = 1;
+    public static final int PICK_FROM_ALBUM = 1;
     //카메라와 앨범으로부터 얻게 되는 URI ->>스토리지로 업로드!!
     public Uri photoUri;
     //파일 위치 절대경로 URI
     public Uri getPhotoUri;
     //카메라 촬영,앨범에서 얻게 되는 비트맵 이미지 주소값
-    public Bitmap originalBm;
-    //전역변수로 File 타입의 tempFile 을 선언해 주세요. 이 tempFile 에 받아온 이미지를 저장할거에요.
-    public static File tempFile;
+
 
     //현재 접속중인 유저UID가져오기
     public FirebaseUser uid = FirebaseAuth.getInstance().getCurrentUser();
@@ -94,7 +102,47 @@ public class AddingPoster_BaseAct extends AppCompatActivity {
         이때 startActivityForResult 의 두번 째 파라미터로 보낸 값 {여기서는 PICK_FROM_ALBUM 이겠죠?}이
         requestCode 로 반환되는 동작을 합니다.*/
     }
+    public void takePhoto() {
 
+        isCamera=true;
+
+        Intent intent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
+        try {
+            tempFile = createImageFile();
+        } catch (IOException e) {
+            Toast.makeText(this, "이미지 처리 오류! 다시 시도해주세요.", Toast.LENGTH_SHORT).show();
+            finish();
+            e.printStackTrace();
+        }
+        if (tempFile != null) {
+            if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.N) {
+                Uri photoUri = FileProvider.getUriForFile(this,
+                        "com.example.morrisgram.provider", tempFile);
+                intent.putExtra(MediaStore.EXTRA_OUTPUT, photoUri);
+                startActivityForResult(intent, PICK_FROM_CAMERA);
+            } else {
+
+                Uri photoUri = Uri.fromFile(tempFile);
+                intent.putExtra(MediaStore.EXTRA_OUTPUT, photoUri);
+                startActivityForResult(intent, PICK_FROM_CAMERA);
+            }
+        }
+    }
+    //카메라에서 찍은 사진을 저장할 파일 만들기
+    public File createImageFile() throws IOException {
+        // 이미지 파일 이름 ( blackJin_{시간}_ )
+        String timeStamp = new SimpleDateFormat("HHmmss").format(new Date());
+        String imageFileName = "morrisgram" + timeStamp + "_";
+
+        // 이미지가 저장될 폴더 이름 ( blackJin )
+        File storageDir = new File(Environment.getExternalStorageDirectory() + "/morrisgram/");
+        if (!storageDir.exists()) storageDir.mkdirs();
+
+        // 빈 파일 생성
+        File image = File.createTempFile(imageFileName, ".jpg", storageDir);
+
+        return image;
+    }
     @Override
     public void onActivityResult(int requestCode, int resultCode, Intent data) {
         Log.i("이미지"," onActivityResult 실행확인");

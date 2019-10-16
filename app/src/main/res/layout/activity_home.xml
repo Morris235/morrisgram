@@ -35,7 +35,7 @@
         app:layout_constraintVertical_bias="0.055" />
 
     <ImageButton
-        android:id="@+id/takephotoB"
+        android:id="@+id/takephotoB_home"
         android:layout_width="35dp"
         android:layout_height="35dp"
         android:layout_marginStart="8dp"
@@ -165,7 +165,7 @@
         app:layout_constraintBottom_toBottomOf="@+id/view3"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintHorizontal_bias="0.115"
-        app:layout_constraintStart_toStartOf="@+id/takephotoB"
+        app:layout_constraintStart_toStartOf="@+id/takephotoB_home"
         app:layout_constraintTop_toTopOf="parent"
         app:layout_constraintVertical_bias="0.0"
         app:srcCompat="@drawable/morristagram4" />
@@ -181,7 +181,7 @@
         >
 
         <androidx.recyclerview.widget.RecyclerView
-            android:id="@+id/recyclerView"
+            android:id="@+id/recyclerView_home"
             android:layout_width="395dp"
             android:layout_height="601dp"
             android:layout_marginStart="8dp"

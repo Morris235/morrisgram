@@ -128,6 +128,12 @@ public class Myinfo extends AddingPoster_BaseAct implements SwipeRefreshLayout.O
         gridLayoutManager = new GridLayoutManager(this,3);
         recyclerView.setLayoutManager(gridLayoutManager);
         recyclerView.setHasFixedSize(true);
+
+//        //아이템 역순 추가정렬 = true
+//        gridLayoutManager.setReverseLayout(true);
+//        gridLayoutManager.setStackFromEnd(false);
+//        recyclerView.setLayoutManager(gridLayoutManager); //setLayoutManager 메소드를 사용해서 매니저를 리사이클러뷰에 설정
+
         fetch();
 //-----------------------------------화면이동----------------------------------------
         homeB = (ImageButton) findViewById(R.id.homeB_my);
@@ -426,7 +432,7 @@ public class Myinfo extends AddingPoster_BaseAct implements SwipeRefreshLayout.O
 
 
             @Override
-            protected void onBindViewHolder(ViewHolder holder, final int position, PreView preView) {
+            protected void onBindViewHolder(final ViewHolder holder, final int position, PreView preView) {
                 holder.setPosterKey(preView.getPosterKey());
 
                 holder.root.setOnClickListener(new View.OnClickListener() {
