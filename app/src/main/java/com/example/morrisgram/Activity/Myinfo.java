@@ -47,9 +47,12 @@ import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.Query;
 import com.google.firebase.database.ValueEventListener;
+import com.google.firebase.firestore.core.OrderBy;
 import com.google.firebase.storage.FirebaseStorage;
 import com.google.firebase.storage.StorageReference;
 
+import java.util.Collection;
+import java.util.Collections;
 import java.util.Objects;
 
 public class Myinfo extends AddingPoster_BaseAct implements SwipeRefreshLayout.OnRefreshListener,NavigationView.OnNavigationItemSelectedListener {
@@ -128,11 +131,6 @@ public class Myinfo extends AddingPoster_BaseAct implements SwipeRefreshLayout.O
         gridLayoutManager = new GridLayoutManager(this,3);
         recyclerView.setLayoutManager(gridLayoutManager);
         recyclerView.setHasFixedSize(true);
-
-//        //아이템 역순 추가정렬 = true
-//        gridLayoutManager.setReverseLayout(true);
-//        gridLayoutManager.setStackFromEnd(false);
-//        recyclerView.setLayoutManager(gridLayoutManager); //setLayoutManager 메소드를 사용해서 매니저를 리사이클러뷰에 설정
 
         fetch();
 //-----------------------------------화면이동----------------------------------------
@@ -371,7 +369,6 @@ public class Myinfo extends AddingPoster_BaseAct implements SwipeRefreshLayout.O
     public class ViewHolder extends RecyclerView.ViewHolder {
         public ConstraintLayout root;
         public ImageView PosterKey;
-        public TextView PosterKeyText;
 
         public ViewHolder(@NonNull View itemView) {
             super(itemView);
@@ -405,9 +402,10 @@ public class Myinfo extends AddingPoster_BaseAct implements SwipeRefreshLayout.O
                 .getReference()
                 .child("UserList")
                 .child(userUID)
-                .child("UserPosterList");
+                .child("UserPosterList")
+                .orderByKey();
 
-        Log.i("파베", "query 경로 확인 : "+query.toString());
+        Log.i("쿼리", "query 경로 확인 : "+query.toString());
 
         //DB에 정보를 받아서 가져오는 스냅샷 - 스트링형식으로 받아와야함
         FirebaseRecyclerOptions<PreView> options =

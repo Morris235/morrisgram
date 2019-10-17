@@ -21,7 +21,7 @@
         app:layout_constraintVertical_bias="0.055" />
 
     <ImageButton
-        android:id="@+id/optionB_idtv_postitem"
+        android:id="@+id/optionB_idtv_home"
         android:layout_width="35dp"
         android:layout_height="35dp"
         android:layout_marginStart="8dp"

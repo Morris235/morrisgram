@@ -84,7 +84,6 @@ public class AddingPoster_BaseAct extends AppCompatActivity {
     //현재 접속중인 유저UID가져오기
     public FirebaseUser uid = FirebaseAuth.getInstance().getCurrentUser();
     public StorageReference mstorageRef = FirebaseStorage.getInstance().getReference();
-    public DatabaseReference mdataref;
     public StorageReference riversRef;
     public String userUID = uid.getUid();
 

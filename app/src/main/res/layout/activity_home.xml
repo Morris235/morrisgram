@@ -173,7 +173,7 @@
     <com.orangegangsters.github.swipyrefreshlayout.library.SwipyRefreshLayout
         android:id="@+id/refresh_home"
         android:layout_width="405dp"
-        android:layout_height="625dp"
+        android:layout_height="623dp"
         android:layout_marginTop="8dp"
         android:layout_marginBottom="8dp"
         app:layout_constraintBottom_toTopOf="@+id/view2"

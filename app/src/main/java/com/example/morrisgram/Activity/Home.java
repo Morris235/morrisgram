@@ -1,9 +1,11 @@
 package com.example.morrisgram.Activity;
 
 import android.Manifest;
+import android.content.DialogInterface;
 import android.content.Intent;
 
 import androidx.annotation.NonNull;
+import androidx.appcompat.app.AlertDialog;
 import androidx.constraintlayout.widget.ConstraintLayout;
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
@@ -86,8 +88,12 @@ public class Home extends AddingPoster_BaseAct implements SwipyRefreshLayout.OnR
 
         recyclerView = findViewById(R.id.recyclerView_home);
         linearLayoutManager = new LinearLayoutManager(this);
+        linearLayoutManager.setReverseLayout(true);
+        linearLayoutManager.setStackFromEnd(true);
+
         recyclerView.setLayoutManager(linearLayoutManager);
         recyclerView.setHasFixedSize(true);
+
         //smooth scrolling
         recyclerView.setNestedScrollingEnabled(false);
 
@@ -251,6 +257,7 @@ public class Home extends AddingPoster_BaseAct implements SwipyRefreshLayout.OnR
         public TextView LocationData;
         public ImageView profileIMG;
         public ImageView PosterKey;
+        public ImageView vetB;
 
         public LikeButton likeButton;
 
@@ -267,6 +274,7 @@ public class Home extends AddingPoster_BaseAct implements SwipyRefreshLayout.OnR
             profileIMG = itemView.findViewById(R.id.profileIMG_posteritem);
             NickName_Reply = itemView.findViewById(R.id.nicknameTV_posteritem_body);
             LocationData = itemView.findViewById(R.id.location_posterviewer);
+            vetB = itemView.findViewById(R.id.optionB_idtv_home);
         }
 
         public void setMetadata(String uri){
@@ -387,6 +395,27 @@ public class Home extends AddingPoster_BaseAct implements SwipyRefreshLayout.OnR
                 holder.setNickName_Reply(posting_dto.getUserNickName());
                 //위치 메타데이터
                 holder.setMetadata(posting_dto.getPosterKey());
+
+                //게시물 삭제
+                holder.vetB.setOnClickListener(new View.OnClickListener() {
+                    @Override
+                    public void onClick(View v) {
+                        CharSequence info[] = new CharSequence[] {"삭제","수정" };
+                        AlertDialog.Builder builder = new AlertDialog.Builder(Home.this);
+//                        builder.setTitle()
+                        builder.setItems(info, new DialogInterface.OnClickListener() {
+                            @Override
+                            public void onClick(DialogInterface dialog, int which) {
+                                if(which == 0){
+//                                    mdataref.child(userUID).child("UserPosterList").child();
+                                    Toast.makeText(Home.this, "옵션 클릭확인", Toast.LENGTH_SHORT).show();
+                                }
+                                dialog.dismiss();
+                            }
+                        });
+                        builder.show();
+                    }
+                });
 
                 holder.root.setOnClickListener(new View.OnClickListener() {
                     @Override

@@ -1,8 +1,10 @@
 package com.example.morrisgram.Activity;
 
+import android.content.DialogInterface;
 import android.content.Intent;
 
 import androidx.annotation.NonNull;
+import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.constraintlayout.widget.ConstraintLayout;
 import androidx.recyclerview.widget.GridLayoutManager;
@@ -75,6 +77,9 @@ public class PosterViewer extends AddingPoster_BaseAct implements SwipyRefreshLa
 
         recyclerView = findViewById(R.id.recyclerView_posterviewer);
         linearLayoutManager = new LinearLayoutManager(this);
+        linearLayoutManager.setStackFromEnd(true);
+        linearLayoutManager.setReverseLayout(true);
+
         recyclerView.setLayoutManager(linearLayoutManager);
         recyclerView.setHasFixedSize(true);
 
@@ -186,6 +191,7 @@ public class PosterViewer extends AddingPoster_BaseAct implements SwipyRefreshLa
         public TextView LocationData;
         public ImageView profileIMG;
         public ImageView PosterKey;
+        public ImageView vetB;
 
         public LikeButton likeButton;
 
@@ -201,6 +207,7 @@ public class PosterViewer extends AddingPoster_BaseAct implements SwipyRefreshLa
             profileIMG = itemView.findViewById(R.id.profileIMG_posteritem);
             NickName_Reply = itemView.findViewById(R.id.nicknameTV_posteritem_body);
             LocationData = itemView.findViewById(R.id.location_posterviewer);
+            vetB = itemView.findViewById(R.id.optionB_idtv_home);
         }
 
         public void setMetadata(String uri){
@@ -327,6 +334,26 @@ public class PosterViewer extends AddingPoster_BaseAct implements SwipyRefreshLa
                 //위치 메타데이터
                 holder.setMetadata(posting_dto.getPosterKey());
 
+                //게시물 삭제
+                holder.vetB.setOnClickListener(new View.OnClickListener() {
+                    @Override
+                    public void onClick(View v) {
+                        CharSequence info[] = new CharSequence[] {"삭제","수정" };
+                        AlertDialog.Builder builder = new AlertDialog.Builder(PosterViewer.this);
+//                        builder.setTitle()
+                        builder.setItems(info, new DialogInterface.OnClickListener() {
+                            @Override
+                            public void onClick(DialogInterface dialog, int which) {
+                                if(which == 0){
+//                                    mdataref.child(userUID).child("UserPosterList").child();
+                                    Toast.makeText(PosterViewer.this, "옵션 클릭확인", Toast.LENGTH_SHORT).show();
+                                }
+                                dialog.dismiss();
+                            }
+                        });
+                        builder.show();
+                    }
+                });
                 //내피드에서 선택한 게시물 포커스 주기 - 액티비티 최초실행시 실행
                 if (FIRST_FOCUS){
                     Intent intent = getIntent();
