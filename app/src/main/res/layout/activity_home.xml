@@ -173,17 +173,18 @@
     <com.orangegangsters.github.swipyrefreshlayout.library.SwipyRefreshLayout
         android:id="@+id/refresh_home"
         android:layout_width="405dp"
-        android:layout_height="630dp"
+        android:layout_height="625dp"
+        android:layout_marginTop="8dp"
+        android:layout_marginBottom="8dp"
         app:layout_constraintBottom_toTopOf="@+id/view2"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="@+id/view3"
-        >
+        app:layout_constraintTop_toTopOf="@+id/view3">
 
         <androidx.recyclerview.widget.RecyclerView
             android:id="@+id/recyclerView_home"
-            android:layout_width="395dp"
-            android:layout_height="601dp"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
             android:layout_marginStart="8dp"
             android:layout_marginTop="8dp"
             android:layout_marginEnd="8dp"

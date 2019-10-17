@@ -543,28 +543,29 @@ private void takePhoto() {
                 }
             }
 
-//            //메타데이터 얻기 - 코드는 제대로 작동함
-//            // *Exif는 JPEG파일에서만 제공된다*
-//            try {
-//                Log.i("메타데이터", "try 통과 확인");
-//                Metadata metadata = ImageMetadataReader.readMetadata(tempFile);
-//                Log.i("메타데이터", "tempFile 값 확인 : " + tempFile);
-//
-//                //사진에 메타데이터 포함 여부 조건문
-//
-//                    GpsDirectory gpsDirectory = metadata.getFirstDirectoryOfType(GpsDirectory.class);
-//                    //GPS경도값 가져오기
-//                   GeoLocation geoLocation = gpsDirectory.getGeoLocation();
-//                    Log.i("메타데이터", "geoLocation : " + geoLocation);
-//
-//                    //GPS Directory (tags)
-//                    String ImageMetaDataGPS = gpsDirectory.toString();
-//                    Log.i("메타데이터", "ImageMetaDataGPS : " + ImageMetaDataGPS);
-//
-//            } catch (ImageProcessingException | NullPointerException | IOException e) {
-//                e.printStackTrace();
-//                Log.i("메타데이터", "에러발생! : " + e);
-//            }
+            //메타데이터 얻기 - 코드는 제대로 작동함
+            // *Exif는 JPEG파일에서만 제공된다*
+            try {
+                Log.i("메타데이터", "try 통과 확인");
+                Metadata metadata = ImageMetadataReader.readMetadata(tempFile);
+                Log.i("메타데이터", "tempFile 값 확인 : " + tempFile);
+
+                //사진에 메타데이터 포함 여부 조건문
+
+                    GpsDirectory gpsDirectory = metadata.getFirstDirectoryOfType(GpsDirectory.class);
+                    //GPS경도값 가져오기
+                   GeoLocation geoLocation = gpsDirectory.getGeoLocation();
+                    Log.i("메타데이터", "geoLocation : " + geoLocation);
+
+                    //GPS Directory (tags)
+                    String ImageMetaDataGPS = gpsDirectory.toString();
+                    Log.i("메타데이터", "ImageMetaDataGPS : " + ImageMetaDataGPS);
+
+            } catch (ImageProcessingException | NullPointerException | IOException e) {
+                e.printStackTrace();
+                Log.i("메타데이터", "에러발생! : " + e);
+                Toast.makeText(getApplicationContext(),"위치 메타데이터 없음",Toast.LENGTH_LONG).show();
+            }
 
             setImage();
             //onActivityResult 분기 처리

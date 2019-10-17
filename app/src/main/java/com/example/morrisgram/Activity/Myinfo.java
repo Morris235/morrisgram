@@ -239,6 +239,8 @@ public class Myinfo extends AddingPoster_BaseAct implements SwipeRefreshLayout.O
     @Override
     public void onRefresh() {
         mSwipeRefreshLayout.setRefreshing(false);
+        fetch();
+        adapter.startListening();
     }
 
     @Override
@@ -441,6 +443,7 @@ public class Myinfo extends AddingPoster_BaseAct implements SwipeRefreshLayout.O
                         Toast.makeText(Myinfo.this, String.valueOf(position), Toast.LENGTH_SHORT).show();
                         //해당 포지션으로 포커스 주기 - 포스터뷰어로 이동
                         Intent intent = new Intent(Myinfo.this,PosterViewer.class);
+                        intent.putExtra("FOCUS",position);
                         startActivity(intent);
                     }
                 });

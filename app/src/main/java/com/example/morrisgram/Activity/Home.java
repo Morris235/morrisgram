@@ -88,6 +88,8 @@ public class Home extends AddingPoster_BaseAct implements SwipyRefreshLayout.OnR
         linearLayoutManager = new LinearLayoutManager(this);
         recyclerView.setLayoutManager(linearLayoutManager);
         recyclerView.setHasFixedSize(true);
+        //smooth scrolling
+        recyclerView.setNestedScrollingEnabled(false);
 
 //        //아이템 역순 추가정렬 = true
 //        linearLayoutManager.setReverseLayout(false);
@@ -161,6 +163,7 @@ public class Home extends AddingPoster_BaseAct implements SwipyRefreshLayout.OnR
         mSwipeRefreshLayout = (SwipyRefreshLayout) findViewById(R.id.refresh_home);
         mSwipeRefreshLayout.setOnRefreshListener(this);
         mSwipeRefreshLayout.setDirection(SwipyRefreshLayoutDirection.BOTH);
+
     }
 
     @Override
@@ -168,6 +171,8 @@ public class Home extends AddingPoster_BaseAct implements SwipyRefreshLayout.OnR
         Log.d("MainActivity", "Refresh triggered at "
                 + (direction == SwipyRefreshLayoutDirection.TOP ? "top" : "bottom"));
         mSwipeRefreshLayout.setRefreshing(false);
+        fetch();
+        adapter.startListening();
     }
     // 권한 요청
     @Override
@@ -292,10 +297,10 @@ public class Home extends AddingPoster_BaseAct implements SwipyRefreshLayout.OnR
             StorageReference imageRef = mstorageRef.child(uri+"/ProfileIMG/ProfileIMG");
             GlideApp.with(Home.this)
                     .load(imageRef)
-                    .skipMemoryCache(false)
+                    .skipMemoryCache(true)
                     .thumbnail()
                     .circleCrop()
-                    .diskCacheStrategy(DiskCacheStrategy.ALL)
+                    .diskCacheStrategy(DiskCacheStrategy.NONE)
                     .dontAnimate()
                     .placeholder(R.drawable.ic_insert_photo_black_24dp)
                     .into(profileIMG);

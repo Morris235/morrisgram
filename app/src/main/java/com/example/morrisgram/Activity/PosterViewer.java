@@ -43,10 +43,13 @@ import com.google.firebase.storage.FirebaseStorage;
 import com.google.firebase.storage.StorageMetadata;
 import com.google.firebase.storage.StorageReference;
 import com.like.LikeButton;
+import com.orangegangsters.github.swipyrefreshlayout.library.SwipyRefreshLayout;
+import com.orangegangsters.github.swipyrefreshlayout.library.SwipyRefreshLayoutDirection;
 
 //게시물 액티비티
-public class PosterViewer extends AddingPoster_BaseAct {
+public class PosterViewer extends AddingPoster_BaseAct implements SwipyRefreshLayout.OnRefreshListener{
 
+    SwipyRefreshLayout mSwipeRefreshLayout;
     //데이터베이스의 주소를 지정 필수
     private DatabaseReference mdataref = FirebaseDatabase.getInstance().getReference("UserList");
     //현재 접속중인 유저UID가져오기
@@ -60,12 +63,14 @@ public class PosterViewer extends AddingPoster_BaseAct {
     private LinearLayoutManager linearLayoutManager;
     private FirebaseRecyclerAdapter adapter;
 
+    //포커스
+    public boolean FIRST_FOCUS = false;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         // 화면을 portrait(세로) 화면으로 고정하고 싶은 경우
         setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_PORTRAIT);
-
         setContentView(R.layout.activity_poster_viewer);
 
         recyclerView = findViewById(R.id.recyclerView_posterviewer);
@@ -78,8 +83,14 @@ public class PosterViewer extends AddingPoster_BaseAct {
 //        linearLayoutManager.setStackFromEnd(false);
 //        recyclerView.setLayoutManager(linearLayoutManager); //setLayoutManager 메소드를 사용해서 매니저를 리사이클러뷰에 설정
 
+        mSwipeRefreshLayout = (SwipyRefreshLayout) findViewById(R.id.refresh_posterviewer);
+        mSwipeRefreshLayout.setOnRefreshListener(this);
+        mSwipeRefreshLayout.setDirection(SwipyRefreshLayoutDirection.TOP);
+
+        //포커스 boolean
+        FIRST_FOCUS = true;
         fetch();
-//-----------------------------------화면이동----------------------------------------
+//----------------------------------화면이동----------------------------------------
 //홈 화면 이동
         ImageButton homeB;
         homeB=(ImageButton)findViewById(R.id.homeB_poster);
@@ -144,6 +155,24 @@ public class PosterViewer extends AddingPoster_BaseAct {
         adapter.stopListening();
     }
 
+    public void onResume(){
+        super.onResume();
+
+    }
+    //새로고침
+    @Override
+    public void onRefresh(SwipyRefreshLayoutDirection direction) {
+        mSwipeRefreshLayout.setRefreshing(false);
+        fetch();
+        adapter.startListening();
+    }
+
+    @Override
+    public void onPointerCaptureChanged(boolean hasCapture) {
+
+    }
+
+
     //------------------------뷰홀더------------------------------
    public class ViewHolder extends RecyclerView.ViewHolder {
 
@@ -162,7 +191,6 @@ public class PosterViewer extends AddingPoster_BaseAct {
 
         public ViewHolder(@NonNull View itemView) {
             super(itemView);
-
             root = itemView.findViewById(R.id.poster_posterviewer);
             UserNicName = itemView.findViewById(R.id.nicknameTV_posteritem);
             Body = itemView.findViewById(R.id.bodyTV);
@@ -287,7 +315,7 @@ public class PosterViewer extends AddingPoster_BaseAct {
             }
 
             @Override
-            protected void onBindViewHolder(PosterViewer.ViewHolder holder, final int position, Posting_DTO posting_dto) {
+            protected void onBindViewHolder(final PosterViewer.ViewHolder holder, final int position, Posting_DTO posting_dto) {
                 holder.setPosterKey(posting_dto.getPosterKey());
                 holder.setBody(posting_dto.getBody());
                 holder.setUserNickName(posting_dto.getUserNickName());
@@ -299,11 +327,20 @@ public class PosterViewer extends AddingPoster_BaseAct {
                 //위치 메타데이터
                 holder.setMetadata(posting_dto.getPosterKey());
 
+                //내피드에서 선택한 게시물 포커스 주기 - 액티비티 최초실행시 실행
+                if (FIRST_FOCUS){
+                    Intent intent = getIntent();
+                    int focus = intent.getIntExtra("FOCUS",0);
+                    recyclerView.smoothScrollToPosition(focus);
+                }
+                FIRST_FOCUS = false;
+
+                //터치
                 holder.root.setOnClickListener(new View.OnClickListener() {
                     @Override
                     public void onClick(View view) {
                         Toast.makeText(PosterViewer.this, String.valueOf(position), Toast.LENGTH_SHORT).show();
-                        //해당 포지션으로 포커스 주기 - 포스터뷰어로 이동
+
                     }
                 });
             }
