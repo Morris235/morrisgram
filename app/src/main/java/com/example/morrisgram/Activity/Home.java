@@ -168,7 +168,7 @@ public class Home extends AddingPoster_BaseAct implements SwipyRefreshLayout.OnR
 
         mSwipeRefreshLayout = (SwipyRefreshLayout) findViewById(R.id.refresh_home);
         mSwipeRefreshLayout.setOnRefreshListener(this);
-        mSwipeRefreshLayout.setDirection(SwipyRefreshLayoutDirection.BOTH);
+        mSwipeRefreshLayout.setDirection(SwipyRefreshLayoutDirection.TOP);
 
     }
 
@@ -277,6 +277,7 @@ public class Home extends AddingPoster_BaseAct implements SwipyRefreshLayout.OnR
             vetB = itemView.findViewById(R.id.optionB_idtv_home);
         }
 
+        //사진 위치 데이터
         public void setMetadata(String uri){
             //파베 메타 데이터 다운로드
             StorageReference imageRef = mstorageRef.child("PosterPicList/"+uri+"/PosterIMG");
@@ -296,10 +297,12 @@ public class Home extends AddingPoster_BaseAct implements SwipyRefreshLayout.OnR
             });
         }
 
+        //유저 닉네임
         public void setUserNickName(String string) {
             UserNicName.setText(string);
         }
 
+        //유저 UID - 프로필 사진
         public void setUserUID(String uri) {
             //스토리지에서 프로필 이미지 받아오기
             StorageReference imageRef = mstorageRef.child(uri+"/ProfileIMG/ProfileIMG");
@@ -314,36 +317,42 @@ public class Home extends AddingPoster_BaseAct implements SwipyRefreshLayout.OnR
                     .into(profileIMG);
         }
 
+        //게시물 내용
         public void setBody(String string) {
             Body.setText(string);
         }
 
+        //포스팅한 시간
         public void setPostedTime(String string) {
             PostedTime.setText(string);
         }
 
+        //좋아요 개수
         public void setLikeCount(String string) {
             LikeCount.setText(string);
         }
 
+        //댓글 개수
         public void setReplyCount(String string) {
             ReplyCount.setText(string);
         }
 
+        //스토리지에서 이미지 받아오기
         public void setPosterKey(String uri){
-            //스토리지에서 이미지 받아오기
             StorageReference imageRef = mstorageRef.child("PosterPicList/"+uri+"/PosterIMG");
             GlideApp.with(Home.this)
                     .load(imageRef)
                     .skipMemoryCache(false)
                     .thumbnail()
                     .centerCrop()
+                    .fitCenter()
                     .diskCacheStrategy(DiskCacheStrategy.ALL)
                     .dontAnimate()
                     .placeholder(R.drawable.ic_insert_photo_black_24dp)
                     .into(PosterKey);
         }
 
+        //게시물 내용 - 유저 닉네임
         public void setNickName_Reply(String string){
             NickName_Reply.setText(string);
         }

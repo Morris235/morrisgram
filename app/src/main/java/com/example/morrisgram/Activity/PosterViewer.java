@@ -5,14 +5,11 @@ import android.content.Intent;
 
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AlertDialog;
-import androidx.appcompat.app.AppCompatActivity;
 import androidx.constraintlayout.widget.ConstraintLayout;
-import androidx.recyclerview.widget.GridLayoutManager;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import android.content.pm.ActivityInfo;
-import android.net.Uri;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -20,7 +17,6 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageButton;
 import android.widget.ImageView;
-import android.widget.LinearLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -28,7 +24,6 @@ import com.bumptech.glide.load.engine.DiskCacheStrategy;
 import com.example.morrisgram.Activity.BaseActivity.AddingPoster_BaseAct;
 import com.example.morrisgram.CameraClass.GlideApp;
 import com.example.morrisgram.DTO_Classes.Firebase.Posting_DTO;
-import com.example.morrisgram.DTO_Classes.Firebase.PreView;
 import com.example.morrisgram.R;
 import com.firebase.ui.database.FirebaseRecyclerAdapter;
 import com.firebase.ui.database.FirebaseRecyclerOptions;
@@ -38,9 +33,11 @@ import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.database.DataSnapshot;
+import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.Query;
+import com.google.firebase.database.ValueEventListener;
 import com.google.firebase.storage.FirebaseStorage;
 import com.google.firebase.storage.StorageMetadata;
 import com.google.firebase.storage.StorageReference;
@@ -146,8 +143,10 @@ public class PosterViewer extends AddingPoster_BaseAct implements SwipyRefreshLa
                 goToAlbum();
             }
         });
-//---------------------------------------------------------------------------------
-    }
+
+        PosterKeySearcher();
+
+    }//-------------------------------크리에이트-----------------------------------
     public void onStart() {
         super.onStart();
         Log.i("파베", "마이 스타트");
@@ -177,7 +176,36 @@ public class PosterViewer extends AddingPoster_BaseAct implements SwipyRefreshLa
 
     }
 
+    public void PosterKeySearcher(){
+        mdataref.addListenerForSingleValueEvent(new ValueEventListener() {
+            @Override
+            public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+                double UserPosterPriority = (double) dataSnapshot.child(userUID).child("UserPosterList").getPriority();
+                Log.i("포스터키","현재 접속중인 유저의 포스터 우선도 가져오기 테스트 : "+UserPosterPriority);
 
+                String UserPosterKey = (String) dataSnapshot.child(userUID).child("UserPosterList").getKey();
+                Log.i("포스터키","현재 접속중인 유저의 포스터키들 가져오기 테스트 : "+UserPosterKey);
+
+
+                Long PosterCount = dataSnapshot.child(userUID).child("UserPosterList").getChildrenCount();
+                Log.i("포스터키","현재 접속중인 유저의 포스터키 개수 : "+PosterCount);
+                for (int i=0; i<=PosterCount; i++){
+//                    String Key = (String) dataSnapshot.child(userUID).child("UserPosterList").getKey();
+//                    Log.i("포스터키","키 값들 : "+Key);
+
+                        String Keys = dataSnapshot.child(userUID).child("UserPosterList").getChildren().iterator().next().getKey();
+                        Log.i("포스터키","현재 접속중인 유저의 포스터키 Iterable : "+Keys);
+
+                    Log.i("포스터키","반복횟수 : "+i);
+                }
+            }
+
+            @Override
+            public void onCancelled(@NonNull DatabaseError databaseError) {
+
+            }
+        });
+    }
     //------------------------뷰홀더------------------------------
    public class ViewHolder extends RecyclerView.ViewHolder {
 

@@ -323,7 +323,7 @@ public class Myinfo extends AddingPoster_BaseAct implements SwipeRefreshLayout.O
     public void onStart() {
         super.onStart();
         Log.i("파베", "마이 스타트");
-        //Glide를 통한 이미지 바인딩
+        //Glide를 통한 프로필 이미지 바인딩
         StorageReference imageRef = mstorageRef.child(userUID + "/ProfileIMG/ProfileIMG");
         GlideApp.with(Myinfo.this)
                 .load(imageRef)
@@ -331,6 +331,7 @@ public class Myinfo extends AddingPoster_BaseAct implements SwipeRefreshLayout.O
                 .diskCacheStrategy(DiskCacheStrategy.NONE)
                 .dontAnimate()
                 .placeholder(R.drawable.noimage)
+                .centerCrop()
                 .into(profileimg);
 
         adapter.startListening();
@@ -378,16 +379,16 @@ public class Myinfo extends AddingPoster_BaseAct implements SwipeRefreshLayout.O
             PosterKey = itemView.findViewById(R.id.preview_IMG);
         }
 
+        //스토리지에서 게시물 미리보기 이미지 받아오기
         public void setPosterKey(String uri) {
             Log.i("파베", "setPic 메소드 작동 확인");
-
-            //스토리지에서 이미지 받아오기
             StorageReference imageRef = mstorageRef.child("PosterPicList/"+uri+"/PosterIMG");
             GlideApp.with(Myinfo.this)
                     .load(imageRef)
                     .skipMemoryCache(false)
                     .thumbnail()
                     .centerCrop()
+                    .fitCenter()
                     .diskCacheStrategy(DiskCacheStrategy.ALL)
                     .dontAnimate()
                     .placeholder(R.drawable.ic_insert_photo_black_24dp)
@@ -403,7 +404,7 @@ public class Myinfo extends AddingPoster_BaseAct implements SwipeRefreshLayout.O
                 .child("UserList")
                 .child(userUID)
                 .child("UserPosterList")
-                .orderByKey();
+                .orderByChild("PostedTime");
 
         Log.i("쿼리", "query 경로 확인 : "+query.toString());
 
@@ -414,7 +415,6 @@ public class Myinfo extends AddingPoster_BaseAct implements SwipeRefreshLayout.O
                             @NonNull
                             @Override
                             public PreView parseSnapshot(@NonNull DataSnapshot snapshot) {
-                                Log.i("파베", "스냅샷 메소드 작동 확인");
                                 Log.i("파베", "snapshot.child(\"PosterKey\").getValue().toString() : "+snapshot.child("PosterKey").getValue().toString());
                                 return new PreView(
                                         snapshot.child("PosterKey").getValue().toString());
@@ -430,7 +430,6 @@ public class Myinfo extends AddingPoster_BaseAct implements SwipeRefreshLayout.O
                 return new ViewHolder(view);
             }
 
-
             @Override
             protected void onBindViewHolder(final ViewHolder holder, final int position, PreView preView) {
                 holder.setPosterKey(preView.getPosterKey());
@@ -439,14 +438,13 @@ public class Myinfo extends AddingPoster_BaseAct implements SwipeRefreshLayout.O
                     @Override
                     public void onClick(View view) {
                         Toast.makeText(Myinfo.this, String.valueOf(position), Toast.LENGTH_SHORT).show();
-                        //해당 포지션으로 포커스 주기 - 포스터뷰어로 이동
+                        //해당 포지션으로 포스터뷰어에 포커스위치 전달 - 포스터뷰어로 이동
                         Intent intent = new Intent(Myinfo.this,PosterViewer.class);
                         intent.putExtra("FOCUS",position);
                         startActivity(intent);
                     }
                 });
             }
-
         };
         recyclerView.setAdapter(adapter);
     }

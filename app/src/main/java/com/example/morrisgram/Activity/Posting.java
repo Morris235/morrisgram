@@ -100,14 +100,6 @@ public class Posting extends AddingPoster_BaseAct {
                 mdataref.addListenerForSingleValueEvent(new ValueEventListener() {
                     @Override
                     public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
-                            //현재시간을 msec으로 구한다.
-                            long now = System.currentTimeMillis();
-                            //현재시간을 date변수에 저장
-                            Date date = new Date(now);
-                            //시간을 나타낼 포맷을 정한다.
-                            SimpleDateFormat SDF = new SimpleDateFormat("yyyy년 MM월 dd일 HH시 mm분 ss초");
-                            //스트링변수에 고유키값을 저장.
-                            String DATE = SDF.format(date);
 
                             //현재 로그인된 유저 정보와 일치하는 데이터를 가져오기.
                             String NickName = (String) dataSnapshot.child("UserList").child(userUID).child("UserInfo").child("NickName").getValue();
@@ -116,6 +108,15 @@ public class Posting extends AddingPoster_BaseAct {
                             String Body = body.getText().toString();
 
                             //----------------DTO 클래스를 통한 DB 업데이트 메소드-------------------
+                        //현재시간을 msec으로 구한다.
+                        long now = System.currentTimeMillis();
+                        //현재시간을 date변수에 저장
+                        Date date = new Date(now);
+                        //시간을 나타낼 포맷을 정한다.
+                        SimpleDateFormat SDF = new SimpleDateFormat("yyyy년 MM월 dd일 HH시 mm분 ss초");
+                        //스트링변수에 고유키값을 저장.
+                        String DATE = SDF.format(date);
+
                             UpFirebaseDatabase(true,userUID,NickName,Body,DATE,PosterKey);
 
                             //위치 메타데이터 업로드 메소드
@@ -160,6 +161,7 @@ public class Posting extends AddingPoster_BaseAct {
 
         //유저의 게시물 따로 업데이트
         mdataref.child("UserList").child(userUID).child("UserPosterList").updateChildren(childUpdates);
+        mdataref.child("UserList").child(userUID).child("UserPosterList").setPriority(2018);
     }
 
     //위치 메타데이터 추출 메소드

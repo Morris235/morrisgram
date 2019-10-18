@@ -200,8 +200,7 @@ public class AddingPoster_BaseAct extends AppCompatActivity {
         }
     }
 
-    //선택한 이미지 URL 업로드 메소드
-    //어떻게 작동시키지?
+    //선택한 이미지 URL 업로드 메소드 - 이미지 선택과 함께 업로드 한다.
     public void upLoadImage (){
         Log.i("이미지", "이미지 업로드 메소드 실행 확인");
 //>----------------이미지 uri 업로드 작업------------------<
@@ -221,6 +220,8 @@ public class AddingPoster_BaseAct extends AppCompatActivity {
                 //유저 게시물 키값 저장용 메소드 - 이미지 업로드 실패시 분기 처리
                 SavePosterKey(PosterKey);
 
+                //게시물 업로드 경로 => gs://morrisgram.appspot.com/PosterPicList/-LrNycKfF3c3d5Gb-_OH/PosterIMG
+           //게시물 업로드 경로 수정 => gs://morrisgram.appspot.com/PosterPicList/userUID/-LrNycKfF3c3d5Gb-_OH/PosterIMG
                 riversRef = mstorageRef.child(PosterPicList).child(PosterKey+ "/" + PosterIMGname); //게시물 UID 만들기 -> 포스팅 페이지에 전달
                 Log.i("이미지", "베이스 클래스  riversRef 값 확인 : " +   riversRef);
                 UploadTask uploadTask = riversRef.putFile(photoUri);
@@ -247,7 +248,6 @@ public class AddingPoster_BaseAct extends AppCompatActivity {
                                             finish();
                                            Log.i("이미지", "베이스 클래스 progress 값 확인 : " +progress);
                                         }
-
                                     }
                                 }, (long) progress);
                         //100%가 될 때까지 액티비티 전환 대기
@@ -292,7 +292,7 @@ public class AddingPoster_BaseAct extends AppCompatActivity {
             Log.i("이미지","사진 촬영 phtoUri : "+photoUri);
         }
     }
-    //유저 게시물 키값 저장용 메소드
+    //유저 게시물 키값 내부 저장용 메소드
     public void SavePosterKey (String PosterKey){
         SharedPreferences MY_POSTER_KEYS = getSharedPreferences("POSTER_KEYS",MODE_PRIVATE);
         SharedPreferences.Editor KEY_EDITOR = MY_POSTER_KEYS.edit();
@@ -328,7 +328,7 @@ public class AddingPoster_BaseAct extends AppCompatActivity {
         KEY_EDITOR.apply();
     }
 
-    //유저 키값 얻는 메소드
+    //유저 게시물 키값 얻는 메소드
     public ArrayList GetPosterKey(){
         SharedPreferences MY_POSTER_KEYS = getSharedPreferences("POSTER_KEYS",MODE_PRIVATE);
         String GetPosterKey = MY_POSTER_KEYS.getString(userUID,"null");
