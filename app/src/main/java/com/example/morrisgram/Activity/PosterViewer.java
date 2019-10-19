@@ -163,6 +163,13 @@ public class PosterViewer extends AddingPoster_BaseAct implements SwipyRefreshLa
         super.onResume();
 
     }
+    //애니메이션 효과 지우기
+    @Override
+    public void onPause() {
+        super.onPause();
+        overridePendingTransition(0, 0);
+//        Log.i("파베", "마이 포즈");
+    }
     //새로고침
     @Override
     public void onRefresh(SwipyRefreshLayoutDirection direction) {
@@ -177,27 +184,32 @@ public class PosterViewer extends AddingPoster_BaseAct implements SwipyRefreshLa
     }
 
     public void PosterKeySearcher(){
+
         mdataref.addListenerForSingleValueEvent(new ValueEventListener() {
             @Override
             public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
-                double UserPosterPriority = (double) dataSnapshot.child(userUID).child("UserPosterList").getPriority();
-                Log.i("포스터키","현재 접속중인 유저의 포스터 우선도 가져오기 테스트 : "+UserPosterPriority);
+//                double UserPosterPriority = (double) dataSnapshot.child(userUID).child("UserPosterList").getPriority();
+//                Log.i("포스터키","현재 접속중인 유저의 포스터 우선도 가져오기 테스트 : "+UserPosterPriority);
 
-                String UserPosterKey = (String) dataSnapshot.child(userUID).child("UserPosterList").getKey();
+                Query query = FirebaseDatabase.getInstance()
+                        //BaseQuery
+                        .getReference()
+                        .child("UserList")
+                        .child(userUID)
+                        .child("UserPosterList")
+                        .child("PosterKey");
+
+                String UserPosterKey = query.toString();
                 Log.i("포스터키","현재 접속중인 유저의 포스터키들 가져오기 테스트 : "+UserPosterKey);
-
 
                 Long PosterCount = dataSnapshot.child(userUID).child("UserPosterList").getChildrenCount();
                 Log.i("포스터키","현재 접속중인 유저의 포스터키 개수 : "+PosterCount);
-                for (int i=0; i<=PosterCount; i++){
-//                    String Key = (String) dataSnapshot.child(userUID).child("UserPosterList").getKey();
-//                    Log.i("포스터키","키 값들 : "+Key);
-
-                        String Keys = dataSnapshot.child(userUID).child("UserPosterList").getChildren().iterator().next().getKey();
-                        Log.i("포스터키","현재 접속중인 유저의 포스터키 Iterable : "+Keys);
-
-                    Log.i("포스터키","반복횟수 : "+i);
-                }
+//                for (int i=0; i<=PosterCount; i++){
+////                        String Keys = query.toString();
+////                        Log.i("포스터키","현재 접속중인 유저의 포스터키 Iterable : "+Keys);
+//
+//                    Log.i("포스터키","반복횟수 : "+i);
+//                }
             }
 
             @Override
@@ -220,6 +232,9 @@ public class PosterViewer extends AddingPoster_BaseAct implements SwipyRefreshLa
         public ImageView profileIMG;
         public ImageView PosterKey;
         public ImageView vetB;
+
+        //유저 게시물키 받기용
+        public String UserPosterKey;
 
         public LikeButton likeButton;
 
@@ -292,8 +307,8 @@ public class PosterViewer extends AddingPoster_BaseAct implements SwipyRefreshLa
         }
 
         public void setPosterKey(String uri){
-            //스토리지에서 이미지 받아오기
-            StorageReference imageRef = mstorageRef.child("PosterPicList/"+uri+"/PosterIMG");
+            //스토리지에서 이미지 받아오기 mstorageRef.child("PosterPicList").child(userUID).child(uri).child("PosterIMG");
+            StorageReference imageRef = mstorageRef.child("PosterPicList").child(uri).child("PosterIMG");
             GlideApp.with(PosterViewer.this)
                     .load(imageRef)
                     .skipMemoryCache(false)
@@ -308,10 +323,16 @@ public class PosterViewer extends AddingPoster_BaseAct implements SwipyRefreshLa
         public void setNickName_Reply(String string){
             NickName_Reply.setText(string);
         }
+
+        //유저 게시물 키 받기
+        public String getUserPosterKey(String Key){
+            UserPosterKey = Key;
+            return Key;
+        }
     }
     //----------------------------파이어베이스 어댑터---------------------------------------
     private void fetch() {
-        Query query = FirebaseDatabase.getInstance()
+        final Query query = FirebaseDatabase.getInstance()
                 //BaseQuery
                 .getReference()
                 .child("UserList")
@@ -327,8 +348,11 @@ public class PosterViewer extends AddingPoster_BaseAct implements SwipyRefreshLa
                             @NonNull
                             @Override
                             public Posting_DTO parseSnapshot(@NonNull DataSnapshot snapshot) {
-                                Log.i("파베", "포스터 뷰어 스냅샷 메소드 작동 확인");
-                                Log.i("파베", "snapshot.child(\"PosterKey\").getValue().toString() : "+snapshot.child("PosterKey").getValue().toString());
+
+                                //받은 게시물 키값으로 검색,대조,데이터 수정
+//                                String UserPosterKey =  snapshot.child("PosterKey").getValue().toString();
+//                                Log.i("포스터키", "UserPosterKey : "+UserPosterKey);
+
                                 return new Posting_DTO(
                                         snapshot.child("UserUID").getValue().toString(),     //프로필 이미지
                                         snapshot.child("UserNickName").getValue().toString(), //유저 닉네임
@@ -350,7 +374,7 @@ public class PosterViewer extends AddingPoster_BaseAct implements SwipyRefreshLa
             }
 
             @Override
-            protected void onBindViewHolder(final PosterViewer.ViewHolder holder, final int position, Posting_DTO posting_dto) {
+            protected void onBindViewHolder(final PosterViewer.ViewHolder holder, final int position, final Posting_DTO posting_dto) {
                 holder.setPosterKey(posting_dto.getPosterKey());
                 holder.setBody(posting_dto.getBody());
                 holder.setUserNickName(posting_dto.getUserNickName());
@@ -362,7 +386,7 @@ public class PosterViewer extends AddingPoster_BaseAct implements SwipyRefreshLa
                 //위치 메타데이터
                 holder.setMetadata(posting_dto.getPosterKey());
 
-                //게시물 삭제
+                //---------------게시물 삭제 클릭------------클릭한 게시물 개별 접근------------
                 holder.vetB.setOnClickListener(new View.OnClickListener() {
                     @Override
                     public void onClick(View v) {
@@ -373,15 +397,24 @@ public class PosterViewer extends AddingPoster_BaseAct implements SwipyRefreshLa
                             @Override
                             public void onClick(DialogInterface dialog, int which) {
                                 if(which == 0){
-//                                    mdataref.child(userUID).child("UserPosterList").child();
-                                    Toast.makeText(PosterViewer.this, "옵션 클릭확인", Toast.LENGTH_SHORT).show();
+                                    //클릭한 게시물의 키값 가져오기
+                                   String Key = holder.getUserPosterKey(posting_dto.getPosterKey());
+                                    Log.i("포스터키", "클릭한 PosterKey : "+Key);
+
+                                    //UserPostList 에서의 삭제
+                                    mdataref.child(userUID).child("UserPosterList").child(Key).removeValue();
+                                    //PosterList 에서의 삭제
+                                    mdataref.getDatabase().getReference("PosterList").child(Key).removeValue();
+                                    //스토리지에서의 게시물 이미지 삭제
+                                    mstorageRef.child("PosterPicList").child(Key).child("PosterIMG").delete();
                                 }
                                 dialog.dismiss();
                             }
                         });
                         builder.show();
                     }
-                });
+                });//-------------게시물 삭제 클릭------------
+
                 //내피드에서 선택한 게시물 포커스 주기 - 액티비티 최초실행시 실행
                 if (FIRST_FOCUS){
                     Intent intent = getIntent();

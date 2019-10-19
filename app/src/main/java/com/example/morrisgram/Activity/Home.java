@@ -79,7 +79,6 @@ public class Home extends AddingPoster_BaseAct implements SwipyRefreshLayout.OnR
         super.onCreate(savedInstanceState);
         // 화면을 portrait(세로) 화면으로 고정하고 싶은 경우
         setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_PORTRAIT);
-
         setContentView(R.layout.activity_home);
 
         firebaseAuth = FirebaseAuth.getInstance();
@@ -337,15 +336,13 @@ public class Home extends AddingPoster_BaseAct implements SwipyRefreshLayout.OnR
             ReplyCount.setText(string);
         }
 
-        //스토리지에서 이미지 받아오기
+        //스토리지에서 이미지 받아오기 - 어떻게 해야 모든 이미지를 가져올 수 있지?
         public void setPosterKey(String uri){
             StorageReference imageRef = mstorageRef.child("PosterPicList/"+uri+"/PosterIMG");
             GlideApp.with(Home.this)
                     .load(imageRef)
                     .skipMemoryCache(false)
                     .thumbnail()
-                    .centerCrop()
-                    .fitCenter()
                     .diskCacheStrategy(DiskCacheStrategy.ALL)
                     .dontAnimate()
                     .placeholder(R.drawable.ic_insert_photo_black_24dp)
@@ -370,7 +367,7 @@ public class Home extends AddingPoster_BaseAct implements SwipyRefreshLayout.OnR
 
         Log.i("파베", "홈 뷰어 query 경로 확인 : "+query.toString());
 
-        //DB에 정보를 받아서 가져오는 스냅샷 - 스트링형식으로 받아와야함
+        //query를 사용해서 DB의 모든 해당 정보를 받아서 가져오는 스냅샷 - 스트링형식으로 받아와야함
         FirebaseRecyclerOptions<Posting_DTO> options =
                 new FirebaseRecyclerOptions.Builder<Posting_DTO>()
                         .setQuery(query, new SnapshotParser<Posting_DTO>() {

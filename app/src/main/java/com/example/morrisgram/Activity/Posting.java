@@ -75,20 +75,17 @@ public class Posting extends AddingPoster_BaseAct {
         cancelB = (ImageButton) findViewById(R.id.backB_posting);
 
         //이미지 고르면 스토리지로 업로드가 되는데 게시물 작성 취소를 누르면 스토리지의 이미지도 삭제
-        //Glide를 통한 이미지 바인딩
-
-        //게시물 스토리지 이미지 랜덤 키값 받기
+        //베이스 액티비티로부터 포스팅 버튼 누룰시 게시물 스토리지 이미지 랜덤 키값 받기
         Intent intent = getIntent();
-        final String PosterKey = intent.getStringExtra("PosterKey"); // = 게시물 데이터 키값
+        final String PosterKey_posting = intent.getStringExtra("PosterKey"); // = 게시물 데이터 키값
 
-        final StorageReference imageRef = mstorageRef.child(PosterPicList+"/"+PosterKey+"/"+PosterIMGname);
+        final StorageReference imageRef = mstorageRef.child(PosterPicList+"/"+PosterKey_posting+"/"+PosterIMGname);
         GlideApp.with(this)
                 .load(imageRef)
                 .thumbnail()
                 .skipMemoryCache(true)
                 .diskCacheStrategy(DiskCacheStrategy.NONE)
                 .dontAnimate()
-                .centerCrop()
                 .placeholder(R.drawable.noimage)
                 .into(thumbIMG);
 
@@ -117,10 +114,10 @@ public class Posting extends AddingPoster_BaseAct {
                         //스트링변수에 고유키값을 저장.
                         String DATE = SDF.format(date);
 
-                            UpFirebaseDatabase(true,userUID,NickName,Body,DATE,PosterKey);
+                            UpFirebaseDatabase(true,userUID,NickName,Body,DATE,PosterKey_posting);
 
                             //위치 메타데이터 업로드 메소드
-                            getMetaData(PosterKey);
+                            getMetaData(PosterKey_posting);
                 }
                     @Override
                     public void onCancelled(@NonNull DatabaseError databaseError) {
@@ -139,7 +136,12 @@ public class Posting extends AddingPoster_BaseAct {
         cancelB.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
+                //미리보기용 업로드 삭제
+                mstorageRef.child(PosterPicList).child(PosterKey_posting).child("PosterIMG").delete();
 
+                Intent intent = new Intent(Posting.this,Home.class);
+                startActivity(intent);
+                finish();
             }
         });
     }
@@ -229,6 +231,13 @@ public class Posting extends AddingPoster_BaseAct {
     @Override
     public void onBackPressed(){
         Intent intent = new Intent(this,Home.class);
+
+        //미리보기용 업로드 삭제
+        Intent intent2 = getIntent();
+        String MPosterKey = intent2.getStringExtra("PosterKey");
+        mstorageRef.child(PosterPicList).child(MPosterKey).child("PosterIMG").delete();
+
+        //홈화면 이동
         startActivity(intent);
         finish();
     }

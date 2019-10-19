@@ -31,6 +31,7 @@ import android.widget.Toast;
 import com.bumptech.glide.load.engine.DiskCacheStrategy;
 import com.example.morrisgram.Activity.BaseActivity.AddingPoster_BaseAct;
 import com.example.morrisgram.CameraClass.GlideApp;
+import com.example.morrisgram.DTO_Classes.Firebase.Posting_DTO;
 import com.example.morrisgram.DTO_Classes.Firebase.PreView;
 import com.example.morrisgram.R;
 import com.firebase.ui.database.FirebaseRecyclerAdapter;
@@ -53,6 +54,7 @@ import com.google.firebase.storage.StorageReference;
 
 import java.util.Collection;
 import java.util.Collections;
+import java.util.Map;
 import java.util.Objects;
 
 public class Myinfo extends AddingPoster_BaseAct implements SwipeRefreshLayout.OnRefreshListener,NavigationView.OnNavigationItemSelectedListener {
@@ -231,7 +233,31 @@ public class Myinfo extends AddingPoster_BaseAct implements SwipeRefreshLayout.O
 
             }
         });
+        //현재 접속한 회원의 스토리지 이미지만 삭제 - 회원의 모든 포스터키 데이터 쿼리
+        Query query = FirebaseDatabase.getInstance()
+                //BaseQuery
+                .getReference()
+                .child("UserList")
+                .child(userUID)
+                .child("UserPosterList");
 
+        //쿼리의 특성 제대로 파악하기
+        Log.i("포스터키","회원탈퇴 쿼리 경로 확인 : "+query);
+        query.addValueEventListener(new ValueEventListener() {
+            @Override
+            public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+                Map<String,Object> PostValues = null;
+                Posting_DTO posting_dto = new Posting_DTO();
+
+                String PosterKey = dataSnapshot.getValue().toString();
+                Log.i("포스터키","회원탈퇴 포스터키 삭제 요구 : "+PosterKey);
+            }
+
+            @Override
+            public void onCancelled(@NonNull DatabaseError databaseError) {
+
+            }
+        });
     }//------------------크리에이트--------------
 
     @Override
@@ -275,12 +301,14 @@ public class Myinfo extends AddingPoster_BaseAct implements SwipeRefreshLayout.O
                         public void onComplete(@NonNull Task<Void> task) {
                             Toast.makeText(Myinfo.this, "계정이 삭제 되었습니다.", Toast.LENGTH_LONG).show();
                             //데이터 삭제
-                            mdataref.child(userUID).setValue(null);
+                            mdataref.child(userUID).removeValue();
                             //로그아웃 처리 & 회원탈퇴 처리
-                            uid.delete();
-
                             firebaseAuth = FirebaseAuth.getInstance();
                             firebaseAuth.signOut();
+                            uid.delete();
+
+
+                            //로그인 화면으로 이동
                             finish();
                             startActivity(new Intent(getApplicationContext(), MainActivity.class));
                         }
@@ -382,7 +410,7 @@ public class Myinfo extends AddingPoster_BaseAct implements SwipeRefreshLayout.O
         //스토리지에서 게시물 미리보기 이미지 받아오기
         public void setPosterKey(String uri) {
             Log.i("파베", "setPic 메소드 작동 확인");
-            StorageReference imageRef = mstorageRef.child("PosterPicList/"+uri+"/PosterIMG");
+            StorageReference imageRef = mstorageRef.child("PosterPicList").child(uri).child("PosterIMG");
             GlideApp.with(Myinfo.this)
                     .load(imageRef)
                     .skipMemoryCache(false)
@@ -403,8 +431,7 @@ public class Myinfo extends AddingPoster_BaseAct implements SwipeRefreshLayout.O
                 .getReference()
                 .child("UserList")
                 .child(userUID)
-                .child("UserPosterList")
-                .orderByChild("PostedTime");
+                .child("UserPosterList");
 
         Log.i("쿼리", "query 경로 확인 : "+query.toString());
 
@@ -434,14 +461,15 @@ public class Myinfo extends AddingPoster_BaseAct implements SwipeRefreshLayout.O
             protected void onBindViewHolder(final ViewHolder holder, final int position, PreView preView) {
                 holder.setPosterKey(preView.getPosterKey());
 
+                //클릭한 이미지의 포스트뷰어로 이동하기
                 holder.root.setOnClickListener(new View.OnClickListener() {
                     @Override
                     public void onClick(View view) {
                         Toast.makeText(Myinfo.this, String.valueOf(position), Toast.LENGTH_SHORT).show();
-                        //해당 포지션으로 포스터뷰어에 포커스위치 전달 - 포스터뷰어로 이동
                         Intent intent = new Intent(Myinfo.this,PosterViewer.class);
                         intent.putExtra("FOCUS",position);
                         startActivity(intent);
+                        overridePendingTransition(0, 0);
                     }
                 });
             }

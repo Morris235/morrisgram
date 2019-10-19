@@ -80,6 +80,8 @@ public class AddingPoster_BaseAct extends AppCompatActivity {
     public Uri getPhotoUri;
     //카메라 촬영,앨범에서 얻게 되는 비트맵 이미지 주소값
 
+    //이미지 업로드 포스터키
+    public String PosterKey;
 
     //현재 접속중인 유저UID가져오기
     public FirebaseUser uid = FirebaseAuth.getInstance().getCurrentUser();
@@ -148,7 +150,7 @@ public class AddingPoster_BaseAct extends AppCompatActivity {
 
         //예외사항 처리 =앨범화면으로 이동 했지만 선택을 하지 않고 뒤로 간 경우 또는 카메라로 촬영한 후 저장하지 않고 뒤로 가기를 간 경우
         super.onActivityResult(requestCode, resultCode, data);
-        //예외처리 분기분
+        //예외처리 분기문
         if (resultCode != Activity.RESULT_OK) {
             Toast.makeText(this, "취소 되었습니다.", Toast.LENGTH_SHORT).show();
             if (tempFile != null) {
@@ -215,7 +217,7 @@ public class AddingPoster_BaseAct extends AppCompatActivity {
 
                 //게시물 UID를 만들어서 포스팅 클래스에 인텐트로 전달한다.
                 final DatabaseReference mdataref = FirebaseDatabase.getInstance().getReference();
-                final String PosterKey = mdataref.push().getKey();
+                PosterKey = mdataref.push().getKey();
 
                 //유저 게시물 키값 저장용 메소드 - 이미지 업로드 실패시 분기 처리
                 SavePosterKey(PosterKey);
@@ -242,6 +244,7 @@ public class AddingPoster_BaseAct extends AppCompatActivity {
                                         progressDialog.show();
 
                                         if(progress == 100.0){
+                                            //포스터키 넘기기
                                             Intent intent = new Intent(AddingPoster_BaseAct.this , Posting.class);
                                             intent.putExtra("PosterKey",PosterKey);
                                             startActivity(intent);
@@ -298,8 +301,8 @@ public class AddingPoster_BaseAct extends AppCompatActivity {
         SharedPreferences.Editor KEY_EDITOR = MY_POSTER_KEYS.edit();
 
         //강제삭제용
-//        KEY_EDITOR.clear();
-//        KEY_EDITOR.apply();
+        KEY_EDITOR.clear();
+        KEY_EDITOR.apply();
 
         //데이터 타입 설명
         Type UserPosterList_Type = new TypeToken<UserPosterList_Dataset>() {}.getType();
