@@ -10,7 +10,7 @@ public class Posting_DTO  {
     public Posting_DTO(){
     }
 
-    public Posting_DTO(String userUID, String userNickName, String body, String PostedTime, String likeCount, String replyCount, String posterKey) {
+    public Posting_DTO(String userUID, String userNickName, String body, String PostedTime, String likeCount, String replyCount, String posterKey, String timestemp) {
         this.UserUID = userUID;
         this.UserNickName = userNickName;
         this.Body = body;
@@ -18,6 +18,7 @@ public class Posting_DTO  {
         this.LikeCount = likeCount;
         this.ReplyCount = replyCount;
         this.PosterKey = posterKey;
+        this.TImeStemp = timestemp;
     }
 
     public String getUserUID() {
@@ -62,6 +63,12 @@ public class Posting_DTO  {
     public void setLikeCount(String likeCount) {
         LikeCount = likeCount;
     }
+    public String getTImeStemp() {
+        return TImeStemp;
+    }
+    public void setTImeStemp(String TImeStemp) {
+        this.TImeStemp = TImeStemp;
+    }
 
     private String UserUID; //유저 프로필 사진 Uri
     private String UserNickName; //유저 닉네임
@@ -70,6 +77,7 @@ public class Posting_DTO  {
     private String PosterKey; //게시물 사진 uri
     private String LikeCount; //좋아요
     private String ReplyCount; //댓글
+    private String TImeStemp; //데이터 정렬에 사용
 
     @Exclude
     public Map<String,Object> toMap() {
@@ -81,6 +89,7 @@ public class Posting_DTO  {
         result.put("PosterKey",PosterKey);
         result.put("LikeCount",LikeCount);
         result.put("ReplyCount",ReplyCount);
+        result.put("TimeStemp",TImeStemp);
         return result;
     }
 }

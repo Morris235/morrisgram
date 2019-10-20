@@ -14,7 +14,6 @@ import androidx.recyclerview.widget.RecyclerView;
 import androidx.swiperefreshlayout.widget.SwipeRefreshLayout;
 
 import android.content.pm.ActivityInfo;
-import android.net.Uri;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -22,7 +21,6 @@ import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
-import android.widget.GridLayout;
 import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.TextView;
@@ -36,6 +34,7 @@ import com.example.morrisgram.DTO_Classes.Firebase.PreView;
 import com.example.morrisgram.R;
 import com.firebase.ui.database.FirebaseRecyclerAdapter;
 import com.firebase.ui.database.FirebaseRecyclerOptions;
+import com.firebase.ui.database.ObservableSnapshotArray;
 import com.firebase.ui.database.SnapshotParser;
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.Task;
@@ -48,14 +47,10 @@ import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.Query;
 import com.google.firebase.database.ValueEventListener;
-import com.google.firebase.firestore.core.OrderBy;
 import com.google.firebase.storage.FirebaseStorage;
 import com.google.firebase.storage.StorageReference;
 
-import java.util.Collection;
-import java.util.Collections;
 import java.util.Map;
-import java.util.Objects;
 
 public class Myinfo extends AddingPoster_BaseAct implements SwipeRefreshLayout.OnRefreshListener,NavigationView.OnNavigationItemSelectedListener {
     private SwipeRefreshLayout mSwipeRefreshLayout;
@@ -189,7 +184,6 @@ public class Myinfo extends AddingPoster_BaseAct implements SwipeRefreshLayout.O
             }
         });
 
-
         //프로필 변경하기로 이동
         profilemodifyB = (Button) findViewById(R.id.profileB);
         profilemodifyB.setOnClickListener(new View.OnClickListener() {
@@ -233,7 +227,8 @@ public class Myinfo extends AddingPoster_BaseAct implements SwipeRefreshLayout.O
 
             }
         });
-        //현재 접속한 회원의 스토리지 이미지만 삭제 - 회원의 모든 포스터키 데이터 쿼리
+
+        //-----------현재 접속한 회원의 스토리지 이미지만 삭제 - 회원의 모든 포스터키 데이터 쿼리----------
         Query query = FirebaseDatabase.getInstance()
                 //BaseQuery
                 .getReference()
@@ -248,16 +243,20 @@ public class Myinfo extends AddingPoster_BaseAct implements SwipeRefreshLayout.O
             public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
                 Map<String,Object> PostValues = null;
                 Posting_DTO posting_dto = new Posting_DTO();
-
-                String PosterKey = dataSnapshot.getValue().toString();
-                Log.i("포스터키","회원탈퇴 포스터키 삭제 요구 : "+PosterKey);
+                try {
+                   final String PosterKeyGet = dataSnapshot.child("PosterKey").getValue().toString();
+                    Log.i("포스터키","회원탈퇴 포스터키 삭제 요구 : "+PosterKeyGet);
+                }catch (NullPointerException e){
+                    e.getStackTrace();
+                    Log.i("포스터키","데이터 없음 : "+e);
+                }
             }
-
             @Override
             public void onCancelled(@NonNull DatabaseError databaseError) {
 
             }
-        });
+        });//-----------------------------------------------------------------------
+
     }//------------------크리에이트--------------
 
     @Override
@@ -306,7 +305,6 @@ public class Myinfo extends AddingPoster_BaseAct implements SwipeRefreshLayout.O
                             firebaseAuth = FirebaseAuth.getInstance();
                             firebaseAuth.signOut();
                             uid.delete();
-
 
                             //로그인 화면으로 이동
                             finish();
@@ -431,7 +429,8 @@ public class Myinfo extends AddingPoster_BaseAct implements SwipeRefreshLayout.O
                 .getReference()
                 .child("UserList")
                 .child(userUID)
-                .child("UserPosterList");
+                .child("UserPosterList")
+                .orderByChild("TimeStemp");
 
         Log.i("쿼리", "query 경로 확인 : "+query.toString());
 
@@ -442,7 +441,8 @@ public class Myinfo extends AddingPoster_BaseAct implements SwipeRefreshLayout.O
                             @NonNull
                             @Override
                             public PreView parseSnapshot(@NonNull DataSnapshot snapshot) {
-                                Log.i("파베", "snapshot.child(\"PosterKey\").getValue().toString() : "+snapshot.child("PosterKey").getValue().toString());
+                                Log.i("파베", "PosterKey : "+snapshot.child("PosterKey").getValue().toString());
+                                Log.i("정렬", "TimeStemp : "+snapshot.child("TimeStemp").getValue().toString());
                                 return new PreView(
                                         snapshot.child("PosterKey").getValue().toString());
                             }

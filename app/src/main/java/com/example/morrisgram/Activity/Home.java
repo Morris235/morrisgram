@@ -383,7 +383,8 @@ public class Home extends AddingPoster_BaseAct implements SwipyRefreshLayout.OnR
                                         snapshot.child("PostedTime").getValue().toString(),  //게시물 만든 시간
                                         snapshot.child("LikeCount").getValue().toString(),   //좋아요 개수
                                         snapshot.child("ReplyCount").getValue().toString(),  //댓글 개수
-                                        snapshot.child("PosterKey").getValue().toString());  //게시물 이미지
+                                        snapshot.child("PosterKey").getValue().toString(),
+                                        null);  //게시물 이미지
                             }
                         })
                         .build();

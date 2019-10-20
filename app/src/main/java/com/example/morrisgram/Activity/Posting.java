@@ -111,10 +111,13 @@ public class Posting extends AddingPoster_BaseAct {
                         Date date = new Date(now);
                         //시간을 나타낼 포맷을 정한다.
                         SimpleDateFormat SDF = new SimpleDateFormat("yyyy년 MM월 dd일 HH시 mm분 ss초");
+                        SimpleDateFormat TIMESTEMP = new SimpleDateFormat("yyyyMMddHHmmss");
+
                         //스트링변수에 고유키값을 저장.
                         String DATE = SDF.format(date);
+                        String TimeStemp = TIMESTEMP.format(date);
 
-                            UpFirebaseDatabase(true,userUID,NickName,Body,DATE,PosterKey_posting);
+                            UpFirebaseDatabase(true,userUID,NickName,Body,DATE,PosterKey_posting,TimeStemp);
 
                             //위치 메타데이터 업로드 메소드
                             getMetaData(PosterKey_posting);
@@ -147,13 +150,13 @@ public class Posting extends AddingPoster_BaseAct {
     }
 
     //파이어 베이스 업데이트 메소드 - 게시물 포스팅 클래스에서 입력받아야 하는 모든 데이터들
-    public void UpFirebaseDatabase(boolean add, String UserUID, String UserNicName, String Body,String Time, String PosterKey){
+    public void UpFirebaseDatabase(boolean add, String UserUID, String UserNicName, String Body,String Time, String PosterKey, String TimeStemp){
         //해쉬맵 생성
         Map<String,Object> childUpdates = new HashMap<>();
         Map<String,Object> PostValues = null;
 
         if(add){
-            Posting_DTO posting = new Posting_DTO(UserUID,UserNicName,Body,Time,"0","0",PosterKey);
+            Posting_DTO posting = new Posting_DTO(UserUID,UserNicName,Body,Time,"0","0",PosterKey,TimeStemp);
             PostValues = posting.toMap();
         }
 
