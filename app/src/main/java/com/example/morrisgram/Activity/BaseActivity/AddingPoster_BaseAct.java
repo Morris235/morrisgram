@@ -220,7 +220,7 @@ public class AddingPoster_BaseAct extends AppCompatActivity {
                 PosterKey = mdataref.push().getKey();
 
                 //유저 게시물 키값 저장용 메소드 - 이미지 업로드 실패시 분기 처리
-                SavePosterKey(PosterKey);
+//                SavePosterKey(PosterKey);
 
                 //게시물 업로드 경로 => gs://morrisgram.appspot.com/PosterPicList/-LrNycKfF3c3d5Gb-_OH/PosterIMG
            //게시물 업로드 경로 수정 => gs://morrisgram.appspot.com/PosterPicList/userUID/-LrNycKfF3c3d5Gb-_OH/PosterIMG
@@ -301,8 +301,8 @@ public class AddingPoster_BaseAct extends AppCompatActivity {
         SharedPreferences.Editor KEY_EDITOR = MY_POSTER_KEYS.edit();
 
         //강제삭제용
-        KEY_EDITOR.clear();
-        KEY_EDITOR.apply();
+//        KEY_EDITOR.clear();
+//        KEY_EDITOR.apply();
 
         //데이터 타입 설명
         Type UserPosterList_Type = new TypeToken<UserPosterList_Dataset>() {}.getType();

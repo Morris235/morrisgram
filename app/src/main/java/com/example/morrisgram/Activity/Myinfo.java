@@ -31,6 +31,7 @@ import com.example.morrisgram.Activity.BaseActivity.AddingPoster_BaseAct;
 import com.example.morrisgram.CameraClass.GlideApp;
 import com.example.morrisgram.DTO_Classes.Firebase.Posting_DTO;
 import com.example.morrisgram.DTO_Classes.Firebase.PreView;
+import com.example.morrisgram.DTO_Classes.UserPosterList_Dataset;
 import com.example.morrisgram.R;
 import com.firebase.ui.database.FirebaseRecyclerAdapter;
 import com.firebase.ui.database.FirebaseRecyclerOptions;
@@ -49,7 +50,16 @@ import com.google.firebase.database.Query;
 import com.google.firebase.database.ValueEventListener;
 import com.google.firebase.storage.FirebaseStorage;
 import com.google.firebase.storage.StorageReference;
+import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
+import com.google.gson.JsonArray;
+import com.google.gson.reflect.TypeToken;
 
+import org.json.JSONArray;
+import org.json.JSONException;
+import org.json.JSONObject;
+
+import java.lang.reflect.Type;
 import java.util.Map;
 
 public class Myinfo extends AddingPoster_BaseAct implements SwipeRefreshLayout.OnRefreshListener,NavigationView.OnNavigationItemSelectedListener {
@@ -102,6 +112,10 @@ public class Myinfo extends AddingPoster_BaseAct implements SwipeRefreshLayout.O
 
         profileimg = (ImageView) findViewById(R.id.profileIMG_my);
         recyclerView = findViewById(R.id.recyclerView_myinfo);
+
+        //gson & Type
+        final Gson gson = new GsonBuilder().create();
+        final Type StringType = new TypeToken<String>() {}.getType();
 
         //네비게이션뷰 리스너
         NavigationView navigationView = (NavigationView) findViewById(R.id.navigationview);
@@ -238,24 +252,42 @@ public class Myinfo extends AddingPoster_BaseAct implements SwipeRefreshLayout.O
 
         //쿼리의 특성 제대로 파악하기
         Log.i("포스터키","회원탈퇴 쿼리 경로 확인 : "+query);
-        query.addValueEventListener(new ValueEventListener() {
-            @Override
-            public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
-                Map<String,Object> PostValues = null;
-                Posting_DTO posting_dto = new Posting_DTO();
-                try {
-                   final String PosterKeyGet = dataSnapshot.child("PosterKey").getValue().toString();
-                    Log.i("포스터키","회원탈퇴 포스터키 삭제 요구 : "+PosterKeyGet);
-                }catch (NullPointerException e){
-                    e.getStackTrace();
-                    Log.i("포스터키","데이터 없음 : "+e);
-                }
-            }
-            @Override
-            public void onCancelled(@NonNull DatabaseError databaseError) {
 
-            }
-        });//-----------------------------------------------------------------------
+//        query.addValueEventListener(new ValueEventListener() {
+//            @Override
+//            public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+//                try {
+//                    String PosterKeyGet = dataSnapshot.getValue().toString();
+//                    Log.i("포스터키","데이터스냅샷 : "+PosterKeyGet);
+//
+//                    Posting_DTO posting_dto = gson.fromJson(gson.toJson(PosterKeyGet),Posting_DTO.class);
+//                    Log.i("포스터키","posting_dto : "+posting_dto.toString());
+//
+//                    String json = gson.toJson(PosterKeyGet,StringType);
+//                    Log.i("포스터키","json : "+json);
+//
+//                    JSONArray jsonArray = new JSONArray(json);
+//                    Log.i("포스터키","jsonArray : "+jsonArray.getString(0));
+//
+//                    for(int i=0; i<jsonArray.length(); i++){
+//                        String Key = jsonArray.getString(i);
+//                        Log.i("포스터키","jsonArray : "+jsonArray.getString(i));
+//
+//                        JSONObject jsonObject = new JSONObject(Key);
+//
+//                        //종단 처리 되지 않았음. "Key":"value"
+//                        String PosterKey = jsonObject.getString("PosterKey");
+//                        Log.i("포스터키","회원탈퇴 포스터키 삭제 요구 : "+PosterKey);
+//                    }
+//                }catch (NullPointerException | JSONException | TypeNotPresentException e){
+//                    e.getStackTrace();
+//                    Log.i("포스터키","Exception e : "+e);
+//                }
+//            }
+//            @Override
+//            public void onCancelled(@NonNull DatabaseError databaseError) {
+//            }
+//        });//-----------------------------------------------------------------------
 
     }//------------------크리에이트--------------
 
