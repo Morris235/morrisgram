@@ -398,8 +398,7 @@
         <androidx.recyclerview.widget.RecyclerView
             android:id="@+id/recyclerView_user"
             android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            tools:listitem="@layout/test_item"/>
+            android:layout_height="match_parent" />
     </androidx.swiperefreshlayout.widget.SwipeRefreshLayout>
 </ScrollView>
 
@@ -413,6 +412,7 @@
         android:layout_marginEnd="8dp"
         android:layout_marginBottom="472dp"
         android:text="www.naver.com"
+        android:textColorLink="#0067a3"
         android:linksClickable="true"
         android:autoLink="web"
         app:layout_constraintBottom_toBottomOf="parent"

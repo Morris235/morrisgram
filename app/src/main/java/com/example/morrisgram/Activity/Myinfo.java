@@ -26,6 +26,7 @@ import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.bumptech.glide.load.Option;
 import com.bumptech.glide.load.engine.DiskCacheStrategy;
 import com.example.morrisgram.Activity.BaseActivity.AddingPoster_BaseAct;
 import com.example.morrisgram.CameraClass.GlideApp;
@@ -40,6 +41,7 @@ import com.firebase.ui.database.SnapshotParser;
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.Task;
 import com.google.android.material.navigation.NavigationView;
+import com.google.firebase.FirebaseOptions;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.database.DataSnapshot;
@@ -84,6 +86,9 @@ public class Myinfo extends AddingPoster_BaseAct implements SwipeRefreshLayout.O
     private FirebaseAuth firebaseAuth;
     private StorageReference mstorageRef = FirebaseStorage.getInstance().getReference();
     private String userUID = uid.getUid();
+
+    //포스터키
+    public String UserPosterKeys;
 
     //파이어베이스 리사이클러뷰
     private RecyclerView recyclerView;
@@ -136,14 +141,14 @@ public class Myinfo extends AddingPoster_BaseAct implements SwipeRefreshLayout.O
         mSwipeRefreshLayout = (SwipeRefreshLayout) findViewById(R.id.refresh_my);
         mSwipeRefreshLayout.setOnRefreshListener(this);
 
-
-
         //파이어베이스 리사이클러뷰
         gridLayoutManager = new GridLayoutManager(this,3);
         recyclerView.setLayoutManager(gridLayoutManager);
         recyclerView.setHasFixedSize(true);
 
         fetch();
+        Log.i("포스터키","회원탈퇴 쿼리 경로 확인 : "+UserPosterKeys);
+
 //-----------------------------------화면이동----------------------------------------
         homeB = (ImageButton) findViewById(R.id.homeB_my);
         homeB.setOnClickListener(new View.OnClickListener() {
@@ -243,15 +248,8 @@ public class Myinfo extends AddingPoster_BaseAct implements SwipeRefreshLayout.O
         });
 
         //-----------현재 접속한 회원의 스토리지 이미지만 삭제 - 회원의 모든 포스터키 데이터 쿼리----------
-        Query query = FirebaseDatabase.getInstance()
-                //BaseQuery
-                .getReference()
-                .child("UserList")
-                .child(userUID)
-                .child("UserPosterList");
 
-        //쿼리의 특성 제대로 파악하기
-        Log.i("포스터키","회원탈퇴 쿼리 경로 확인 : "+query);
+
 
 //        query.addValueEventListener(new ValueEventListener() {
 //            @Override
@@ -473,7 +471,10 @@ public class Myinfo extends AddingPoster_BaseAct implements SwipeRefreshLayout.O
                             @NonNull
                             @Override
                             public PreView parseSnapshot(@NonNull DataSnapshot snapshot) {
-                                Log.i("파베", "PosterKey : "+snapshot.child("PosterKey").getValue().toString());
+                                //포스터키 수집
+                                UserPosterKeys = snapshot.child("PosterKey").getValue().toString();
+
+                                Log.i("파베", "UserPosterKeys : "+UserPosterKeys);
                                 Log.i("정렬", "TimeStemp : "+snapshot.child("TimeStemp").getValue().toString());
                                 return new PreView(
                                         snapshot.child("PosterKey").getValue().toString());

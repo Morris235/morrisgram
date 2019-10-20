@@ -120,7 +120,6 @@ public class MainActivity extends AppCompatActivity {
         //파이어 베이스 인스턴스
         firebaseAuth = firebaseAuth.getInstance();
 
-
         //로그인 버튼
         loginB.setOnClickListener(new View.OnClickListener() {
             @Override
