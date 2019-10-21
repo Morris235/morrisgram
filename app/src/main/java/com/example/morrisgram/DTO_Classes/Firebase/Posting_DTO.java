@@ -1,16 +1,18 @@
 package com.example.morrisgram.DTO_Classes.Firebase;
 
 import com.google.firebase.database.Exclude;
+import com.google.firebase.database.IgnoreExtraProperties;
 
 import java.util.HashMap;
 import java.util.Map;
 
+@IgnoreExtraProperties
 public class Posting_DTO  {
 
     public Posting_DTO(){
     }
 
-    public Posting_DTO(String userUID, String userNickName, String body, String PostedTime, String likeCount, String replyCount, String posterKey, String timestemp) {
+    public Posting_DTO(String userUID, String userNickName, String body, String PostedTime, int likeCount, int replyCount, String posterKey, String timestemp) {
         this.UserUID = userUID;
         this.UserNickName = userNickName;
         this.Body = body;
@@ -51,16 +53,16 @@ public class Posting_DTO  {
     public void setPosterKey(String posterKey) {
         this.PosterKey = posterKey;
     }
-    public String getReplyCount() {
+    public int getReplyCount() {
         return ReplyCount;
     }
-    public void setReplyCount(String replyCount) {
+    public void setReplyCount(int replyCount) {
         ReplyCount = replyCount;
     }
-    public String getLikeCount() {
+    public int getLikeCount() {
         return LikeCount;
     }
-    public void setLikeCount(String likeCount) {
+    public void setLikeCount(int likeCount) {
         LikeCount = likeCount;
     }
     public String getTImeStemp() {
@@ -75,9 +77,11 @@ public class Posting_DTO  {
     private String Body; //게시물 글 내용
     private String PostedTime; //게시물 게시 시간
     private String PosterKey; //게시물 사진 uri
-    private String LikeCount; //좋아요
-    private String ReplyCount; //댓글
     private String TImeStemp; //데이터 정렬에 사용
+
+    public int LikeCount; //좋아요
+    public int ReplyCount; //댓글
+    public Map<String, Boolean> likes = new HashMap<>();
 
     @Exclude
     public Map<String,Object> toMap() {
@@ -90,6 +94,7 @@ public class Posting_DTO  {
         result.put("LikeCount",LikeCount);
         result.put("ReplyCount",ReplyCount);
         result.put("TimeStemp",TImeStemp);
+
         return result;
     }
 }

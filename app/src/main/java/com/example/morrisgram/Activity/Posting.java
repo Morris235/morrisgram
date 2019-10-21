@@ -156,7 +156,7 @@ public class Posting extends AddingPoster_BaseAct {
         Map<String,Object> PostValues = null;
 
         if(add){
-            Posting_DTO posting = new Posting_DTO(UserUID,UserNicName,Body,Time,"0","0",PosterKey,TimeStemp);
+            Posting_DTO posting = new Posting_DTO(UserUID,UserNicName,Body,Time,0,0,PosterKey,TimeStemp);
             PostValues = posting.toMap();
         }
 
