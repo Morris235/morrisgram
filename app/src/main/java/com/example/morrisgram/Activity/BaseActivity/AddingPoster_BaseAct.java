@@ -219,8 +219,6 @@ public class AddingPoster_BaseAct extends AppCompatActivity {
                 final DatabaseReference mdataref = FirebaseDatabase.getInstance().getReference();
                 PosterKey = mdataref.push().getKey();
 
-                //유저 게시물 키값 저장용 메소드 - 이미지 업로드 실패시 분기 처리
-//                SavePosterKey(PosterKey);
 
                 //게시물 업로드 경로 => gs://morrisgram.appspot.com/PosterPicList/-LrNycKfF3c3d5Gb-_OH/PosterIMG
            //게시물 업로드 경로 수정 => gs://morrisgram.appspot.com/PosterPicList/userUID/-LrNycKfF3c3d5Gb-_OH/PosterIMG
@@ -272,6 +270,9 @@ public class AddingPoster_BaseAct extends AppCompatActivity {
                     public void onSuccess(UploadTask.TaskSnapshot taskSnapshot) {
                         //업로드 완료되면 포스팅 화면으로 이동 - 게시물 UID 전달
                         Log.i("파베","이미지 업로드 성공");
+
+//                        //유저 게시물 키값 저장용 메소드 - 이미지 업로드 실패시 분기 처리
+//                        SavePosterKey(PosterKey);
                     }
                 });
 

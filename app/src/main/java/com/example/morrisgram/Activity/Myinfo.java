@@ -13,6 +13,7 @@ import androidx.recyclerview.widget.GridLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 import androidx.swiperefreshlayout.widget.SwipeRefreshLayout;
 
+import android.content.SharedPreferences;
 import android.content.pm.ActivityInfo;
 import android.os.Bundle;
 import android.util.Log;
@@ -147,7 +148,7 @@ public class Myinfo extends AddingPoster_BaseAct implements SwipeRefreshLayout.O
         recyclerView.setHasFixedSize(true);
 
         fetch();
-        Log.i("포스터키","회원탈퇴 쿼리 경로 확인 : "+UserPosterKeys);
+        Log.i("포스터키","회원탈퇴 포스터키 : "+UserPosterKeys);
 
 //-----------------------------------화면이동----------------------------------------
         homeB = (ImageButton) findViewById(R.id.homeB_my);
@@ -329,11 +330,27 @@ public class Myinfo extends AddingPoster_BaseAct implements SwipeRefreshLayout.O
                         @Override
                         public void onComplete(@NonNull Task<Void> task) {
                             Toast.makeText(Myinfo.this, "계정이 삭제 되었습니다.", Toast.LENGTH_LONG).show();
-                            //데이터 삭제
+                            //유저의 DB 모든 데이터 삭제
                             mdataref.child(userUID).removeValue();
-                            //로그아웃 처리 & 회원탈퇴 처리
-                            firebaseAuth = FirebaseAuth.getInstance();
-                            firebaseAuth.signOut();
+
+                            //유저의 프로필 사진 삭제
+                            mstorageRef.child(userUID).child("ProfileIMG").child("ProfileIMG").delete();
+
+                            //-GetPosterKey is ArrayList-
+                            for (int i=0; i<GetPosterKey().size(); i++){
+                                //스토리지에서 유저의 게시물 이미지 모두 삭제
+                                mstorageRef.child("PosterPicList").child(GetPosterKey().get(i).toString()).child("PosterIMG").delete();
+                                //유저의 게시물 전체 DB삭제
+                                mdataref.getDatabase().getReference("PosterList").child(GetPosterKey().get(i).toString()).removeValue();
+                            }
+
+                            //내부 DB의 포스터키 삭제
+                            SharedPreferences MY_POSTER_KEYS = getSharedPreferences("POSTER_KEYS",MODE_PRIVATE);
+                            SharedPreferences.Editor KEY_EDITOR = MY_POSTER_KEYS.edit();
+                            KEY_EDITOR.clear();
+                            KEY_EDITOR.apply();
+
+                            //회원탈퇴 처리
                             uid.delete();
 
                             //로그인 화면으로 이동
@@ -454,61 +471,67 @@ public class Myinfo extends AddingPoster_BaseAct implements SwipeRefreshLayout.O
 
     //----------------------------파이어베이스 어댑터---------------------------------------
     private void fetch() {
-        Query query = FirebaseDatabase.getInstance()
-                //BaseQuery
-                .getReference()
-                .child("UserList")
-                .child(userUID)
-                .child("UserPosterList")
-                .orderByChild("TimeStemp");
+        try {
+            Query query = FirebaseDatabase.getInstance()
+                    //BaseQuery
+                    .getReference()
+                    .child("UserList")
+                    .child(userUID)
+                    .child("UserPosterList")
+                    .orderByChild("TimeStemp");
 
-        Log.i("쿼리", "query 경로 확인 : "+query.toString());
+            Log.i("쿼리", "query 경로 확인 : "+query.toString());
 
-        //DB에 정보를 받아서 가져오는 스냅샷 - 스트링형식으로 받아와야함
-        FirebaseRecyclerOptions<PreView> options =
-                new FirebaseRecyclerOptions.Builder<PreView>()
-                        .setQuery(query, new SnapshotParser<PreView>() {
-                            @NonNull
-                            @Override
-                            public PreView parseSnapshot(@NonNull DataSnapshot snapshot) {
-                                //포스터키 수집
-                                UserPosterKeys = snapshot.child("PosterKey").getValue().toString();
+            //DB에 정보를 받아서 가져오는 스냅샷 - 스트링형식으로 받아와야함
+            FirebaseRecyclerOptions<PreView> options =
+                    new FirebaseRecyclerOptions.Builder<PreView>()
+                            .setQuery(query, new SnapshotParser<PreView>() {
+                                @NonNull
+                                @Override
+                                public PreView parseSnapshot(@NonNull DataSnapshot snapshot) {
+                                    //포스터키 수집
+                                    UserPosterKeys = snapshot.child("PosterKey").getValue().toString();
+                                    //내부 DB에 로그인한 유저의 포스터키 저장
+                                    SavePosterKey(UserPosterKeys);
 
-                                Log.i("파베", "UserPosterKeys : "+UserPosterKeys);
-                                Log.i("정렬", "TimeStemp : "+snapshot.child("TimeStemp").getValue().toString());
-                                return new PreView(
-                                        snapshot.child("PosterKey").getValue().toString());
-                            }
-                        })
-                        .build();
+                                    Log.i("파베", "UserPosterKeys : "+UserPosterKeys);
+                                    return new PreView(
+                                            snapshot.child("PosterKey").getValue().toString());
+                                }
+                            })
+                            .build();
 
-        adapter = new FirebaseRecyclerAdapter<PreView, ViewHolder>(options) {
-            @Override
-            public ViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
-                View view = LayoutInflater.from(parent.getContext())
-                        .inflate(R.layout.preview_item, parent, false);
-                return new ViewHolder(view);
-            }
+            adapter = new FirebaseRecyclerAdapter<PreView, ViewHolder>(options) {
+                @Override
+                public ViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
+                    View view = LayoutInflater.from(parent.getContext())
+                            .inflate(R.layout.preview_item, parent, false);
+                    return new ViewHolder(view);
+                }
 
-            @Override
-            protected void onBindViewHolder(final ViewHolder holder, final int position, PreView preView) {
-                holder.setPosterKey(preView.getPosterKey());
+                @Override
+                protected void onBindViewHolder(final ViewHolder holder, final int position, PreView preView) {
+                    holder.setPosterKey(preView.getPosterKey());
 
-                //클릭한 이미지의 포스트뷰어로 이동하기
-                holder.root.setOnClickListener(new View.OnClickListener() {
-                    @Override
-                    public void onClick(View view) {
-                        Toast.makeText(Myinfo.this, String.valueOf(position), Toast.LENGTH_SHORT).show();
-                        Intent intent = new Intent(Myinfo.this,PosterViewer.class);
-                        intent.putExtra("FOCUS",position);
-                        startActivity(intent);
-                        overridePendingTransition(0, 0);
-                    }
-                });
-            }
-        };
-        recyclerView.setAdapter(adapter);
+                    //클릭한 이미지의 포스트뷰어로 이동하기
+                    holder.root.setOnClickListener(new View.OnClickListener() {
+                        @Override
+                        public void onClick(View view) {
+                            Toast.makeText(Myinfo.this, String.valueOf(position), Toast.LENGTH_SHORT).show();
+                            Intent intent = new Intent(Myinfo.this,PosterViewer.class);
+                            intent.putExtra("FOCUS",position);
+                            startActivity(intent);
+                            overridePendingTransition(0, 0);
+                        }
+                    });
+                }
+            };
+            recyclerView.setAdapter(adapter);
+
+        }catch (NullPointerException e){
+            e.getStackTrace();
+            Log.i("try", "NullPointerException :"+e);
+        }
     }
-
 }//---------------myinfo class---------------
 
