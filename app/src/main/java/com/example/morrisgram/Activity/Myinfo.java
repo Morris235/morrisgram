@@ -27,22 +27,17 @@ import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import com.bumptech.glide.load.Option;
 import com.bumptech.glide.load.engine.DiskCacheStrategy;
 import com.example.morrisgram.Activity.BaseActivity.AddingPoster_BaseAct;
 import com.example.morrisgram.CameraClass.GlideApp;
-import com.example.morrisgram.DTO_Classes.Firebase.Posting_DTO;
-import com.example.morrisgram.DTO_Classes.Firebase.PreView;
-import com.example.morrisgram.DTO_Classes.UserPosterList_Dataset;
+import com.example.morrisgram.ClassesDataSet.Firebase.PreView;
 import com.example.morrisgram.R;
 import com.firebase.ui.database.FirebaseRecyclerAdapter;
 import com.firebase.ui.database.FirebaseRecyclerOptions;
-import com.firebase.ui.database.ObservableSnapshotArray;
 import com.firebase.ui.database.SnapshotParser;
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.Task;
 import com.google.android.material.navigation.NavigationView;
-import com.google.firebase.FirebaseOptions;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.database.DataSnapshot;
@@ -55,15 +50,9 @@ import com.google.firebase.storage.FirebaseStorage;
 import com.google.firebase.storage.StorageReference;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
-import com.google.gson.JsonArray;
 import com.google.gson.reflect.TypeToken;
 
-import org.json.JSONArray;
-import org.json.JSONException;
-import org.json.JSONObject;
-
 import java.lang.reflect.Type;
-import java.util.Map;
 
 public class Myinfo extends AddingPoster_BaseAct implements SwipeRefreshLayout.OnRefreshListener,NavigationView.OnNavigationItemSelectedListener {
     private SwipeRefreshLayout mSwipeRefreshLayout;
@@ -259,7 +248,7 @@ public class Myinfo extends AddingPoster_BaseAct implements SwipeRefreshLayout.O
 //                    String PosterKeyGet = dataSnapshot.getValue().toString();
 //                    Log.i("포스터키","데이터스냅샷 : "+PosterKeyGet);
 //
-//                    Posting_DTO posting_dto = gson.fromJson(gson.toJson(PosterKeyGet),Posting_DTO.class);
+//                    PostingSet posting_dto = gson.fromJson(gson.toJson(PosterKeyGet),PostingSet.class);
 //                    Log.i("포스터키","posting_dto : "+posting_dto.toString());
 //
 //                    String json = gson.toJson(PosterKeyGet,StringType);

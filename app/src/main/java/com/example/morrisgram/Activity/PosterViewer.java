@@ -4,7 +4,6 @@ import android.content.DialogInterface;
 import android.content.Intent;
 
 import androidx.annotation.NonNull;
-import androidx.annotation.Nullable;
 import androidx.appcompat.app.AlertDialog;
 import androidx.constraintlayout.widget.ConstraintLayout;
 import androidx.recyclerview.widget.LinearLayoutManager;
@@ -19,12 +18,11 @@ import android.view.ViewGroup;
 import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.TextView;
-import android.widget.Toast;
 
 import com.bumptech.glide.load.engine.DiskCacheStrategy;
 import com.example.morrisgram.Activity.BaseActivity.AddingPoster_BaseAct;
 import com.example.morrisgram.CameraClass.GlideApp;
-import com.example.morrisgram.DTO_Classes.Firebase.Posting_DTO;
+import com.example.morrisgram.ClassesDataSet.Firebase.PostingSet;
 import com.example.morrisgram.R;
 import com.firebase.ui.database.FirebaseRecyclerAdapter;
 import com.firebase.ui.database.FirebaseRecyclerOptions;
@@ -44,9 +42,6 @@ import com.google.firebase.database.ValueEventListener;
 import com.google.firebase.storage.FirebaseStorage;
 import com.google.firebase.storage.StorageMetadata;
 import com.google.firebase.storage.StorageReference;
-import com.google.protobuf.StringValue;
-import com.like.LikeButton;
-import com.like.OnLikeListener;
 import com.orangegangsters.github.swipyrefreshlayout.library.SwipyRefreshLayout;
 import com.orangegangsters.github.swipyrefreshlayout.library.SwipyRefreshLayoutDirection;
 
@@ -337,6 +332,7 @@ public class PosterViewer extends AddingPoster_BaseAct implements SwipyRefreshLa
         }
     }
     //----------------------------파이어베이스 어댑터---------------------------------------
+
     private void fetch() {
         final Query query = FirebaseDatabase.getInstance()
                 //BaseQuery
@@ -349,18 +345,18 @@ public class PosterViewer extends AddingPoster_BaseAct implements SwipyRefreshLa
         Log.i("파베", "포스터 뷰어 query 경로 확인 : "+query.toString());
 
         //DB에 정보를 받아서 가져오는 스냅샷 - 스트링형식으로 받아와야함
-        FirebaseRecyclerOptions<Posting_DTO> options =
-                new FirebaseRecyclerOptions.Builder<Posting_DTO>()
-                        .setQuery(query, new SnapshotParser<Posting_DTO>() {
+        FirebaseRecyclerOptions<PostingSet> options =
+                new FirebaseRecyclerOptions.Builder<PostingSet>()
+                        .setQuery(query, new SnapshotParser<PostingSet>() {
                             @NonNull
                             @Override
-                            public Posting_DTO parseSnapshot(@NonNull DataSnapshot snapshot) {
+                            public PostingSet parseSnapshot(@NonNull DataSnapshot snapshot) {
 
                                 //받은 게시물 키값으로 검색,대조,데이터 수정
 //                                String UserPosterKey =  snapshot.child("PosterKey").getValue().toString();
 //                                Log.i("포스터키", "UserPosterKey : "+UserPosterKey);
 
-                                return new Posting_DTO(
+                                return new PostingSet(
                                         snapshot.child("UserUID").getValue().toString(),     //프로필 이미지
                                         snapshot.child("UserNickName").getValue().toString(), //유저 닉네임
                                         snapshot.child("Body").getValue().toString(),        //게시물 글
@@ -375,7 +371,7 @@ public class PosterViewer extends AddingPoster_BaseAct implements SwipyRefreshLa
                         })
                         .build();
 
-        adapter = new FirebaseRecyclerAdapter<Posting_DTO, ViewHolder>(options) {
+        adapter = new FirebaseRecyclerAdapter<PostingSet, ViewHolder>(options) {
             @Override
             public PosterViewer.ViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
                 View view = LayoutInflater.from(parent.getContext())
@@ -384,20 +380,22 @@ public class PosterViewer extends AddingPoster_BaseAct implements SwipyRefreshLa
             }
 
             @Override
-            protected void onBindViewHolder(final PosterViewer.ViewHolder holder, final int position, final Posting_DTO posting_dto) {
-                holder.setPosterKey(posting_dto.getPosterKey());
-                holder.setBody(posting_dto.getBody());
-                holder.setUserNickName(posting_dto.getUserNickName());
-                holder.setUserUID(posting_dto.getUserUID());
+            protected void onBindViewHolder(final PosterViewer.ViewHolder holder, final int position, final PostingSet posting_set) {
+                holder.setPosterKey(posting_set.getPosterkey());
+                holder.setBody(posting_set.getBody());
+                holder.setUserNickName(posting_set.getUserNickName());
+                holder.setUserUID(posting_set.getUserUID());
 
-                holder.setLikeCount(Integer.valueOf(posting_dto.getLikeCount()).toString());
-                holder.setReplyCount(Integer.valueOf(posting_dto.getReplyCount()).toString());
+                holder.setLikeCount(String.valueOf(posting_set.getLikecount()));
+                holder.setReplyCount(String.valueOf(posting_set.getReplycount()));
 
-                holder.setPostedTime(posting_dto.getPostedTime());
-                holder.setNickName_Reply(posting_dto.getUserNickName());
+                holder.setPostedTime(posting_set.getPostedtime());
+                holder.setNickName_Reply(posting_set.getUserNickName());
                 //위치 메타데이터
-                holder.setMetadata(posting_dto.getPosterKey());
+                holder.setMetadata(posting_set.getPosterkey());
 
+                //클릭한 포스터의 키값 받기
+                final String Key = holder.getUserPosterKey(posting_set.getPosterkey());
 
                 //---------------게시물 삭제 클릭------------클릭한 게시물 개별 접근------------
                 holder.vetB.setOnClickListener(new View.OnClickListener() {
@@ -411,7 +409,7 @@ public class PosterViewer extends AddingPoster_BaseAct implements SwipyRefreshLa
                             public void onClick(DialogInterface dialog, int which) {
                                 if(which == 0){
                                     //클릭한 게시물의 키값 가져오기
-                                   String Key = holder.getUserPosterKey(posting_dto.getPosterKey());
+                                   String Key = holder.getUserPosterKey(posting_set.getPosterkey());
                                     Log.i("포스터키", "클릭한 PosterKey : "+Key);
 
                                     //UserPostList 에서의 삭제
@@ -425,6 +423,7 @@ public class PosterViewer extends AddingPoster_BaseAct implements SwipyRefreshLa
                             }
                         });
                         builder.show();
+
                     }
                 });//-------------게시물 삭제 클릭------------
 
@@ -440,50 +439,51 @@ public class PosterViewer extends AddingPoster_BaseAct implements SwipyRefreshLa
                 holder.likeButton.setOnClickListener(new View.OnClickListener() {
                     @Override
                     public void onClick(View v) {
+                        onStarClicked(mdataref,Key);
                         holder.likeButton.setImageResource(R.drawable.like3);
-                        final String Key = holder.getUserPosterKey(posting_dto.getPosterKey());
-                        mdataref.child(userUID).child("UserPosterList").child(Key).child("LikeCount").runTransaction(new Transaction.Handler() {
-                            @Override
-                            public Transaction.Result doTransaction(MutableData mutableData) {
-                                Posting_DTO p = mutableData.getValue(Posting_DTO.class);
-                                if (p == null) {
-                                    return Transaction.success(mutableData);
-                                }
-
-                                if (p.likes.containsKey(userUID)) {
-                                    // Unstar the post and remove self from stars
-                                    p.LikeCount = p.LikeCount - 1;
-                                    p.likes.remove(userUID);
-                                } else {
-                                    // Star the post and add self to stars
-                                    p.LikeCount = p.LikeCount + 1;
-                                    p.likes.put(userUID, true);
-                                }
-
-                                // Set value and report transaction success
-                                mutableData.setValue(p);
-                                return Transaction.success(mutableData);
-                            }
-
-                            @Override
-                            public void onComplete(DatabaseError databaseError, boolean b,
-                                                   DataSnapshot dataSnapshot) {
-                                // Transaction completed
-                            }
-                        });
-                    }
-                });
-
-                //터치
-                holder.root.setOnClickListener(new View.OnClickListener() {
-                    @Override
-                    public void onClick(View view) {
-                        Toast.makeText(PosterViewer.this, String.valueOf(position), Toast.LENGTH_SHORT).show();
                     }
                 });
             }
         };
         recyclerView.setAdapter(adapter);
+    }
+
+    //좋아요 메소드
+    private void onStarClicked(final DatabaseReference postRef, final String Key) {
+        postRef.child(userUID).child("UserPosterList").child(Key).child("LikeCount").runTransaction(new Transaction.Handler() {
+            @Override
+            public Transaction.Result doTransaction(MutableData mutableData) {
+                PostingSet p = mutableData.getValue(PostingSet.class);
+                if (p == null) {
+                    return Transaction.success(mutableData);
+                }
+
+                if (p.likes.containsKey(userUID)) {
+                    // Unstar the post and remove self from stars
+                    p.likecount = p.likecount  - 1;
+                    p.likes.remove(userUID);
+                    Log.i("좋아요","이미 눌렀을 때 좋아요 개수 : "+p.likecount);
+                } else {
+                    // Star the post and add self to stars
+                    p.likecount  = p.likecount + 1;
+                    p.likes.put(userUID, true);
+                    Log.i("좋아요","처음 눌렀을 때 좋아요 개수 : "+p.likecount);
+                }
+
+                // Set value and report transaction success
+                mutableData.setValue(p);
+                return Transaction.success(mutableData);
+            }
+
+            @Override
+            public void onComplete(DatabaseError databaseError, boolean b,
+                                   DataSnapshot dataSnapshot) {
+                // Transaction completed
+                Log.i("좋아요","b : "+b);
+                Log.i("좋아요","databaseError : "+databaseError);
+                Log.i("좋아요","dataSnapshot : "+dataSnapshot);
+            }
+        });
     }
 }
 

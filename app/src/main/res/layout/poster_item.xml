@@ -280,7 +280,7 @@
         app:layout_constraintBottom_toTopOf="@+id/guideline2"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintHorizontal_bias="0.0"
-        app:layout_constraintStart_toEndOf="@+id/lickB_posteritem"
+        app:layout_constraintStart_toEndOf="@+id/likeB_posteritem"
         app:layout_constraintTop_toBottomOf="@+id/imageView_posteritem"
         app:srcCompat="@drawable/reple1" />
 

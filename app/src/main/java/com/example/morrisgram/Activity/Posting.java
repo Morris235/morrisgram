@@ -3,9 +3,7 @@ package com.example.morrisgram.Activity;
 import androidx.annotation.NonNull;
 
 import android.content.Intent;
-import android.content.SharedPreferences;
 import android.content.pm.ActivityInfo;
-import android.net.Uri;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
@@ -23,7 +21,7 @@ import com.drew.metadata.Metadata;
 import com.drew.metadata.exif.GpsDirectory;
 import com.example.morrisgram.Activity.BaseActivity.AddingPoster_BaseAct;
 import com.example.morrisgram.CameraClass.GlideApp;
-import com.example.morrisgram.DTO_Classes.Firebase.Posting_DTO;
+import com.example.morrisgram.ClassesDataSet.Firebase.PostingSet;
 import com.example.morrisgram.R;
 import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
@@ -38,7 +36,6 @@ import com.google.firebase.storage.FirebaseStorage;
 import com.google.firebase.storage.StorageMetadata;
 import com.google.firebase.storage.StorageReference;
 
-import java.io.File;
 import java.io.IOException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
@@ -156,7 +153,7 @@ public class Posting extends AddingPoster_BaseAct {
         Map<String,Object> PostValues = null;
 
         if(add){
-            Posting_DTO posting = new Posting_DTO(UserUID,UserNicName,Body,Time,0,0,PosterKey,TimeStemp);
+            PostingSet posting = new PostingSet(UserUID,UserNicName,Body,Time,0,0,PosterKey,TimeStemp);
             PostValues = posting.toMap();
         }
 

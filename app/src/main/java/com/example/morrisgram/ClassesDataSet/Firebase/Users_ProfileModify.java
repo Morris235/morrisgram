@@ -1,4 +1,4 @@
-package com.example.morrisgram.DTO_Classes.Firebase;
+package com.example.morrisgram.ClassesDataSet.Firebase;
 import com.google.firebase.database.Exclude;
 
 import java.util.HashMap;
