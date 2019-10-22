@@ -8,12 +8,12 @@ import java.util.HashMap;
 import java.util.Map;
 
 @IgnoreExtraProperties
-public class PostingSet{
+public class PostingDTO {
 
-    public PostingSet(){
+    public PostingDTO(){
     }
 
-    public PostingSet(String userUID, String userNickName, String body, String postedTime, int likeCount, int replyCount, String posterKey, String timestemp) {
+    public PostingDTO(String userUID, String userNickName, String body, String postedTime, long likeCount, long replyCount, String posterKey, String timestemp) {
         this.userUID = userUID;
         this.userNickName = userNickName;
         this.body = body;
@@ -69,19 +69,19 @@ public class PostingSet{
         this.tImeStemp = tImeStemp;
     }
 
-    public int getLikecount() {
+    public long getLikecount() {
         return likecount;
     }
 
-    public void setLikecount(int likecount) {
+    public void setLikecount(long likecount) {
         this.likecount = likecount;
     }
 
-    public int getReplycount() {
+    public long getReplycount() {
         return replycount;
     }
 
-    public void setReplycount(int replycount) {
+    public void setReplycount(long replycount) {
         this.replycount = replycount;
     }
 
@@ -93,8 +93,6 @@ public class PostingSet{
         this.likes = likes;
     }
 
-    private static final long serialVersionUID = 1L;
-
     private String userUID; //유저 프로필 사진 Uri
     private String userNickName; //유저 닉네임
     private String body; //게시물 글 내용
@@ -102,8 +100,8 @@ public class PostingSet{
     private String posterkey; //게시물 사진 uri
     private String tImeStemp; //데이터 정렬에 사용
 
-    public int likecount; //좋아요
-    public int replycount; //댓글
+    public long likecount; //좋아요
+    public long replycount; //댓글
 
     public Map<String, Boolean> likes = new HashMap<>();
 

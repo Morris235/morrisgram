@@ -30,7 +30,7 @@ import android.widget.Toast;
 import com.bumptech.glide.load.engine.DiskCacheStrategy;
 import com.example.morrisgram.Activity.BaseActivity.AddingPoster_BaseAct;
 import com.example.morrisgram.CameraClass.GlideApp;
-import com.example.morrisgram.ClassesDataSet.Firebase.PostingSet;
+import com.example.morrisgram.ClassesDataSet.Firebase.PostingDTO;
 import com.example.morrisgram.ClassesDataSet.Firebase.PreView;
 import com.example.morrisgram.R;
 import com.firebase.ui.database.FirebaseRecyclerAdapter;
@@ -79,11 +79,9 @@ public class Myinfo extends AddingPoster_BaseAct implements SwipeRefreshLayout.O
     private StorageReference mstorageRef = FirebaseStorage.getInstance().getReference();
     private String userUID = uid.getUid();
 
-    //포스터키
-    public String UserPosterKeys;
     //포스터키 수집용 리스트
     private List<String> PosterKeyList = new ArrayList<>();
-    private List<PostingSet> postingSets = new ArrayList<>();
+    private List<PostingDTO> postingDTOS = new ArrayList<>();
 
     //파이어베이스 리사이클러뷰
     private RecyclerView recyclerView;
@@ -229,19 +227,19 @@ public class Myinfo extends AddingPoster_BaseAct implements SwipeRefreshLayout.O
 
                 //포스터키 수집용 리스트
 //                private List<String> PosterKeyList = new ArrayList<>();
-//                private List<PostingSet> postingSets = new ArrayList<>();
+//                private List<PostingDTO> postingDTOS = new ArrayList<>();
                 //포스터키가 리스트에 쌓이지 않도록 클리어하기
 
-                postingSets.clear();
+                postingDTOS.clear();
                 PosterKeyList.clear();
                 for (DataSnapshot snapshot : dataSnapshot.getChildren()){
-                    PostingSet postingSet = snapshot.getValue(PostingSet.class);
+                    PostingDTO postingDTO = snapshot.getValue(PostingDTO.class);
 
                     String GetKey = snapshot.getKey();
                     Log.i("포스터키","GetKeyTest : "+GetKey);
 
                     //클래스 주소값?
-                    postingSets.add(postingSet);
+                    postingDTOS.add(postingDTO);
                     PosterKeyList.add(GetKey);
                 }
 
@@ -267,7 +265,7 @@ public class Myinfo extends AddingPoster_BaseAct implements SwipeRefreshLayout.O
 //                    String PosterKeyGet = dataSnapshot.getValue().toString();
 //                    Log.i("포스터키","데이터스냅샷 : "+PosterKeyGet);
 //
-//                    PostingSet posting_dto = gson.fromJson(gson.toJson(PosterKeyGet),PostingSet.class);
+//                    PostingDTO posting_dto = gson.fromJson(gson.toJson(PosterKeyGet),PostingDTO.class);
 //                    Log.i("포스터키","posting_dto : "+posting_dto.toString());
 //
 //                    String json = gson.toJson(PosterKeyGet,StringType);
@@ -345,7 +343,7 @@ public class Myinfo extends AddingPoster_BaseAct implements SwipeRefreshLayout.O
                             mstorageRef.child(userUID).child("ProfileIMG").child("ProfileIMG").delete();
 
                             //-GetPosterKey is ArrayList-
-                            for (int i=0; i<GetPosterKey().size(); i++){
+                            for (int i=0; i<PosterKeyList.size(); i++){
                                 //스토리지에서 유저의 게시물 이미지 모두 삭제
                                 mstorageRef.child("PosterPicList").child(PosterKeyList.get(i)).child("PosterIMG").delete();
                                 //유저의 게시물 전체 DB삭제
@@ -501,7 +499,6 @@ public class Myinfo extends AddingPoster_BaseAct implements SwipeRefreshLayout.O
 //                                    UserPosterKeys = snapshot.child("PosterKey").getValue().toString();
 //                                    //내부 DB에 로그인한 유저의 포스터키 저장
 //                                    SavePosterKey(UserPosterKeys);
-                                    Log.i("파베", "UserPosterKeys : "+UserPosterKeys);
                                     return new PreView(
                                             snapshot.child("PosterKey").getValue().toString());
                                 }

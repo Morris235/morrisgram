@@ -21,7 +21,7 @@ import com.drew.metadata.Metadata;
 import com.drew.metadata.exif.GpsDirectory;
 import com.example.morrisgram.Activity.BaseActivity.AddingPoster_BaseAct;
 import com.example.morrisgram.CameraClass.GlideApp;
-import com.example.morrisgram.ClassesDataSet.Firebase.PostingSet;
+import com.example.morrisgram.ClassesDataSet.Firebase.PostingDTO;
 import com.example.morrisgram.R;
 import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
@@ -114,7 +114,10 @@ public class Posting extends AddingPoster_BaseAct {
                         String DATE = SDF.format(date);
                         String TimeStemp = TIMESTEMP.format(date);
 
-                            UpFirebaseDatabase(true,userUID,NickName,Body,DATE,PosterKey_posting,TimeStemp);
+                        long likecount = 0;
+                        long replycount = 0;
+
+                            UpFirebaseDatabase(true,userUID,NickName,Body,DATE,PosterKey_posting,TimeStemp,likecount,replycount);
 
                             //위치 메타데이터 업로드 메소드
                             getMetaData(PosterKey_posting);
@@ -146,14 +149,14 @@ public class Posting extends AddingPoster_BaseAct {
         });
     }
 
-    //파이어 베이스 업데이트 메소드 - 게시물 포스팅 클래스에서 입력받아야 하는 모든 데이터들
-    public void UpFirebaseDatabase(boolean add, String UserUID, String UserNicName, String Body,String Time, String PosterKey, String TimeStemp){
+    //파이어 베이스 업데이트 메소드 - 게시물 포스팅 클래스에서 입력받아야 하는 모든 데이터들 // 인트로 업로드
+    public void UpFirebaseDatabase(boolean add, String UserUID, String UserNicName, String Body,String Time, String PosterKey, String TimeStemp, long likeCount, long replyCount){
         //해쉬맵 생성
         Map<String,Object> childUpdates = new HashMap<>();
         Map<String,Object> PostValues = null;
 
         if(add){
-            PostingSet posting = new PostingSet(UserUID,UserNicName,Body,Time,0,0,PosterKey,TimeStemp);
+            PostingDTO posting = new PostingDTO(UserUID,UserNicName,Body,Time,likeCount,replyCount,PosterKey,TimeStemp);
             PostValues = posting.toMap();
         }
 
@@ -163,7 +166,6 @@ public class Posting extends AddingPoster_BaseAct {
 
         //유저의 게시물 따로 업데이트
         mdataref.child("UserList").child(userUID).child("UserPosterList").updateChildren(childUpdates);
-        mdataref.child("UserList").child(userUID).child("UserPosterList").setPriority(2018);
     }
 
     //위치 메타데이터 추출 메소드

@@ -28,7 +28,7 @@ import android.widget.Toast;
 import com.bumptech.glide.load.engine.DiskCacheStrategy;
 import com.example.morrisgram.Activity.BaseActivity.AddingPoster_BaseAct;
 import com.example.morrisgram.CameraClass.GlideApp;
-import com.example.morrisgram.ClassesDataSet.Firebase.PostingSet;
+import com.example.morrisgram.ClassesDataSet.Firebase.PostingDTO;
 import com.example.morrisgram.R;
 import com.firebase.ui.database.FirebaseRecyclerAdapter;
 import com.firebase.ui.database.FirebaseRecyclerOptions;
@@ -366,15 +366,15 @@ public class Home extends AddingPoster_BaseAct implements SwipyRefreshLayout.OnR
         Log.i("파베", "홈 뷰어 query 경로 확인 : "+query.toString());
 
         //query를 사용해서 DB의 모든 해당 정보를 받아서 가져오는 스냅샷 - 스트링형식으로 받아와야함
-        FirebaseRecyclerOptions<PostingSet> options =
-                new FirebaseRecyclerOptions.Builder<PostingSet>()
-                        .setQuery(query, new SnapshotParser<PostingSet>() {
+        FirebaseRecyclerOptions<PostingDTO> options =
+                new FirebaseRecyclerOptions.Builder<PostingDTO>()
+                        .setQuery(query, new SnapshotParser<PostingDTO>() {
                             @NonNull
                             @Override
-                            public PostingSet parseSnapshot(@NonNull DataSnapshot snapshot) {
+                            public PostingDTO parseSnapshot(@NonNull DataSnapshot snapshot) {
                                 Log.i("파베", "홈 뷰어 스냅샷 메소드 작동 확인");
                                 Log.i("파베", "snapshot.child(\"PosterKey\").getValue().toString() : "+snapshot.child("PosterKey").getValue().toString());
-                                return new PostingSet(
+                                return new PostingDTO(
                                         snapshot.child("UserUID").getValue().toString(),     //프로필 이미지
                                         snapshot.child("UserNickName").getValue().toString(), //유저 닉네임
                                         snapshot.child("Body").getValue().toString(),        //게시물 글
@@ -387,16 +387,16 @@ public class Home extends AddingPoster_BaseAct implements SwipyRefreshLayout.OnR
                         })
                         .build();
 
-        adapter = new FirebaseRecyclerAdapter<PostingSet, Home.ViewHolder>(options) {
+        adapter = new FirebaseRecyclerAdapter<PostingDTO, Home.ViewHolder>(options) {
             @Override
-            protected void onBindViewHolder(@NonNull ViewHolder holder, final int position, @NonNull PostingSet posting_set) {
+            protected void onBindViewHolder(@NonNull ViewHolder holder, final int position, @NonNull PostingDTO posting_set) {
                 holder.setPosterKey(posting_set.getPosterkey());
                 holder.setBody(posting_set.getBody());
                 holder.setUserNickName(posting_set.getUserNickName());
                 holder.setUserUID(posting_set.getUserUID());
 
-                holder.setLikeCount(Integer.valueOf(posting_set.getLikecount()).toString());
-                holder.setReplyCount(Integer.valueOf(posting_set.getReplycount()).toString());
+                holder.setLikeCount(Long.valueOf(posting_set.getLikecount()).toString());
+                holder.setReplyCount(Long.valueOf(posting_set.getReplycount()).toString());
 
                 holder.setPostedTime(posting_set.getPostedtime());
                 holder.setNickName_Reply(posting_set.getUserNickName());
