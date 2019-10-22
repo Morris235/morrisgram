@@ -30,6 +30,7 @@ import android.widget.Toast;
 import com.bumptech.glide.load.engine.DiskCacheStrategy;
 import com.example.morrisgram.Activity.BaseActivity.AddingPoster_BaseAct;
 import com.example.morrisgram.CameraClass.GlideApp;
+import com.example.morrisgram.ClassesDataSet.Firebase.PostingSet;
 import com.example.morrisgram.ClassesDataSet.Firebase.PreView;
 import com.example.morrisgram.R;
 import com.firebase.ui.database.FirebaseRecyclerAdapter;
@@ -53,6 +54,8 @@ import com.google.gson.GsonBuilder;
 import com.google.gson.reflect.TypeToken;
 
 import java.lang.reflect.Type;
+import java.util.ArrayList;
+import java.util.List;
 
 public class Myinfo extends AddingPoster_BaseAct implements SwipeRefreshLayout.OnRefreshListener,NavigationView.OnNavigationItemSelectedListener {
     private SwipeRefreshLayout mSwipeRefreshLayout;
@@ -68,7 +71,6 @@ public class Myinfo extends AddingPoster_BaseAct implements SwipeRefreshLayout.O
     private DrawerLayout mdrawerLayout;
     private ActionBarDrawerToggle mtoggle;
 
-
     //데이터베이스의 주소를 지정 필수
     private DatabaseReference mdataref = FirebaseDatabase.getInstance().getReference("UserList");
     //현재 접속중인 유저UID가져오기
@@ -79,6 +81,9 @@ public class Myinfo extends AddingPoster_BaseAct implements SwipeRefreshLayout.O
 
     //포스터키
     public String UserPosterKeys;
+    //포스터키 수집용 리스트
+    private List<String> PosterKeyList = new ArrayList<>();
+    private List<PostingSet> postingSets = new ArrayList<>();
 
     //파이어베이스 리사이클러뷰
     private RecyclerView recyclerView;
@@ -137,8 +142,6 @@ public class Myinfo extends AddingPoster_BaseAct implements SwipeRefreshLayout.O
         recyclerView.setHasFixedSize(true);
 
         fetch();
-        Log.i("포스터키","회원탈퇴 포스터키 : "+UserPosterKeys);
-
 //-----------------------------------화면이동----------------------------------------
         homeB = (ImageButton) findViewById(R.id.homeB_my);
         homeB.setOnClickListener(new View.OnClickListener() {
@@ -224,6 +227,24 @@ public class Myinfo extends AddingPoster_BaseAct implements SwipeRefreshLayout.O
                 String WebsiteVal = (String) dataSnapshot.child(userUID).child("Profile").child("Website").getValue();
                 String IntroVal = (String) dataSnapshot.child(userUID).child("Profile").child("Introduce").getValue();
 
+                //포스터키 수집용 리스트
+//                private List<String> PosterKeyList = new ArrayList<>();
+//                private List<PostingSet> postingSets = new ArrayList<>();
+                //포스터키가 리스트에 쌓이지 않도록 클리어하기
+
+                postingSets.clear();
+                PosterKeyList.clear();
+                for (DataSnapshot snapshot : dataSnapshot.getChildren()){
+                    PostingSet postingSet = snapshot.getValue(PostingSet.class);
+
+                    String GetKey = snapshot.getKey();
+                    Log.i("포스터키","GetKeyTest : "+GetKey);
+
+                    //클래스 주소값?
+                    postingSets.add(postingSet);
+                    PosterKeyList.add(GetKey);
+                }
+
                 hname.setText(NameVal);
                 pname.setText(NameVal);
                 idtv.setText(NameVal);
@@ -238,8 +259,6 @@ public class Myinfo extends AddingPoster_BaseAct implements SwipeRefreshLayout.O
         });
 
         //-----------현재 접속한 회원의 스토리지 이미지만 삭제 - 회원의 모든 포스터키 데이터 쿼리----------
-
-
 
 //        query.addValueEventListener(new ValueEventListener() {
 //            @Override
@@ -328,7 +347,7 @@ public class Myinfo extends AddingPoster_BaseAct implements SwipeRefreshLayout.O
                             //-GetPosterKey is ArrayList-
                             for (int i=0; i<GetPosterKey().size(); i++){
                                 //스토리지에서 유저의 게시물 이미지 모두 삭제
-                                mstorageRef.child("PosterPicList").child(GetPosterKey().get(i).toString()).child("PosterIMG").delete();
+                                mstorageRef.child("PosterPicList").child(PosterKeyList.get(i)).child("PosterIMG").delete();
                                 //유저의 게시물 전체 DB삭제
                                 mdataref.getDatabase().getReference("PosterList").child(GetPosterKey().get(i).toString()).removeValue();
                             }
@@ -479,10 +498,9 @@ public class Myinfo extends AddingPoster_BaseAct implements SwipeRefreshLayout.O
                                 @Override
                                 public PreView parseSnapshot(@NonNull DataSnapshot snapshot) {
                                     //포스터키 수집
-                                    UserPosterKeys = snapshot.child("PosterKey").getValue().toString();
-                                    //내부 DB에 로그인한 유저의 포스터키 저장
-                                    SavePosterKey(UserPosterKeys);
-
+//                                    UserPosterKeys = snapshot.child("PosterKey").getValue().toString();
+//                                    //내부 DB에 로그인한 유저의 포스터키 저장
+//                                    SavePosterKey(UserPosterKeys);
                                     Log.i("파베", "UserPosterKeys : "+UserPosterKeys);
                                     return new PreView(
                                             snapshot.child("PosterKey").getValue().toString());

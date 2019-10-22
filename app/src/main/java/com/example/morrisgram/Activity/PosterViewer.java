@@ -33,6 +33,7 @@ import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
+import com.google.firebase.database.DatabaseException;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.MutableData;
@@ -44,6 +45,9 @@ import com.google.firebase.storage.StorageMetadata;
 import com.google.firebase.storage.StorageReference;
 import com.orangegangsters.github.swipyrefreshlayout.library.SwipyRefreshLayout;
 import com.orangegangsters.github.swipyrefreshlayout.library.SwipyRefreshLayoutDirection;
+
+import java.util.ArrayList;
+import java.util.List;
 
 //게시물 액티비티
 public class PosterViewer extends AddingPoster_BaseAct implements SwipyRefreshLayout.OnRefreshListener{
@@ -61,6 +65,10 @@ public class PosterViewer extends AddingPoster_BaseAct implements SwipyRefreshLa
     private RecyclerView recyclerView;
     private LinearLayoutManager linearLayoutManager;
     private FirebaseRecyclerAdapter adapter;
+
+    //포스터키 수집용 리스트
+    private List<String> PosterKeyList = new ArrayList<>();
+    private List<PostingSet> postingSets = new ArrayList<>();
 
     //포커스
     public boolean FIRST_FOCUS = false;
@@ -80,11 +88,6 @@ public class PosterViewer extends AddingPoster_BaseAct implements SwipyRefreshLa
         recyclerView.setLayoutManager(linearLayoutManager);
         recyclerView.setHasFixedSize(true);
 
-//        //아이템 역순 추가정렬 = true
-//        linearLayoutManager.setReverseLayout(false);
-//        linearLayoutManager.setStackFromEnd(false);
-//        recyclerView.setLayoutManager(linearLayoutManager); //setLayoutManager 메소드를 사용해서 매니저를 리사이클러뷰에 설정
-
         mSwipeRefreshLayout = (SwipyRefreshLayout) findViewById(R.id.refresh_posterviewer);
         mSwipeRefreshLayout.setOnRefreshListener(this);
         mSwipeRefreshLayout.setDirection(SwipyRefreshLayoutDirection.TOP);
@@ -92,6 +95,37 @@ public class PosterViewer extends AddingPoster_BaseAct implements SwipyRefreshLa
         //포커스 boolean
         FIRST_FOCUS = true;
         fetch();
+
+        mdataref.child(userUID).child("UserPosterList").addValueEventListener(new ValueEventListener() {
+            @Override
+            public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+                //포스터키 수집용 리스트
+//                private List<String> PosterKeyList = new ArrayList<>();
+//                private List<PostingSet> postingSets = new ArrayList<>();
+
+                //포스터키가 리스트에 쌓이지 않도록 클리어하기
+                postingSets.clear();
+                PosterKeyList.clear();
+                for (DataSnapshot snapshot : dataSnapshot.getChildren()){
+                    //어디에 쓰는 코드?
+                    PostingSet postingSet = snapshot.getValue(PostingSet.class);
+
+                    //게시물 키값 받기
+                    String GetKey = snapshot.getKey();
+                    Log.i("포스터키","GetKeyTest : "+GetKey);
+
+                    //클래스 주소값?
+                    postingSets.add(postingSet);
+                    //키값들을 리스트형태로 저장
+                    PosterKeyList.add(GetKey);
+                }
+            }
+
+            @Override
+            public void onCancelled(@NonNull DatabaseError databaseError) {
+
+            }
+        });
 //----------------------------------화면이동----------------------------------------
 //홈 화면 이동
         ImageButton homeB;
@@ -144,8 +178,6 @@ public class PosterViewer extends AddingPoster_BaseAct implements SwipyRefreshLa
             }
         });
 
-        PosterKeySearcher();
-
     }//-------------------------------크리에이트-----------------------------------
     public void onStart() {
         super.onStart();
@@ -183,41 +215,6 @@ public class PosterViewer extends AddingPoster_BaseAct implements SwipyRefreshLa
 
     }
 
-    public void PosterKeySearcher(){
-
-        mdataref.addListenerForSingleValueEvent(new ValueEventListener() {
-            @Override
-            public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
-//                double UserPosterPriority = (double) dataSnapshot.child(userUID).child("UserPosterList").getPriority();
-//                Log.i("포스터키","현재 접속중인 유저의 포스터 우선도 가져오기 테스트 : "+UserPosterPriority);
-
-                Query query = FirebaseDatabase.getInstance()
-                        //BaseQuery
-                        .getReference()
-                        .child("UserList")
-                        .child(userUID)
-                        .child("UserPosterList")
-                        .child("PosterKey");
-
-                String UserPosterKey = query.toString();
-                Log.i("포스터키","현재 접속중인 유저의 포스터키들 가져오기 테스트 : "+UserPosterKey);
-
-                Long PosterCount = dataSnapshot.child(userUID).child("UserPosterList").getChildrenCount();
-                Log.i("포스터키","현재 접속중인 유저의 포스터키 개수 : "+PosterCount);
-//                for (int i=0; i<=PosterCount; i++){
-////                        String Keys = query.toString();
-////                        Log.i("포스터키","현재 접속중인 유저의 포스터키 Iterable : "+Keys);
-//
-//                    Log.i("포스터키","반복횟수 : "+i);
-//                }
-            }
-
-            @Override
-            public void onCancelled(@NonNull DatabaseError databaseError) {
-
-            }
-        });
-    }
     //------------------------뷰홀더------------------------------
    public class ViewHolder extends RecyclerView.ViewHolder {
 
@@ -393,9 +390,8 @@ public class PosterViewer extends AddingPoster_BaseAct implements SwipyRefreshLa
                 holder.setNickName_Reply(posting_set.getUserNickName());
                 //위치 메타데이터
                 holder.setMetadata(posting_set.getPosterkey());
-
-                //클릭한 포스터의 키값 받기
-                final String Key = holder.getUserPosterKey(posting_set.getPosterkey());
+//                //클릭한 포스터의 키값 받기
+//                final String Key = holder.getUserPosterKey(posting_set.getPosterkey());
 
                 //---------------게시물 삭제 클릭------------클릭한 게시물 개별 접근------------
                 holder.vetB.setOnClickListener(new View.OnClickListener() {
@@ -426,7 +422,6 @@ public class PosterViewer extends AddingPoster_BaseAct implements SwipyRefreshLa
 
                     }
                 });//-------------게시물 삭제 클릭------------
-
                 //내피드에서 선택한 게시물 포커스 주기 - 액티비티 최초실행시 실행
                 if (FIRST_FOCUS){
                     Intent intent = getIntent();
@@ -439,51 +434,72 @@ public class PosterViewer extends AddingPoster_BaseAct implements SwipyRefreshLa
                 holder.likeButton.setOnClickListener(new View.OnClickListener() {
                     @Override
                     public void onClick(View v) {
-                        onStarClicked(mdataref,Key);
-                        holder.likeButton.setImageResource(R.drawable.like3);
+                        //포스터키는 리스트사용
+                        onStarClicked(mdataref.child(userUID).child("UserPosterList").child(PosterKeyList.get(position)).child("LikeCount"));
+                        Log.i("좋아요","mdataref 경로확인 : "+mdataref.child(userUID).child("UserPosterList").child(PosterKeyList.get(position)).child("LikeCount").toString());
                     }
                 });
+                //좋아요를 해당 계정이 이미 눌렀다면 빈하트, 아니라면 하트
+                if (postingSets.get(position).likes.containsKey(userUID)){
+                    holder.likeButton.setImageResource(R.drawable.like3);
+                }else {
+                    holder.likeButton.setImageResource(R.drawable.like1);
+                }
             }
         };
         recyclerView.setAdapter(adapter);
     }
 
     //좋아요 메소드
-    private void onStarClicked(final DatabaseReference postRef, final String Key) {
-        postRef.child(userUID).child("UserPosterList").child(Key).child("LikeCount").runTransaction(new Transaction.Handler() {
-            @Override
-            public Transaction.Result doTransaction(MutableData mutableData) {
-                PostingSet p = mutableData.getValue(PostingSet.class);
-                if (p == null) {
+    private void onStarClicked(final DatabaseReference postRef) {
+        try {
+            postRef.runTransaction(new Transaction.Handler() {
+                @Override
+                public Transaction.Result doTransaction(MutableData mutableData) {
+                    Log.i("좋아요","트랜젝션 실행확인");
+                    Log.i("좋아요"," postRef 경로 확인"+postRef.toString());
+
+                    PostingSet p = mutableData.getValue(PostingSet.class);
+                    Log.i("좋아요","이미 눌렀을 때 좋아요 개수 : "+p.likecount);
+
+                    if (p == null) {
+                        return Transaction.success(mutableData);
+                    }
+                    Log.i("좋아요","이미 눌렀을 때 좋아요 개수 : "+p.likecount);
+
+                    if (p.likes.containsKey(userUID)) {
+                        // Unstar the post and remove self from stars
+                        p.likecount = p.likecount  - 1;
+                        p.likes.remove(userUID);
+                        Log.i("좋아요","if (p.likes.containsKey(userUID)) 실행확인");
+                        Log.i("좋아요","이미 눌렀을 때 좋아요 개수 : "+p.likecount);
+                    } else {
+                        // Star the post and add self to stars
+                        Log.i("좋아요","else 실행확인");
+                        p.likecount  = p.likecount + 1;
+                        p.likes.put(userUID, true);
+                        Log.i("좋아요","처음 눌렀을 때 좋아요 개수 : "+p.likecount);
+                    }
+
+                    // Set value and report transaction success
+                    mutableData.setValue(p);
                     return Transaction.success(mutableData);
                 }
 
-                if (p.likes.containsKey(userUID)) {
-                    // Unstar the post and remove self from stars
-                    p.likecount = p.likecount  - 1;
-                    p.likes.remove(userUID);
-                    Log.i("좋아요","이미 눌렀을 때 좋아요 개수 : "+p.likecount);
-                } else {
-                    // Star the post and add self to stars
-                    p.likecount  = p.likecount + 1;
-                    p.likes.put(userUID, true);
-                    Log.i("좋아요","처음 눌렀을 때 좋아요 개수 : "+p.likecount);
+                @Override
+                public void onComplete(DatabaseError databaseError, boolean b,
+                                       DataSnapshot dataSnapshot) {
+                    // Transaction completed
+                    Log.i("좋아요","b : "+b);
+                    Log.i("좋아요","databaseError : "+databaseError);
+                    Log.i("좋아요","dataSnapshot : "+dataSnapshot);
                 }
+            });
+        }catch (DatabaseException e){
+            e.printStackTrace();
+            Log.i("DatabaseException","DatabaseException : "+e);
+        }
 
-                // Set value and report transaction success
-                mutableData.setValue(p);
-                return Transaction.success(mutableData);
-            }
-
-            @Override
-            public void onComplete(DatabaseError databaseError, boolean b,
-                                   DataSnapshot dataSnapshot) {
-                // Transaction completed
-                Log.i("좋아요","b : "+b);
-                Log.i("좋아요","databaseError : "+databaseError);
-                Log.i("좋아요","dataSnapshot : "+dataSnapshot);
-            }
-        });
     }
 }
 

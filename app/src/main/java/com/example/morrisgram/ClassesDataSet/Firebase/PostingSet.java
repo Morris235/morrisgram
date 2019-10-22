@@ -8,7 +8,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 @IgnoreExtraProperties
-public class PostingSet implements Serializable {
+public class PostingSet{
 
     public PostingSet(){
     }
@@ -118,7 +118,6 @@ public class PostingSet implements Serializable {
         result.put("LikeCount",likecount);
         result.put("ReplyCount",replycount);
         result.put("TimeStemp",tImeStemp);
-
         return result;
     }
 }

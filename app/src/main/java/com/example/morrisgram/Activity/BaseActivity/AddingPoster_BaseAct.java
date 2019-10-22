@@ -279,40 +279,40 @@ public class AddingPoster_BaseAct extends AppCompatActivity {
         }
     }
     //유저 게시물 키값 내부 저장용 메소드
-    public void SavePosterKey (String PosterKey){
-        SharedPreferences MY_POSTER_KEYS = getSharedPreferences("POSTER_KEYS",MODE_PRIVATE);
-        SharedPreferences.Editor KEY_EDITOR = MY_POSTER_KEYS.edit();
-
-        //강제삭제용
-//        KEY_EDITOR.clear();
+//    public void SavePosterKey (String PosterKey){
+//        SharedPreferences MY_POSTER_KEYS = getSharedPreferences("POSTER_KEYS",MODE_PRIVATE);
+//        SharedPreferences.Editor KEY_EDITOR = MY_POSTER_KEYS.edit();
+//
+//        //강제삭제용
+////        KEY_EDITOR.clear();
+////        KEY_EDITOR.apply();
+//
+//        //데이터 타입 설명
+//        Type UserPosterList_Type = new TypeToken<UserPosterList_Dataset>() {}.getType();
+//        //게시물 키값 DTO클래스 객체 - PosterKey ; PosterKey
+//        UserPosterList_Dataset MyPosterList = new UserPosterList_Dataset(PosterKey);
+//
+//        //json 변환 도구 gson
+//        Gson gson =new GsonBuilder().create();
+//        JSONArray jsonArray = new JSONArray();
+//
+//        //게시물 키값들 로드용
+//        JSONObject jsonObject;
+//
+//        //MY_POSTER_KEYS에 데이터가 있다면 로드해서 쌓이게 담기 로직
+//        if(!MY_POSTER_KEYS.getString(userUID,"null").isEmpty()){
+//            String TEMP_KEYS = MY_POSTER_KEYS.getString(userUID,"null");
+//            try {
+//                jsonArray = new JSONArray(TEMP_KEYS);
+//            } catch (JSONException e) {
+//                e.printStackTrace();
+//            }
+//        }
+//        String json = gson.toJson(MyPosterList,UserPosterList_Type);
+//        jsonArray.put(json);
+//        KEY_EDITOR.putString(userUID,jsonArray.toString());
 //        KEY_EDITOR.apply();
-
-        //데이터 타입 설명
-        Type UserPosterList_Type = new TypeToken<UserPosterList_Dataset>() {}.getType();
-        //게시물 키값 DTO클래스 객체 - PosterKey ; PosterKey
-        UserPosterList_Dataset MyPosterList = new UserPosterList_Dataset(PosterKey);
-
-        //json 변환 도구 gson
-        Gson gson =new GsonBuilder().create();
-        JSONArray jsonArray = new JSONArray();
-
-        //게시물 키값들 로드용
-        JSONObject jsonObject;
-
-        //MY_POSTER_KEYS에 데이터가 있다면 로드해서 쌓이게 담기 로직
-        if(!MY_POSTER_KEYS.getString(userUID,"null").isEmpty()){
-            String TEMP_KEYS = MY_POSTER_KEYS.getString(userUID,"null");
-            try {
-                jsonArray = new JSONArray(TEMP_KEYS);
-            } catch (JSONException e) {
-                e.printStackTrace();
-            }
-        }
-        String json = gson.toJson(MyPosterList,UserPosterList_Type);
-        jsonArray.put(json);
-        KEY_EDITOR.putString(userUID,jsonArray.toString());
-        KEY_EDITOR.apply();
-    }
+//    }
 
     //유저 게시물 키값 얻는 메소드
     public ArrayList GetPosterKey(){
