@@ -379,8 +379,7 @@ public class Home extends AddingPoster_BaseAct implements SwipyRefreshLayout.OnR
                                         snapshot.child("UserNickName").getValue().toString(), //유저 닉네임
                                         snapshot.child("Body").getValue().toString(),        //게시물 글
                                         snapshot.child("PostedTime").getValue().toString(),  //게시물 만든 시간
-                                        Integer.valueOf(snapshot.child("LikeCount").getValue().toString()),   //좋아요 개수
-                                        Integer.valueOf(snapshot.child("ReplyCount").getValue().toString()),  //댓글 개수
+                                        Integer.valueOf(snapshot.child("likeCount").getValue().toString()),   //좋아요 개수
                                         snapshot.child("PosterKey").getValue().toString(),
                                         null);  //게시물 이미지
                             }
@@ -395,8 +394,7 @@ public class Home extends AddingPoster_BaseAct implements SwipyRefreshLayout.OnR
                 holder.setUserNickName(posting_set.getUserNickName());
                 holder.setUserUID(posting_set.getUserUID());
 
-                holder.setLikeCount(Long.valueOf(posting_set.getLikecount()).toString());
-                holder.setReplyCount(Long.valueOf(posting_set.getReplycount()).toString());
+                holder.setLikeCount(Long.valueOf(posting_set.getLikeCount()).toString());
 
                 holder.setPostedTime(posting_set.getPostedtime());
                 holder.setNickName_Reply(posting_set.getUserNickName());

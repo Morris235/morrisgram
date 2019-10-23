@@ -113,7 +113,7 @@ public class PosterViewer extends AddingPoster_BaseAct implements SwipyRefreshLa
                     String GetKey = snapshot.getKey();
                     Log.i("포스터키","GetKeyTest : "+GetKey);
 
-                    //클래스 주소값?
+                    //클래스 주소값? 리스트
                     postingDTOS.add(postingDTO);
                     //키값들을 리스트형태로 저장
                     PosterKeyList.add(GetKey);
@@ -358,8 +358,7 @@ public class PosterViewer extends AddingPoster_BaseAct implements SwipyRefreshLa
                                         snapshot.child("Body").getValue().toString(),        //게시물 글
                                         snapshot.child("PostedTime").getValue().toString(),  //게시물 만든 시간
                                         //정수형을 문자형으로
-                                        Long.valueOf(snapshot.child("LikeCount").getValue().toString()),   //좋아요 개수
-                                        Long.valueOf(snapshot.child("ReplyCount").getValue().toString()),  //댓글 개수
+                                        Long.valueOf(snapshot.child("likeCount").getValue().toString()),   //좋아요 개수
                                         snapshot.child("PosterKey").getValue().toString(),
                                         null);  //게시물 이미지
                             }
@@ -381,8 +380,7 @@ public class PosterViewer extends AddingPoster_BaseAct implements SwipyRefreshLa
                 holder.setUserNickName(posting_set.getUserNickName());
                 holder.setUserUID(posting_set.getUserUID());
 
-                holder.setLikeCount(String.valueOf(posting_set.getLikecount()));
-                holder.setReplyCount(String.valueOf(posting_set.getReplycount()));
+                holder.setLikeCount(String.valueOf(posting_set.getLikeCount()));
 
                 holder.setPostedTime(posting_set.getPostedtime());
                 holder.setNickName_Reply(posting_set.getUserNickName());
@@ -433,7 +431,7 @@ public class PosterViewer extends AddingPoster_BaseAct implements SwipyRefreshLa
                     @Override
                     public void onClick(View v) {
                         //포스터키는 리스트사용 -
-                        onStarClicked(mdataref.child(userUID).child("UserPosterList").child(PosterKeyList.get(position)).child("LikeCount"));
+                        onStarClicked(mdataref.child(userUID).child("UserPosterList").child(PosterKeyList.get(position)));
                     }
                 });
 
@@ -458,33 +456,28 @@ public class PosterViewer extends AddingPoster_BaseAct implements SwipyRefreshLa
                 @Override
                 public Transaction.Result doTransaction(MutableData mutableData) {
                     Log.i("좋아요","트랜젝션 실행확인");
-                    Log.i("좋아요"," postRef 경로 확인"+postRef.toString());
 
                     //java.lang.Long cannot be cast to com.example.morrisgram.ClassesDataSet.Firebase.PostingDTO
                     PostingDTO p = mutableData.getValue(PostingDTO.class);
-                    Log.i("좋아요","이미 눌렀을 때 좋아요 개수 : "+p.likecount);
 
                     if (p == null) {
                         return Transaction.success(mutableData);
                     }
 
-                    Log.i("좋아요","이미 눌렀을 때 좋아요 개수 : "+p.likecount);
                     if (p.likes.containsKey(userUID)) {
                         // Unstar the post and remove self from stars
-                        p.likecount = p.likecount  - 1;
+                        p.likeCount = p.likeCount  - 1;
                         p.likes.remove(userUID);
-                        Log.i("좋아요","if (p.likes.containsKey(userUID)) 실행확인");
-                        Log.i("좋아요","이미 눌렀을 때 좋아요 개수 : "+p.likecount);
+
                     } else {
                         // Star the post and add self to stars
                         Log.i("좋아요","else 실행확인");
-                        p.likecount  = p.likecount + 1;
+                        p.likeCount  = p.likeCount + 1;
                         p.likes.put(userUID, true);
-                        Log.i("좋아요","처음 눌렀을 때 좋아요 개수 : "+p.likecount);
                     }
 
-                    // Set value and report transaction success
-                    mutableData.setValue(p);
+                    // -------------Set value and report transaction success---------
+                    mutableData.child("likeCount").setValue(p);
                     return Transaction.success(mutableData);
                 }
 

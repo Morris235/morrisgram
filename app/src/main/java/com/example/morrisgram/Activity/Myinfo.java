@@ -229,11 +229,22 @@ public class Myinfo extends AddingPoster_BaseAct implements SwipeRefreshLayout.O
 //                private List<String> PosterKeyList = new ArrayList<>();
 //                private List<PostingDTO> postingDTOS = new ArrayList<>();
                 //포스터키가 리스트에 쌓이지 않도록 클리어하기
-
                 postingDTOS.clear();
                 PosterKeyList.clear();
+
+                //유저리스트에 있는 모든 데이터를 읽어온다. 그중에서 파베예외 발생 : Failed to convert a value of type java.util.HashMap to long
                 for (DataSnapshot snapshot : dataSnapshot.getChildren()){
+                    //클래스 타입 - 해쉬맵 문제? - PostingDTO라는 모델클래스의 틀에 맞춰서 파베의 데이터를 읽어오는데 그중 long타입을 해쉬맵으로 치환해서 읽어 올 수 없다?
                     PostingDTO postingDTO = snapshot.getValue(PostingDTO.class);
+
+                    //갓텍오버플로우의 솔루션 제시
+                    // public void onDataChange(DataSnapshot dataSnapshot) {
+                    //        for(DataSnapshot ds : dataSnapshot.getChildren()) {
+                    //            String email = ds.child("email").getValue(String.class);
+                    //            String name = ds.child("name").getValue(String.class);
+                    //            Log.d("TAG", email + " / " + name);
+                    //        }
+                    //    }
 
                     String GetKey = snapshot.getKey();
                     Log.i("포스터키","GetKeyTest : "+GetKey);

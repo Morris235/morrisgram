@@ -13,13 +13,12 @@ public class PostingDTO {
     public PostingDTO(){
     }
 
-    public PostingDTO(String userUID, String userNickName, String body, String postedTime, long likeCount, long replyCount, String posterKey, String timestemp) {
+    public PostingDTO(String userUID, String userNickName, String body, String postedTime, long likeCount, String posterKey, String timestemp) {
         this.userUID = userUID;
         this.userNickName = userNickName;
         this.body = body;
         this.postedtime = postedTime;
-        this.likecount = likeCount;
-        this.replycount = replyCount;
+        this.likeCount = likeCount;
         this.posterkey = posterKey;
         this.tImeStemp = timestemp;
     }
@@ -69,28 +68,12 @@ public class PostingDTO {
         this.tImeStemp = tImeStemp;
     }
 
-    public long getLikecount() {
-        return likecount;
+    public long getLikeCount() {
+        return likeCount;
     }
 
-    public void setLikecount(long likecount) {
-        this.likecount = likecount;
-    }
-
-    public long getReplycount() {
-        return replycount;
-    }
-
-    public void setReplycount(long replycount) {
-        this.replycount = replycount;
-    }
-
-    public Map<String, Boolean> getLikes() {
-        return likes;
-    }
-
-    public void setLikes(Map<String, Boolean> likes) {
-        this.likes = likes;
+    public void setLikeCount(long likeCount) {
+        likeCount = likeCount;
     }
 
     private String userUID; //유저 프로필 사진 Uri
@@ -99,10 +82,9 @@ public class PostingDTO {
     private String postedtime; //게시물 게시 시간
     private String posterkey; //게시물 사진 uri
     private String tImeStemp; //데이터 정렬에 사용
-
-    public long likecount; //좋아요
-    public long replycount; //댓글
-
+    //왜인지는 모르겠으나 LikeCount라고 l을 대문자 L로 작성하면 파베 데이터스냅샷 오류 발생...getter와 setter부분도 주위 요망 하아 ㅅㅂ
+    public long likeCount; //좋아요
+    //파베 데이터타입 치환문제가 중점 개념확실히 점검....
     public Map<String, Boolean> likes = new HashMap<>();
 
     @Exclude
@@ -113,8 +95,7 @@ public class PostingDTO {
         result.put("Body",body);
         result.put("PostedTime",postedtime);
         result.put("PosterKey",posterkey);
-        result.put("LikeCount",likecount);
-        result.put("ReplyCount",replycount);
+        result.put("likeCount",likeCount);
         result.put("TimeStemp",tImeStemp);
         return result;
     }
