@@ -19,7 +19,7 @@ import android.widget.RadioGroup;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import com.example.morrisgram.ClassesDataSet.Firebase.Users_Signup;
+import com.example.morrisgram.DTOclass.Firebase.Users_Signup;
 import com.example.morrisgram.R;
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.Task;

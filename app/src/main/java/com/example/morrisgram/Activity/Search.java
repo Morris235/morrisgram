@@ -2,58 +2,102 @@ package com.example.morrisgram.Activity;
 
 import android.content.Intent;
 
+import androidx.annotation.NonNull;
+import androidx.constraintlayout.widget.ConstraintLayout;
+import androidx.recyclerview.widget.GridLayoutManager;
+import androidx.recyclerview.widget.RecyclerView;
 import androidx.swiperefreshlayout.widget.SwipeRefreshLayout;
 
 import android.content.pm.ActivityInfo;
 import android.os.Bundle;
+import android.util.Log;
+import android.view.LayoutInflater;
 import android.view.View;
+import android.view.ViewGroup;
 import android.widget.ImageButton;
+import android.widget.ImageView;
+import android.widget.Toast;
 
+import com.bumptech.glide.load.engine.DiskCacheStrategy;
 import com.example.morrisgram.Activity.BaseActivity.AddingPoster_BaseAct;
+import com.example.morrisgram.CameraClass.GlideApp;
+import com.example.morrisgram.DTOclass.Firebase.PreView;
 import com.example.morrisgram.R;
+import com.firebase.ui.database.FirebaseRecyclerAdapter;
+import com.firebase.ui.database.FirebaseRecyclerOptions;
+import com.firebase.ui.database.SnapshotParser;
+import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.auth.FirebaseUser;
+import com.google.firebase.database.DataSnapshot;
+import com.google.firebase.database.FirebaseDatabase;
+import com.google.firebase.database.Query;
+import com.google.firebase.storage.StorageReference;
 
-public class Search extends AddingPoster_BaseAct implements SwipeRefreshLayout.OnRefreshListener{
-    SwipeRefreshLayout mSwipeRefreshLayout;
+public class Search extends AddingPoster_BaseAct implements SwipeRefreshLayout.OnRefreshListener {
+    private SwipeRefreshLayout mSwipeRefreshLayout;
+
+    //파이어베이스 리사이클러뷰
+    private RecyclerView recyclerView;
+    private GridLayoutManager gridLayoutManager;
+    private FirebaseRecyclerAdapter adapter;
+
+    //파이어베이스 유저 정보
+    private FirebaseAuth firebaseAuth;
+    private FirebaseUser currentUser;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         // 화면을 portrait(세로) 화면으로 고정하고 싶은 경우
         setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_PORTRAIT);
-
         setContentView(R.layout.activity_search);
+
+        firebaseAuth = FirebaseAuth.getInstance();
+
+        recyclerView = findViewById(R.id.recyclerView_search);
+        gridLayoutManager = new GridLayoutManager(this,3);
+
+        recyclerView.setLayoutManager(gridLayoutManager);
+        recyclerView.setHasFixedSize(true);
+
+        //smooth scrolling
+        recyclerView.setNestedScrollingEnabled(false);
+
+        //리사이클러뷰 어댑터 클래스
+        fetch();
 //-----------------------------------화면이동----------------------------------------
 //홈 화면 이동
         ImageButton homeB;
-        homeB=(ImageButton)findViewById(R.id.homeB_search);
+        homeB = (ImageButton) findViewById(R.id.homeB_search);
         homeB.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 Intent intent = new Intent(Search.this, Home.class);
                 startActivity(intent);
-                overridePendingTransition(0,0);
+                overridePendingTransition(0, 0);
             }
         });
 //좋아요 알람 화면 이동
         ImageButton likealarmB;
-        likealarmB=(ImageButton)findViewById(R.id.likeB_search);
+        likealarmB = (ImageButton) findViewById(R.id.likeB_search);
         likealarmB.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 Intent intent = new Intent(Search.this, LikeAlarm.class);
                 startActivity(intent);
-                overridePendingTransition(0,0);
+                overridePendingTransition(0, 0);
             }
         });
 
 //내 프로필 화면 이동
         ImageButton myinfoB;
-        myinfoB=(ImageButton)findViewById(R.id.myB_search);
+        myinfoB = (ImageButton) findViewById(R.id.myB_search);
         myinfoB.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 Intent intent = new Intent(Search.this, Myinfo.class);
                 startActivity(intent);
-                overridePendingTransition(0,0);
+                overridePendingTransition(0, 0);
             }
         });
 
@@ -68,16 +112,122 @@ public class Search extends AddingPoster_BaseAct implements SwipeRefreshLayout.O
 //---------------------------------------------------------------------------------
         mSwipeRefreshLayout = (SwipeRefreshLayout) findViewById(R.id.refresh_search);
         mSwipeRefreshLayout.setOnRefreshListener(this);
-    }
+    }//-------------크리에이트-------------------
+
     //새로고침
     @Override
     public void onRefresh() {
         mSwipeRefreshLayout.setRefreshing(false);
+        fetch();
+        adapter.startListening();
     }
 
     @Override
-    public void onPause(){
+    public void onPause() {
         super.onPause();
-        overridePendingTransition(0,0);
+        overridePendingTransition(0, 0);
+    }
+
+    public void onStart() {
+        super.onStart();
+        adapter.startListening();
+    }
+
+    public void onStop() {
+        super.onStop();
+        adapter.stopListening();
+    }
+
+    //------------------------뷰홀더------------------------------
+    public class ViewHolder extends RecyclerView.ViewHolder {
+
+        public ConstraintLayout root;
+        public ImageView PosterKey;
+
+        public ViewHolder(@NonNull View itemView) {
+            super(itemView);
+
+            root = itemView.findViewById(R.id.preview_search_root);
+            PosterKey = itemView.findViewById(R.id.preview_search_IMG);
+        }
+
+        //스토리지에서 게시물 미리보기 이미지 받아오기
+        public void setPosterKey(String uri) {
+            Log.i("파베", "setPic 메소드 작동 확인");
+            StorageReference imageRef = mstorageRef.child("PosterPicList").child(uri).child("PosterIMG");
+            GlideApp.with(Search.this)
+                    .load(imageRef)
+                    .skipMemoryCache(false)
+                    .thumbnail()
+                    .centerCrop()
+                    .fitCenter()
+                    .diskCacheStrategy(DiskCacheStrategy.ALL)
+                    .dontAnimate()
+                    .placeholder(R.drawable.ic_insert_photo_black_24dp)
+                    .into(PosterKey);
+        }
+    }
+    //----------------------------파이어베이스 어댑터---------------------------------------
+    private void fetch() {
+        //BaseQuery
+        Query query = FirebaseDatabase.getInstance()
+                //BaseQuery
+                .getReference()
+                .child("PosterList")
+                .orderByChild("TimeStemp");
+
+        //orderByChild()	지정된 하위 키의 값에 따라 결과를 정렬합니다.
+        //orderByKey()	    하위 키에 따라 결과를 정렬합니다.
+        //orderByValue()	하위 값에 따라 결과를 정렬합니다.
+
+        Log.i("파베", "홈 뷰어 query 경로 확인 : " + query.toString());
+
+        //DB에 정보를 받아서 가져오는 스냅샷 - 스트링형식으로 받아와야함
+        FirebaseRecyclerOptions<PreView> options =
+                new FirebaseRecyclerOptions.Builder<PreView>()
+                        .setQuery(query, new SnapshotParser<PreView>() {
+                            @NonNull
+                            @Override
+                            public PreView parseSnapshot(@NonNull DataSnapshot snapshot) {
+                                //포스터키 수집
+//                                    UserPosterKeys = snapshot.child("PosterKey").getValue().toString();
+//                                    //내부 DB에 로그인한 유저의 포스터키 저장
+//                                    SavePosterKey(UserPosterKeys);
+                                return new PreView(
+                                        snapshot.child("PosterKey").getValue().toString());
+                            }
+                        })
+                        .build();
+
+        adapter = new FirebaseRecyclerAdapter<PreView, ViewHolder>(options) {
+            @Override
+            public ViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
+                View view = LayoutInflater.from(parent.getContext())
+                        .inflate(R.layout.preview_search_item, parent, false);
+                return new ViewHolder(view);
+            }
+
+            @Override
+            protected void onBindViewHolder(final ViewHolder holder, final int position, PreView preView) {
+                holder.setPosterKey(preView.getPosterKey());
+
+                //클릭한 이미지의 포스트뷰어로 이동하기
+                holder.root.setOnClickListener(new View.OnClickListener() {
+                    @Override
+                    public void onClick(View view) {
+                        Toast.makeText(Search.this, String.valueOf(position), Toast.LENGTH_SHORT).show();
+                        Intent intent = new Intent(Search.this, PosterViewer.class);
+
+                        //해당 게시물을 보기 위한 신호
+                        final int FLAG = 2;
+                        intent.putExtra("FLAG",FLAG);
+                        intent.putExtra("FOCUS", position);
+                        startActivity(intent);
+                        overridePendingTransition(0, 0);
+                    }
+                });
+            }
+        };
+        recyclerView.setAdapter(adapter);
     }
 }

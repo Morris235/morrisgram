@@ -28,7 +28,7 @@ import android.widget.Toast;
 import com.bumptech.glide.load.engine.DiskCacheStrategy;
 import com.example.morrisgram.Activity.BaseActivity.AddingPoster_BaseAct;
 import com.example.morrisgram.CameraClass.GlideApp;
-import com.example.morrisgram.ClassesDataSet.Firebase.PostingDTO;
+import com.example.morrisgram.DTOclass.Firebase.PostingDTO;
 import com.example.morrisgram.R;
 import com.firebase.ui.database.FirebaseRecyclerAdapter;
 import com.firebase.ui.database.FirebaseRecyclerOptions;
@@ -46,8 +46,10 @@ import com.like.LikeButton;
 import com.orangegangsters.github.swipyrefreshlayout.library.SwipyRefreshLayout;
 import com.orangegangsters.github.swipyrefreshlayout.library.SwipyRefreshLayoutDirection;
 
+import java.util.HashMap;
+
 public class Home extends AddingPoster_BaseAct implements SwipyRefreshLayout.OnRefreshListener {
-    SwipyRefreshLayout mSwipeRefreshLayout;
+    private SwipyRefreshLayout mSwipeRefreshLayout;
     private ImageButton myinfoB;
     private ImageButton searchB;
     private ImageButton addposterB;
@@ -94,13 +96,8 @@ public class Home extends AddingPoster_BaseAct implements SwipyRefreshLayout.OnR
         //smooth scrolling
         recyclerView.setNestedScrollingEnabled(false);
 
-//        //아이템 역순 추가정렬 = true
-//        linearLayoutManager.setReverseLayout(false);
-//        linearLayoutManager.setStackFromEnd(false);
-//        recyclerView.setLayoutManager(linearLayoutManager); //setLayoutManager 메소드를 사용해서 매니저를 리사이클러뷰에 설정
 
         fetch();
-
 //-----------------------------------화면이동----------------------------------------
         //탐색화면 이동
         searchB = (ImageButton) findViewById(R.id.searchB_home);
@@ -162,7 +159,6 @@ public class Home extends AddingPoster_BaseAct implements SwipyRefreshLayout.OnR
         });
 //---------------------------------------------------------------------------------
 
-
         mSwipeRefreshLayout = (SwipyRefreshLayout) findViewById(R.id.refresh_home);
         mSwipeRefreshLayout.setOnRefreshListener(this);
         mSwipeRefreshLayout.setDirection(SwipyRefreshLayoutDirection.TOP);
@@ -192,7 +188,7 @@ public class Home extends AddingPoster_BaseAct implements SwipyRefreshLayout.OnR
         super.onStart();
         Log.i("파베","홈 스타트");
         adapter.startListening();
-        }
+    }
     public void onResume(){
         super.onResume();
         Log.i("파베","홈 리즈메");
@@ -359,9 +355,9 @@ public class Home extends AddingPoster_BaseAct implements SwipyRefreshLayout.OnR
                 .getReference()
                 .child("PosterList");
 
-                //orderByChild()	지정된 하위 키의 값에 따라 결과를 정렬합니다.
-                //orderByKey()	    하위 키에 따라 결과를 정렬합니다.
-                //orderByValue()	하위 값에 따라 결과를 정렬합니다.
+        //orderByChild()	지정된 하위 키의 값에 따라 결과를 정렬합니다.
+        //orderByKey()	    하위 키에 따라 결과를 정렬합니다.
+        //orderByValue()	하위 값에 따라 결과를 정렬합니다.
 
         Log.i("파베", "홈 뷰어 query 경로 확인 : "+query.toString());
 
@@ -373,13 +369,15 @@ public class Home extends AddingPoster_BaseAct implements SwipyRefreshLayout.OnR
                             @Override
                             public PostingDTO parseSnapshot(@NonNull DataSnapshot snapshot) {
                                 Log.i("파베", "홈 뷰어 스냅샷 메소드 작동 확인");
-                                Log.i("파베", "snapshot.child(\"PosterKey\").getValue().toString() : "+snapshot.child("PosterKey").getValue().toString());
                                 return new PostingDTO(
                                         snapshot.child("UserUID").getValue().toString(),     //프로필 이미지
                                         snapshot.child("UserNickName").getValue().toString(), //유저 닉네임
                                         snapshot.child("Body").getValue().toString(),        //게시물 글
                                         snapshot.child("PostedTime").getValue().toString(),  //게시물 만든 시간
-                                        Integer.valueOf(snapshot.child("likeCount").getValue().toString()),   //좋아요 개수
+
+                                        //DTO 형태
+
+//                                        (HashMap<String, Long>) snapshot.child("like").getChildren().iterator().next().child("Count").getValue(),   //좋아요 개수
                                         snapshot.child("PosterKey").getValue().toString(),
                                         null);  //게시물 이미지
                             }
@@ -394,7 +392,7 @@ public class Home extends AddingPoster_BaseAct implements SwipyRefreshLayout.OnR
                 holder.setUserNickName(posting_set.getUserNickName());
                 holder.setUserUID(posting_set.getUserUID());
 
-                holder.setLikeCount(Long.valueOf(posting_set.getLikeCount()).toString());
+//                holder.setLikeCount(String.valueOf(posting_set.getLikeCount()));
 
                 holder.setPostedTime(posting_set.getPostedtime());
                 holder.setNickName_Reply(posting_set.getUserNickName());

@@ -17,7 +17,6 @@ import androidx.core.content.FileProvider;
 
 import com.example.morrisgram.Activity.Posting;
 import com.example.morrisgram.CameraClass.ImageResizeUtils;
-import com.example.morrisgram.ClassesDataSet.UserPosterList_Dataset;
 import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.firebase.auth.FirebaseAuth;
@@ -29,9 +28,6 @@ import com.google.firebase.storage.OnPausedListener;
 import com.google.firebase.storage.OnProgressListener;
 import com.google.firebase.storage.StorageReference;
 import com.google.firebase.storage.UploadTask;
-import com.google.gson.Gson;
-import com.google.gson.GsonBuilder;
-import com.google.gson.reflect.TypeToken;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -39,7 +35,6 @@ import org.json.JSONObject;
 
 import java.io.File;
 import java.io.IOException;
-import java.lang.reflect.Type;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;

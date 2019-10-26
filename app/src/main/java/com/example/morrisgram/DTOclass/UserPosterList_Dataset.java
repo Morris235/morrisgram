@@ -1,4 +1,4 @@
-package com.example.morrisgram.ClassesDataSet;
+package com.example.morrisgram.DTOclass;
 
 public class UserPosterList_Dataset {
 

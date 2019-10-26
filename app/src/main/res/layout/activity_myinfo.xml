@@ -315,7 +315,7 @@
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toBottomOf="@+id/website_my"
-            app:layout_constraintVertical_bias="0.02" />
+            app:layout_constraintVertical_bias="0.0" />
 
         <!--130글자 제한-->
         <TextView
@@ -323,6 +323,7 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginStart="8dp"
+            android:layout_marginTop="8dp"
             android:layout_marginEnd="8dp"
             android:layout_marginBottom="8dp"
             android:text=""
@@ -363,6 +364,7 @@
                 android:id="@+id/refresh_my"
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
+                android:foregroundGravity="center"
                 android:layout_marginStart="8dp"
                 android:layout_marginTop="8dp"
                 android:layout_marginEnd="8dp"
@@ -379,7 +381,7 @@
                     android:layout_marginBottom="8dp"
                     android:columnOrderPreserved="false"
                     android:rowOrderPreserved="false"
-                    tools:listitem="@layout/preview_item" />
+                    tools:listitem="@layout/preview_userfeed_item" />
 
             </androidx.swiperefreshlayout.widget.SwipeRefreshLayout>
 

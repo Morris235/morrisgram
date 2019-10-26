@@ -30,8 +30,8 @@ import android.widget.Toast;
 import com.bumptech.glide.load.engine.DiskCacheStrategy;
 import com.example.morrisgram.Activity.BaseActivity.AddingPoster_BaseAct;
 import com.example.morrisgram.CameraClass.GlideApp;
-import com.example.morrisgram.ClassesDataSet.Firebase.PostingDTO;
-import com.example.morrisgram.ClassesDataSet.Firebase.PreView;
+import com.example.morrisgram.DTOclass.Firebase.PostingDTO;
+import com.example.morrisgram.DTOclass.Firebase.PreView;
 import com.example.morrisgram.R;
 import com.firebase.ui.database.FirebaseRecyclerAdapter;
 import com.firebase.ui.database.FirebaseRecyclerOptions;
@@ -67,6 +67,11 @@ public class Myinfo extends AddingPoster_BaseAct implements SwipeRefreshLayout.O
     private TextView intro;
     private TextView website;
     private ImageView profileimg;
+
+    //Count
+    private TextView posternumTV;
+    private TextView followernumTV;
+    private TextView forllowingnumTV;
 
     private DrawerLayout mdrawerLayout;
     private ActionBarDrawerToggle mtoggle;
@@ -108,6 +113,10 @@ public class Myinfo extends AddingPoster_BaseAct implements SwipeRefreshLayout.O
         website = (TextView) findViewById(R.id.website_my);
         intro = (TextView) findViewById(R.id.introduce_my);
 
+        //CountTV
+        posternumTV = (TextView) findViewById(R.id.PosterNum_my);
+
+
         profileimg = (ImageView) findViewById(R.id.profileIMG_my);
         recyclerView = findViewById(R.id.recyclerView_myinfo);
 
@@ -139,6 +148,7 @@ public class Myinfo extends AddingPoster_BaseAct implements SwipeRefreshLayout.O
         recyclerView.setLayoutManager(gridLayoutManager);
         recyclerView.setHasFixedSize(true);
 
+        //리사이클러뷰 어댑터 클래스
         fetch();
 //-----------------------------------화면이동----------------------------------------
         homeB = (ImageButton) findViewById(R.id.homeB_my);
@@ -214,7 +224,6 @@ public class Myinfo extends AddingPoster_BaseAct implements SwipeRefreshLayout.O
         });
 //---------------------------------------------------------------------------------
 
-
         //처음 앱을 실행하고 버튼을 눌렀을 때만 값을 읽어옴 addListenerForSingleValueEvent
         //수시로 해당 디비의 하위값들이 변화를 감지하고 그떄마다 값을 불러오려면 addValueEventListener를 사용
         mdataref.addValueEventListener(new ValueEventListener() {
@@ -224,6 +233,15 @@ public class Myinfo extends AddingPoster_BaseAct implements SwipeRefreshLayout.O
                 String NameVal = (String) dataSnapshot.child(userUID).child("UserInfo").child("NickName").getValue();
                 String WebsiteVal = (String) dataSnapshot.child(userUID).child("Profile").child("Website").getValue();
                 String IntroVal = (String) dataSnapshot.child(userUID).child("Profile").child("Introduce").getValue();
+                String posternum = String.valueOf( (int) dataSnapshot.child(userUID).child("UserPosterList").getChildrenCount());
+
+                posternumTV.setText(posternum);
+                hname.setText(NameVal);
+                pname.setText(NameVal);
+                idtv.setText(NameVal);
+                website.setText(WebsiteVal);
+                intro.setText(IntroVal);
+
 
                 //포스터키 수집용 리스트
 //                private List<String> PosterKeyList = new ArrayList<>();
@@ -231,21 +249,11 @@ public class Myinfo extends AddingPoster_BaseAct implements SwipeRefreshLayout.O
                 //포스터키가 리스트에 쌓이지 않도록 클리어하기
                 postingDTOS.clear();
                 PosterKeyList.clear();
-
                 //유저리스트에 있는 모든 데이터를 읽어온다. 그중에서 파베예외 발생 : Failed to convert a value of type java.util.HashMap to long
+                //C#의 foreach문과 유사한 배열에 이용되는 for문 ->for(변수:배열) = 배열에 있는 값들을 하나씩 순서대로 변수에 대입시킨다. -배열의 자료형과 for문의 변수 자료형은 같아야 한다.
                 for (DataSnapshot snapshot : dataSnapshot.getChildren()){
                     //클래스 타입 - 해쉬맵 문제? - PostingDTO라는 모델클래스의 틀에 맞춰서 파베의 데이터를 읽어오는데 그중 long타입을 해쉬맵으로 치환해서 읽어 올 수 없다?
                     PostingDTO postingDTO = snapshot.getValue(PostingDTO.class);
-
-                    //갓텍오버플로우의 솔루션 제시
-                    // public void onDataChange(DataSnapshot dataSnapshot) {
-                    //        for(DataSnapshot ds : dataSnapshot.getChildren()) {
-                    //            String email = ds.child("email").getValue(String.class);
-                    //            String name = ds.child("name").getValue(String.class);
-                    //            Log.d("TAG", email + " / " + name);
-                    //        }
-                    //    }
-
                     String GetKey = snapshot.getKey();
                     Log.i("포스터키","GetKeyTest : "+GetKey);
 
@@ -254,16 +262,10 @@ public class Myinfo extends AddingPoster_BaseAct implements SwipeRefreshLayout.O
                     PosterKeyList.add(GetKey);
                 }
 
-                hname.setText(NameVal);
-                pname.setText(NameVal);
-                idtv.setText(NameVal);
-                website.setText(WebsiteVal);
-                intro.setText(IntroVal);
             }
 
             @Override
             public void onCancelled(@NonNull DatabaseError databaseError) {
-
             }
         });
 
@@ -465,8 +467,8 @@ public class Myinfo extends AddingPoster_BaseAct implements SwipeRefreshLayout.O
             super(itemView);
 
             Log.i("파베", "ViewHolder 메소드 작동 확인");
-            root = itemView.findViewById(R.id.preview_root);
-            PosterKey = itemView.findViewById(R.id.preview_IMG);
+            root = itemView.findViewById(R.id.preview_userfeed_root);
+            PosterKey = itemView.findViewById(R.id.preview_userfeed_IMG);
         }
 
         //스토리지에서 게시물 미리보기 이미지 받아오기
@@ -520,7 +522,7 @@ public class Myinfo extends AddingPoster_BaseAct implements SwipeRefreshLayout.O
                 @Override
                 public ViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
                     View view = LayoutInflater.from(parent.getContext())
-                            .inflate(R.layout.preview_item, parent, false);
+                            .inflate(R.layout.preview_userfeed_item, parent, false);
                     return new ViewHolder(view);
                 }
 
@@ -533,8 +535,12 @@ public class Myinfo extends AddingPoster_BaseAct implements SwipeRefreshLayout.O
                         @Override
                         public void onClick(View view) {
                             Toast.makeText(Myinfo.this, String.valueOf(position), Toast.LENGTH_SHORT).show();
+
+                            final int FLAG = 0;
                             Intent intent = new Intent(Myinfo.this,PosterViewer.class);
                             intent.putExtra("FOCUS",position);
+                            intent.putExtra("FLAG",FLAG);
+
                             startActivity(intent);
                             overridePendingTransition(0, 0);
                         }
