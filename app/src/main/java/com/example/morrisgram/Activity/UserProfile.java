@@ -4,14 +4,72 @@ import android.content.Intent;
 
 import android.content.pm.ActivityInfo;
 import android.os.Bundle;
+import android.util.Log;
+import android.view.LayoutInflater;
 import android.view.View;
+import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.ImageButton;
+import android.widget.ImageView;
+import android.widget.TextView;
+import android.widget.Toast;
 
+import androidx.annotation.NonNull;
+import androidx.constraintlayout.widget.ConstraintLayout;
+import androidx.recyclerview.widget.GridLayoutManager;
+import androidx.recyclerview.widget.RecyclerView;
+import androidx.swiperefreshlayout.widget.SwipeRefreshLayout;
+
+import com.bumptech.glide.load.engine.DiskCacheStrategy;
 import com.example.morrisgram.Activity.BaseActivity.AddingPoster_BaseAct;
+import com.example.morrisgram.CameraClass.GlideApp;
+import com.example.morrisgram.DTOclass.Firebase.PostingDTO;
+import com.example.morrisgram.DTOclass.Firebase.PreView;
 import com.example.morrisgram.R;
+import com.firebase.ui.database.FirebaseRecyclerAdapter;
+import com.firebase.ui.database.FirebaseRecyclerOptions;
+import com.firebase.ui.database.SnapshotParser;
+import com.google.firebase.database.DataSnapshot;
+import com.google.firebase.database.DatabaseError;
+import com.google.firebase.database.DatabaseReference;
+import com.google.firebase.database.FirebaseDatabase;
+import com.google.firebase.database.Query;
+import com.google.firebase.database.ValueEventListener;
+import com.google.firebase.storage.FirebaseStorage;
+import com.google.firebase.storage.StorageReference;
 
-public class UserProfile extends AddingPoster_BaseAct {
+import java.util.ArrayList;
+import java.util.List;
+
+public class UserProfile extends AddingPoster_BaseAct implements SwipeRefreshLayout.OnRefreshListener{
+    private SwipeRefreshLayout mSwipeRefreshLayout;
+
+    //Count
+    private TextView posternumTV;
+    private TextView followernumTV;
+    private TextView forllowingnumTV;
+
+
+    //데이터베이스의 주소를 지정 필수
+    private DatabaseReference mdataref = FirebaseDatabase.getInstance().getReference();
+    //스토리지 레퍼렌스
+    private StorageReference mstorageRef = FirebaseStorage.getInstance().getReference();
+
+    //유저의 포스터키 수집용 리스트
+    private List<String> PosterKeyList = new ArrayList<>();
+    private List<PostingDTO> postingDTOS = new ArrayList<>();
+
+    //파이어베이스 리사이클러뷰
+    private RecyclerView recyclerView;
+    private GridLayoutManager gridLayoutManager;
+    private FirebaseRecyclerAdapter adapter;
+
+    //유저 정보표시
+    private TextView pname;
+    private TextView idtv;
+    private TextView intro;
+    private TextView website;
+    private ImageView profileimg;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -19,6 +77,76 @@ public class UserProfile extends AddingPoster_BaseAct {
         // 화면을 portrait(세로) 화면으로 고정하고 싶은 경우
         setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_PORTRAIT);
         setContentView(R.layout.activity_userprofile);
+
+
+        pname = (TextView) findViewById(R.id.name_user);
+        idtv = (TextView) findViewById(R.id.idtv_user);
+        website = (TextView) findViewById(R.id.website_user);
+        intro = (TextView) findViewById(R.id.introduce_user);
+
+        mSwipeRefreshLayout = (SwipeRefreshLayout) findViewById(R.id.refresh_user);
+        mSwipeRefreshLayout.setOnRefreshListener(this);
+
+        //CountTV
+        posternumTV = (TextView) findViewById(R.id.posterNum_user);
+
+        //프로필 이미지 바인드
+        profileimg = (ImageView) findViewById(R.id.profileIMG_user);
+        //리사이클러뷰 바인드
+        recyclerView = findViewById(R.id.recyclerView_user);
+
+        //파이어베이스 리사이클러뷰
+        gridLayoutManager = new GridLayoutManager(this,3);
+        recyclerView.setLayoutManager(gridLayoutManager);
+        recyclerView.setHasFixedSize(true);
+
+        //인텐트로 게시물의 유저UID받기
+        Intent intent = getIntent();
+        String PosterUserUID = intent.getStringExtra("PosterUserUID");
+        Log.i("게시물 유저","게시물 유저 UID : "+PosterUserUID);
+
+        mdataref.child("UserList").child(PosterUserUID).addValueEventListener(new ValueEventListener() {
+            @Override
+            public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+                //현재 로그인된 유저 정보와 일치하는 데이터를 가져오기.
+                String NameVal = (String) dataSnapshot.child("UserInfo").child("NickName").getValue();
+                String WebsiteVal = (String) dataSnapshot.child("Profile").child("Website").getValue();
+                String IntroVal = (String) dataSnapshot.child("Profile").child("Introduce").getValue();
+                String posternum = String.valueOf( (int) dataSnapshot.child("UserPosterList").getChildrenCount());
+
+                posternumTV.setText(posternum);
+                pname.setText(NameVal);
+                idtv.setText(NameVal);
+                website.setText(WebsiteVal);
+                intro.setText(IntroVal);
+
+
+                //포스터키 수집용 리스트
+//                private List<String> PosterKeyList = new ArrayList<>();
+//                private List<PostingDTO> postingDTOS = new ArrayList<>();
+                //포스터키가 리스트에 쌓이지 않도록 클리어하기
+                postingDTOS.clear();
+                PosterKeyList.clear();
+                //유저리스트에 있는 모든 데이터를 읽어온다. 그중에서 파베예외 발생 : Failed to convert a value of type java.util.HashMap to long
+                //C#의 foreach문과 유사한 배열에 이용되는 for문 ->for(변수:배열) = 배열에 있는 값들을 하나씩 순서대로 변수에 대입시킨다. -배열의 자료형과 for문의 변수 자료형은 같아야 한다.
+                for (DataSnapshot snapshot : dataSnapshot.getChildren()){
+                    //클래스 타입 - 해쉬맵 문제? - PostingDTO라는 모델클래스의 틀에 맞춰서 파베의 데이터를 읽어오는데 그중 long타입을 해쉬맵으로 치환해서 읽어 올 수 없다?
+                    PostingDTO postingDTO = snapshot.getValue(PostingDTO.class);
+                    String GetKey = snapshot.getKey();
+                    Log.i("포스터키","GetKeyTest : "+GetKey);
+
+                    //클래스 주소값?
+                    postingDTOS.add(postingDTO);
+                    PosterKeyList.add(GetKey);
+                }
+            }
+            @Override
+            public void onCancelled(@NonNull DatabaseError databaseError) {
+            }
+        });
+
+        //파이어베이스 리사이클러뷰 어댑터 클래스
+        fetch(PosterUserUID);
 //-----------------------------------화면이동----------------------------------------
 //홈 화면 이동
         ImageButton homeB;
@@ -53,7 +181,6 @@ public class UserProfile extends AddingPoster_BaseAct {
                 overridePendingTransition(0,0);
             }
         });
-
 //내 프로필 화면 이동
         ImageButton myinfoB;
         myinfoB=(ImageButton)findViewById(R.id.myB_user);
@@ -65,7 +192,6 @@ public class UserProfile extends AddingPoster_BaseAct {
                 overridePendingTransition(0,0);
             }
         });
-
         //바로 해당유저에게 메세지를 보낼 수 있는 메세지창으로 이동
         Button messageB;
         messageB=(Button)findViewById(R.id.messageB_user);
@@ -75,7 +201,6 @@ public class UserProfile extends AddingPoster_BaseAct {
                 Intent intent = new Intent(UserProfile.this,MessageWindow.class);
             }
         });
-
         //포스팅 화면 이동
         ImageButton addposterB = (ImageButton) findViewById(R.id.addB_user);
         addposterB.setOnClickListener(new View.OnClickListener() {
@@ -85,5 +210,153 @@ public class UserProfile extends AddingPoster_BaseAct {
             }
         });
 //---------------------------------------------------------------------------------
+    }//---------------------------크리에이트---------------------------
+
+    @Override
+    public void onRefresh() {
+        mSwipeRefreshLayout.setRefreshing(false);
+        //인텐트로 게시물의 유저UID받기
+        Intent intent = getIntent();
+        String PosterUserUID = intent.getStringExtra("PosterUserUID");
+        fetch(PosterUserUID);
+
+        adapter.startListening();
     }
+    //--------------생명주기--------------
+    public void onStart() {
+        super.onStart();
+        Log.i("파베", "마이 스타트");
+
+        //인텐트로 게시물의 유저UID받기
+       Intent intent = getIntent();
+       String PosterUserUID = intent.getStringExtra("PosterUserUID");
+
+        //Glide를 통한 프로필 이미지 바인딩
+        StorageReference imageRef = mstorageRef.child(PosterUserUID + "/ProfileIMG/ProfileIMG");
+        GlideApp.with(UserProfile.this)
+                .load(imageRef)
+                .skipMemoryCache(true)
+                .diskCacheStrategy(DiskCacheStrategy.NONE)
+                .dontAnimate()
+                .placeholder(R.drawable.noimage)
+                .centerCrop()
+                .into(profileimg);
+        adapter.startListening();
+    }
+
+
+    //애니메이션 효과 지우기
+    @Override
+    public void onPause() {
+        super.onPause();
+        overridePendingTransition(0, 0);
+//        Log.i("파베", "마이 포즈");
+    }
+    public void onStop() {
+        super.onStop();
+        Log.i("파베", "마이 스탑");
+        adapter.stopListening();
+    }
+
+    //------------------------뷰홀더------------------------------
+    public class ViewHolder extends RecyclerView.ViewHolder {
+        public ConstraintLayout root;
+        public ImageView PosterKey;
+
+        public ViewHolder(@NonNull View itemView) {
+            super(itemView);
+
+            root = itemView.findViewById(R.id.preview_userfeed_root);
+            PosterKey = itemView.findViewById(R.id.preview_userfeed_IMG);
+        }
+        //스토리지에서 게시물 미리보기 이미지 받아오기
+        public void setPosterKey(String uri) {
+            StorageReference imageRef = mstorageRef.child("PosterPicList").child(uri).child("PosterIMG");
+            GlideApp.with(UserProfile.this)
+                    .load(imageRef)
+                    .skipMemoryCache(false)
+                    .thumbnail()
+                    .centerCrop()
+                    .fitCenter()
+                    .diskCacheStrategy(DiskCacheStrategy.ALL)
+                    .dontAnimate()
+                    .placeholder(R.drawable.ic_insert_photo_black_24dp)
+                    .into(PosterKey);
+        }
+    }//------------------------뷰홀더------------------------------
+
+
+    //----------------------------파이어베이스 어댑터 클래스---------------------------------------
+    private void fetch(String PosterUserUID) {
+        try {
+            Query query = FirebaseDatabase.getInstance()
+                    //BaseQuery
+                    .getReference()
+                    .child("UserList")
+                    .child(PosterUserUID)
+                    .child("UserPosterList")
+                    .orderByChild("TimeStemp");
+
+            Log.i("쿼리", "query 경로 확인 : "+query.toString());
+
+            //DB에 정보를 받아서 가져오는 스냅샷 - 스트링형식으로 받아와야함
+            FirebaseRecyclerOptions<PreView> options =
+                    new FirebaseRecyclerOptions.Builder<PreView>()
+                            .setQuery(query, new SnapshotParser<PreView>() {
+                                @NonNull
+                                @Override
+                                public PreView parseSnapshot(@NonNull DataSnapshot snapshot) {
+                                    //포스터키 수집
+//                                    UserPosterKeys = snapshot.child("PosterKey").getValue().toString();
+//                                    //내부 DB에 로그인한 유저의 포스터키 저장
+//                                    SavePosterKey(UserPosterKeys);
+                                    return new PreView(
+                                            snapshot.child("PosterKey").getValue().toString());
+                                }
+                            })
+                            .build();
+
+            adapter = new FirebaseRecyclerAdapter<PreView, ViewHolder>(options) {
+                @Override
+                public ViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
+                    View view = LayoutInflater.from(parent.getContext())
+                            .inflate(R.layout.preview_userfeed_item, parent, false);
+                    return new ViewHolder(view);
+                }
+
+                @Override
+                protected void onBindViewHolder(final ViewHolder holder, final int position, PreView preView) {
+                    holder.setPosterKey(preView.getPosterKey());
+
+
+
+                    //클릭한 이미지의 포스트뷰어로 이동하기
+                    holder.root.setOnClickListener(new View.OnClickListener() {
+                        @Override
+                        public void onClick(View view) {
+                            Toast.makeText(UserProfile.this, String.valueOf(position), Toast.LENGTH_SHORT).show();
+
+                            final int FLAG = 1;
+                            Intent intent = new Intent(UserProfile.this,PosterViewer.class);
+                            intent.putExtra("FOCUS",position);
+                            intent.putExtra("FLAG",FLAG);
+
+                            startActivity(intent);
+                            overridePendingTransition(0, 0);
+                        }
+                    });//클릭한 이미지의 포스트뷰어로 이동하기
+
+
+
+
+                }
+            };
+            recyclerView.setAdapter(adapter);
+
+        }catch (NullPointerException e){
+            e.getStackTrace();
+            Log.i("try", "NullPointerException :"+e);
+        }
+    }//----------------------------파이어베이스 어댑터 클래스---------------------------------------
+
 }

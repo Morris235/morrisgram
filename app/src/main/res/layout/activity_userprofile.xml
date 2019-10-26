@@ -157,7 +157,7 @@
         app:layout_constraintVertical_bias="0.5" />
 
     <de.hdodenhof.circleimageview.CircleImageView
-        android:id="@+id/profileIMG_idtv_user"
+        android:id="@+id/profileIMG_user"
         android:layout_width="80dp"
         android:layout_height="80dp"
         android:layout_marginStart="8dp"
@@ -279,13 +279,12 @@
         android:id="@+id/buttonlayout"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:orientation="horizontal"
         android:gravity="center"
+        android:orientation="horizontal"
         app:layout_constraintBottom_toTopOf="@+id/bottomview2"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="0.0"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/website"
+        app:layout_constraintTop_toBottomOf="@+id/website_user"
         app:layout_constraintVertical_bias="0.0">
 
         <!--이름 : 30자 글자수 제한-->
@@ -297,7 +296,7 @@
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintHorizontal_bias="0.0"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@+id/website"
+            app:layout_constraintTop_toBottomOf="@+id/website_user"
             app:layout_constraintVertical_bias="0.0">
 
             <Button
@@ -339,18 +338,18 @@
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintHorizontal_bias="1.0"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@+id/introduce"
+            app:layout_constraintTop_toBottomOf="@+id/introduce_user"
             app:layout_constraintVertical_bias="0.065" />
 
 
     </LinearLayout>
 
     <TextView
-        android:id="@+id/name"
+        android:id="@+id/name_user"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginStart="8dp"
-        android:layout_marginTop="16dp"
+        android:layout_marginTop="8dp"
         android:layout_marginEnd="8dp"
         android:layout_marginBottom="8dp"
         android:text="이름이름이름이름이름이름이름이름이름이름이름이름이름이름이름"
@@ -359,12 +358,12 @@
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintHorizontal_bias="0.0"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent"
-        app:layout_constraintVertical_bias="0.20" />
+        app:layout_constraintTop_toBottomOf="@+id/profileIMG_user"
+        app:layout_constraintVertical_bias="0.0" />
 
     <!--130글자 제한-->
     <TextView
-        android:id="@+id/introduce"
+        android:id="@+id/introduce_user"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginStart="8dp"
@@ -372,54 +371,53 @@
         android:text="소개소개소개소개소개소개소개소개소개소개소개소개소개소개소개소개소개소개소개소개소개소개소개소개소개소개소개소개소개소개소개소개소개소개소개소개소개소개소개소개소개소개소개소개소개소개소개소개소개소개소개소개소개소개소개소개소개소개소개"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.0"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/name"
-        app:layout_constraintVertical_bias="0.018" />
-<ScrollView
-    android:id="@+id/scroll"
-    android:layout_width="398dp"
-    android:layout_height="350dp"
-    android:layout_marginStart="8dp"
-    android:layout_marginEnd="8dp"
-    android:fillViewport="true"
-    app:layout_constraintBottom_toTopOf="@+id/bottomview2"
-    app:layout_constraintEnd_toEndOf="parent"
-    app:layout_constraintHorizontal_bias="0.666"
-    app:layout_constraintStart_toStartOf="parent"
-    app:layout_constraintTop_toBottomOf="@+id/buttonlayout"
-    app:layout_constraintVertical_bias="0.0">
+        app:layout_constraintTop_toBottomOf="@+id/name_user"
+        app:layout_constraintVertical_bias="0.0" />
 
-    <androidx.swiperefreshlayout.widget.SwipeRefreshLayout
-        android:id="@+id/refresh_user"
-        android:layout_width="match_parent"
-        android:layout_height="match_parent">
+    <ScrollView
+        android:id="@+id/scroll"
+        android:layout_width="398dp"
+        android:layout_height="360dp"
+        android:layout_marginStart="8dp"
+        android:layout_marginEnd="8dp"
+        android:fillViewport="true"
+        app:layout_constraintBottom_toTopOf="@+id/bottomview2"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/buttonlayout">
 
-        <androidx.recyclerview.widget.RecyclerView
-            android:id="@+id/recyclerView_user"
+        <androidx.swiperefreshlayout.widget.SwipeRefreshLayout
+            android:id="@+id/refresh_user"
             android:layout_width="match_parent"
-            android:layout_height="match_parent" />
-    </androidx.swiperefreshlayout.widget.SwipeRefreshLayout>
-</ScrollView>
+            android:layout_height="match_parent">
+
+            <androidx.recyclerview.widget.RecyclerView
+                android:id="@+id/recyclerView_user"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent" />
+        </androidx.swiperefreshlayout.widget.SwipeRefreshLayout>
+    </ScrollView>
 
 
     <TextView
-        android:id="@+id/website"
+        android:id="@+id/website_user"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginStart="8dp"
-        android:layout_marginTop="8dp"
         android:layout_marginEnd="8dp"
         android:layout_marginBottom="472dp"
+        android:autoLink="web"
+        android:linksClickable="true"
         android:text="www.naver.com"
         android:textColorLink="#0067a3"
-        android:linksClickable="true"
-        android:autoLink="web"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintHorizontal_bias="0.0"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/introduce"
-        app:layout_constraintVertical_bias="0.363" />
+        app:layout_constraintTop_toBottomOf="@+id/introduce_user"
+        app:layout_constraintVertical_bias="0.050000012" />
 
     <ImageButton
         android:id="@+id/backB_userprofile"

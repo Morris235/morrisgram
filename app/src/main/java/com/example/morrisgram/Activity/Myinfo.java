@@ -62,6 +62,8 @@ public class Myinfo extends AddingPoster_BaseAct implements SwipeRefreshLayout.O
     private ImageButton homeB;
     private ImageButton optionB;
     private Button profilemodifyB;
+
+    //내 정보표시
     private TextView pname;
     private TextView idtv;
     private TextView intro;
@@ -119,10 +121,6 @@ public class Myinfo extends AddingPoster_BaseAct implements SwipeRefreshLayout.O
 
         profileimg = (ImageView) findViewById(R.id.profileIMG_my);
         recyclerView = findViewById(R.id.recyclerView_myinfo);
-
-        //gson & Type
-        final Gson gson = new GsonBuilder().create();
-        final Type StringType = new TypeToken<String>() {}.getType();
 
         //네비게이션뷰 리스너
         NavigationView navigationView = (NavigationView) findViewById(R.id.navigationview);
@@ -224,6 +222,9 @@ public class Myinfo extends AddingPoster_BaseAct implements SwipeRefreshLayout.O
         });
 //---------------------------------------------------------------------------------
 
+
+
+
         //처음 앱을 실행하고 버튼을 눌렀을 때만 값을 읽어옴 addListenerForSingleValueEvent
         //수시로 해당 디비의 하위값들이 변화를 감지하고 그떄마다 값을 불러오려면 addValueEventListener를 사용
         mdataref.addValueEventListener(new ValueEventListener() {
@@ -261,13 +262,15 @@ public class Myinfo extends AddingPoster_BaseAct implements SwipeRefreshLayout.O
                     postingDTOS.add(postingDTO);
                     PosterKeyList.add(GetKey);
                 }
-
             }
-
             @Override
             public void onCancelled(@NonNull DatabaseError databaseError) {
             }
         });
+
+
+
+
 
         //-----------현재 접속한 회원의 스토리지 이미지만 삭제 - 회원의 모든 포스터키 데이터 쿼리----------
 
@@ -309,6 +312,10 @@ public class Myinfo extends AddingPoster_BaseAct implements SwipeRefreshLayout.O
 
     }//------------------크리에이트--------------
 
+
+
+
+    //새로고침
     @Override
     public void onRefresh() {
         mSwipeRefreshLayout.setRefreshing(false);
@@ -327,7 +334,6 @@ public class Myinfo extends AddingPoster_BaseAct implements SwipeRefreshLayout.O
     @Override
     public boolean onNavigationItemSelected(@NonNull MenuItem item) {
         int id = item.getItemId();
-
         if (id == R.id.logout_navi) {
             //로그아웃
             Toast.makeText(Myinfo.this, "로그아웃 되었습니다.", Toast.LENGTH_LONG).show();
@@ -379,7 +385,6 @@ public class Myinfo extends AddingPoster_BaseAct implements SwipeRefreshLayout.O
                     });
                 }
             });
-
             alert_confirm.setNegativeButton("취소", new DialogInterface.OnClickListener() {
                 @Override
                 public void onClick(DialogInterface dialog, int which) {
@@ -388,13 +393,14 @@ public class Myinfo extends AddingPoster_BaseAct implements SwipeRefreshLayout.O
             });
             alert_confirm.show();
         }
-
         if (id == R.id.setting_navi) {
             //설정
         }
-
         return false;
     }
+
+
+
 
     //뒤로가기 버튼으로 네비게이션 닫기
     @Override
@@ -405,13 +411,14 @@ public class Myinfo extends AddingPoster_BaseAct implements SwipeRefreshLayout.O
             super.onBackPressed();
         }
     }
-
     //네비게이션 드로어 메소드
     @Override
     public void onPointerCaptureChanged(boolean hasCapture) {
 
     }
 
+
+    //--------------생명주기--------------
     public void onStart() {
         super.onStart();
         Log.i("파베", "마이 스타트");
@@ -428,7 +435,6 @@ public class Myinfo extends AddingPoster_BaseAct implements SwipeRefreshLayout.O
 
         adapter.startListening();
     }
-
     public void onResume() {
         super.onResume();
 //        Log.i("파베", "마이 리즈메");
@@ -458,6 +464,12 @@ public class Myinfo extends AddingPoster_BaseAct implements SwipeRefreshLayout.O
         super.onRestart();
 //        Log.i("파베", "마이 리스타트");
     }
+
+
+
+
+
+
     //------------------------뷰홀더------------------------------
     public class ViewHolder extends RecyclerView.ViewHolder {
         public ConstraintLayout root;
@@ -470,7 +482,6 @@ public class Myinfo extends AddingPoster_BaseAct implements SwipeRefreshLayout.O
             root = itemView.findViewById(R.id.preview_userfeed_root);
             PosterKey = itemView.findViewById(R.id.preview_userfeed_IMG);
         }
-
         //스토리지에서 게시물 미리보기 이미지 받아오기
         public void setPosterKey(String uri) {
             Log.i("파베", "setPic 메소드 작동 확인");
@@ -486,9 +497,12 @@ public class Myinfo extends AddingPoster_BaseAct implements SwipeRefreshLayout.O
                     .placeholder(R.drawable.ic_insert_photo_black_24dp)
                     .into(PosterKey);
         }
-    }
+    }//------------------------뷰홀더------------------------------
 
-    //----------------------------파이어베이스 어댑터---------------------------------------
+
+
+
+    //----------------------------파이어베이스 어댑터 클래스---------------------------------------
     private void fetch() {
         try {
             Query query = FirebaseDatabase.getInstance()
@@ -553,6 +567,10 @@ public class Myinfo extends AddingPoster_BaseAct implements SwipeRefreshLayout.O
             e.getStackTrace();
             Log.i("try", "NullPointerException :"+e);
         }
-    }
+    }//----------------------------파이어베이스 어댑터 클래스---------------------------------------
+
+
+
+
 }//---------------myinfo class---------------
 
