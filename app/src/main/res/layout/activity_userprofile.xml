@@ -258,7 +258,7 @@
         app:layout_constraintVertical_bias="0.12">
 
         <TextView
-            android:id="@+id/followingsnum"
+            android:id="@+id/followingsnum_user"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:gravity="center"
@@ -314,6 +314,7 @@
 
             <Button
                 android:id="@+id/followingB_user"
+                android:visibility="invisible"
                 android:layout_width="190dp"
                 android:layout_height="35dp"
                 android:layout_marginStart="8dp"
@@ -352,7 +353,6 @@
         android:layout_marginTop="8dp"
         android:layout_marginEnd="8dp"
         android:layout_marginBottom="8dp"
-        android:text="이름이름이름이름이름이름이름이름이름이름이름이름이름이름이름"
         android:textStyle="bold"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
@@ -368,7 +368,6 @@
         android:layout_height="wrap_content"
         android:layout_marginStart="8dp"
         android:layout_marginEnd="8dp"
-        android:text="소개소개소개소개소개소개소개소개소개소개소개소개소개소개소개소개소개소개소개소개소개소개소개소개소개소개소개소개소개소개소개소개소개소개소개소개소개소개소개소개소개소개소개소개소개소개소개소개소개소개소개소개소개소개소개소개소개소개소개"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintHorizontal_bias="0.0"
@@ -379,7 +378,7 @@
     <ScrollView
         android:id="@+id/scroll"
         android:layout_width="398dp"
-        android:layout_height="360dp"
+        android:layout_height="400dp"
         android:layout_marginStart="8dp"
         android:layout_marginEnd="8dp"
         android:fillViewport="true"
@@ -410,7 +409,6 @@
         android:layout_marginBottom="472dp"
         android:autoLink="web"
         android:linksClickable="true"
-        android:text="www.naver.com"
         android:textColorLink="#0067a3"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"

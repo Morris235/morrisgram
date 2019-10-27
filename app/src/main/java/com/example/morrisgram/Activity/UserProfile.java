@@ -23,8 +23,10 @@ import androidx.swiperefreshlayout.widget.SwipeRefreshLayout;
 import com.bumptech.glide.load.engine.DiskCacheStrategy;
 import com.example.morrisgram.Activity.BaseActivity.AddingPoster_BaseAct;
 import com.example.morrisgram.CameraClass.GlideApp;
+import com.example.morrisgram.DTOclass.Firebase.FollowDTO;
 import com.example.morrisgram.DTOclass.Firebase.PostingDTO;
 import com.example.morrisgram.DTOclass.Firebase.PreView;
+import com.example.morrisgram.DTOclass.Firebase.Users_Signup;
 import com.example.morrisgram.R;
 import com.firebase.ui.database.FirebaseRecyclerAdapter;
 import com.firebase.ui.database.FirebaseRecyclerOptions;
@@ -39,7 +41,9 @@ import com.google.firebase.storage.FirebaseStorage;
 import com.google.firebase.storage.StorageReference;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 public class UserProfile extends AddingPoster_BaseAct implements SwipeRefreshLayout.OnRefreshListener{
     private SwipeRefreshLayout mSwipeRefreshLayout;
@@ -89,6 +93,8 @@ public class UserProfile extends AddingPoster_BaseAct implements SwipeRefreshLay
 
         //CountTV
         posternumTV = (TextView) findViewById(R.id.posterNum_user);
+        followernumTV = (TextView) findViewById(R.id.FollowersNum_user);
+        forllowingnumTV = (TextView) findViewById(R.id.followingsnum_user);
 
         //프로필 이미지 바인드
         profileimg = (ImageView) findViewById(R.id.profileIMG_user);
@@ -102,7 +108,7 @@ public class UserProfile extends AddingPoster_BaseAct implements SwipeRefreshLay
 
         //인텐트로 게시물의 유저UID받기
         Intent intent = getIntent();
-        String PosterUserUID = intent.getStringExtra("PosterUserUID");
+        final String PosterUserUID = intent.getStringExtra("PosterUserUID");
         Log.i("게시물 유저","게시물 유저 UID : "+PosterUserUID);
 
         mdataref.child("UserList").child(PosterUserUID).addValueEventListener(new ValueEventListener() {
@@ -112,13 +118,20 @@ public class UserProfile extends AddingPoster_BaseAct implements SwipeRefreshLay
                 String NameVal = (String) dataSnapshot.child("UserInfo").child("NickName").getValue();
                 String WebsiteVal = (String) dataSnapshot.child("Profile").child("Website").getValue();
                 String IntroVal = (String) dataSnapshot.child("Profile").child("Introduce").getValue();
-                String posternum = String.valueOf( (int) dataSnapshot.child("UserPosterList").getChildrenCount());
-
-                posternumTV.setText(posternum);
                 pname.setText(NameVal);
                 idtv.setText(NameVal);
                 website.setText(WebsiteVal);
                 intro.setText(IntroVal);
+
+
+                //게시물,팔로워,팔로잉 카운트
+                String posternum = String.valueOf( (int) dataSnapshot.child("UserPosterList").getChildrenCount());
+                String followernum = String.valueOf((int)dataSnapshot.child("FollowerList").getChildrenCount());
+                String followingnum = String.valueOf((int)dataSnapshot.child("FollowingList").getChildrenCount());
+                posternumTV.setText(posternum);
+                followernumTV.setText(followernum);
+                forllowingnumTV.setText(followingnum);
+
 
 
                 //포스터키 수집용 리스트
@@ -192,7 +205,7 @@ public class UserProfile extends AddingPoster_BaseAct implements SwipeRefreshLay
             }
         });
         //바로 해당유저에게 메세지를 보낼 수 있는 메세지창으로 이동
-        Button messageB;
+        final Button messageB;
         messageB=(Button)findViewById(R.id.messageB_user);
         messageB.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -208,7 +221,58 @@ public class UserProfile extends AddingPoster_BaseAct implements SwipeRefreshLay
                 goToAlbum();
             }
         });
-//---------------------------------------------------------------------------------
+//-----------------------------------화면이동----------------------------------------
+
+
+
+
+
+
+//-------------------------팔로우------------------------------회원가입 DTO참조
+        //팔로우 & 팔로잉 버튼 바인드
+        final Button followB = findViewById(R.id.followB_user);
+        final Button followingB = findViewById(R.id.followingB_user);
+
+        //팔로우하기 버튼
+        followB.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                //팔로우버튼 표시 분기문
+
+                //상대방 팔로워 리스트 DB에 로그인한 유저의 UID 추가
+                mdataref.child("UserList").child(PosterUserUID).child("FollowList").setValue(userUID);
+                //로그인한 유저의 팔로잉 리스트 DB에 상대방 유저의 UID 추가
+                mdataref.child("UserList").child(userUID).child("FollowingList").setValue(userUID);
+
+                //버튼 표시설정
+                followB.setVisibility(View.INVISIBLE);
+                followingB.setVisibility(View.VISIBLE);
+            }
+        });
+        //언팔로우하기 버튼
+        followingB.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                //상대방 팔로워 리스트 DB에 로그인한 유저의 UID 삭제
+                mdataref.child("UserList").child(PosterUserUID).child("FollowList").child(userUID).setValue(null);
+                //로그인한 유저의 팔로잉 리스트 DB에 상대방 유저의 UID 삭제
+                mdataref.child("UserList").child(userUID).child("FollowingList").child(userUID).setValue(null);
+
+                //버튼 표시설정
+                followB.setVisibility(View.VISIBLE);
+                followingB.setVisibility(View.INVISIBLE);
+            }
+        });
+//-------------------------팔로우------------------------------
+
+
+
+
+
+
+
+
+
     }//---------------------------크리에이트---------------------------
 
     @Override
@@ -285,6 +349,7 @@ public class UserProfile extends AddingPoster_BaseAct implements SwipeRefreshLay
     }//------------------------뷰홀더------------------------------
 
 
+
     //----------------------------파이어베이스 어댑터 클래스---------------------------------------
     private void fetch(final String PosterUserUID) {
         try {
@@ -359,5 +424,23 @@ public class UserProfile extends AddingPoster_BaseAct implements SwipeRefreshLay
             Log.i("try", "NullPointerException :"+e);
         }
     }//----------------------------파이어베이스 어댑터 클래스---------------------------------------
+    public void FirebaseDatabase(boolean add, String follower, String following, String PosterUserUID){
+        // Create new post at /user-posts/$userid/$postid and at
+        // /posts/$postid simultaneously
 
+        Map<String,Object> childUpdates = new HashMap<>();
+        Map<String,Object> PostValues = null;
+
+        if(add){
+            FollowDTO followDTO = new FollowDTO(follower,following);
+            PostValues = followDTO.toMap();
+        }
+
+        childUpdates.put("UserInfo" ,PostValues);
+
+        //상대방 팔로워 리스트 DB에 로그인한 유저의 UID 추가
+        mdataref.child("UserList").child(PosterUserUID).updateChildren(childUpdates);
+        //로그인한 유저의 팔로잉 리스트 DB에 상대방 유저의 UID 추가
+        mdataref.child("UserList").child(userUID).updateChildren(childUpdates);
+    }
 }
