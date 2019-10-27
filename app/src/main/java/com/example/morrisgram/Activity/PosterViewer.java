@@ -100,9 +100,9 @@ public class PosterViewer extends AddingPoster_BaseAct implements SwipyRefreshLa
         FIRST_FOCUS = true;
         fetch();
 
-
+//------------------------------------------------게시물 키값 수집 데이터 스냅샷--------------------------------------------------
         //내 게시물 키 수집
-        mdataref.child("UserList").child("UserPosterList").addValueEventListener(new ValueEventListener() {
+        mdataref.child("UserList").child(userUID).child("UserPosterList").addValueEventListener(new ValueEventListener() {
             @Override
             public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
                 //포스터키 수집용 리스트
@@ -119,7 +119,7 @@ public class PosterViewer extends AddingPoster_BaseAct implements SwipyRefreshLa
                     PostingDTO postingDTO = snapshot.getValue(PostingDTO.class);
                     //게시물 키값 받기
                     String GetKey = snapshot.getKey();
-                    Log.i("포스터키","GetKeyTest : "+GetKey);
+                    Log.i("포스터키","로그인한 유저 게시물 키 : "+GetKey);
 
                     //클래스 주소값? 리스트
                     MypostingDTOS.add(postingDTO);
@@ -132,7 +132,6 @@ public class PosterViewer extends AddingPoster_BaseAct implements SwipyRefreshLa
 
             }
         });
-
 
         //전체 게시물 키 수집
         mdataref.child("PosterList").addValueEventListener(new ValueEventListener() {
@@ -152,7 +151,7 @@ public class PosterViewer extends AddingPoster_BaseAct implements SwipyRefreshLa
                     PostingDTO postingDTO = snapshot.getValue(PostingDTO.class);
                     //게시물 키값 받기
                     String GetKey = snapshot.getKey();
-                    Log.i("포스터키","GetKeyTest : "+GetKey);
+                    Log.i("포스터키","전체 유저 게시물 키 : "+GetKey);
 
                     //클래스 주소값? 리스트
                     postingDTOS.add(postingDTO);
@@ -165,7 +164,7 @@ public class PosterViewer extends AddingPoster_BaseAct implements SwipyRefreshLa
 
             }
         });
-
+//------------------------------------------------게시물 키값 수집 데이터 스냅샷--------------------------------------------------
 
 
 
@@ -387,7 +386,8 @@ public class PosterViewer extends AddingPoster_BaseAct implements SwipyRefreshLa
         //포스트뷰어 게시물 표시 신호
         Intent intent = getIntent();
         final int FLAG = intent.getIntExtra("FLAG",-1);
-        //게시물에서 유저UID를 받은 경우 -> 널값
+
+        //게시물에서 유저UID를 받은 경우
         final String PosterUserUID = intent.getStringExtra("PosterUserUID");
 
         //DB에 정보를 받아서 가져오는 스냅샷 - 스트링형식으로 받아와야함
@@ -485,31 +485,82 @@ public class PosterViewer extends AddingPoster_BaseAct implements SwipyRefreshLa
 
                     @Override
                     public void onClick(View v) {
-                        //게시물에서 유저 UID가져오기
-                        mdataref.child("PosterList").addListenerForSingleValueEvent(new ValueEventListener() {
-                            @Override
-                            public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
-                                //전체 게시물 노드에서의 유저UID
-                              String PosterUserUID = dataSnapshot.child(PosterKeyList.get(position)).child("UserUID").getValue().toString();
-                              //유저 게시물 노드에서의 유저UID
-//                                String UserUID = dataSnapshot.child()
 
-                                //** 가져온 유저UID가 자신의 UID와 같으면 자신의 프로필로 이동 ->Myinfo.class ->게시물 위치 다름 userUID 다시받기 **
-                                if (PosterUserUID.equals(userUID)){
-                                    Intent intent2 = new Intent(PosterViewer.this,Myinfo.class);
-                                    startActivity(intent2);
-                                    Log.i("포스터키", "내 프로필 클릭 확인 : "+PosterUserUID);
+
+                        //플래그가 0이나 1이면 프로필에서 게시물을 보는거기 때문에 유저 게시물 DB를 참조
+                        if (FLAG == 0 || FLAG == 1){
+                            Log.i("쿼리", "로그인한 게시물 DB 참조");
+
+
+                            //유저 게시물DB에서 유저 UID가져오기 - 유저피드에서 다시 유저피드로 이동 클릭시 문제 있음
+                            mdataref.child("UserList").child(PosterUserUID).child("UserPosterList").addListenerForSingleValueEvent(new ValueEventListener() {
+                                @Override
+                                public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+
+                                    //전체 게시물 노드에서의 유저UID - 클릭한 전체 게시물ID
+                                    String PosterUserUID = dataSnapshot.child(MyPosterKeyList.get(position)).child("UserUID").getValue().toString();
+                                    //유저 게시물 노드에서의 유저UID - 클릭한 내(로그인한) 게시물ID
+//                              String LoginedUID = dataSnapshot.child(MyPosterKeyList.get(position)).child("UserUID").getValue().toString();
+
+
+
+                                    //** 가져온 유저UID가 자신의 UID와 같으면 자신의 프로필로 이동 ->Myinfo.class ->게시물 위치 다름 userUID 다시받기 **
+                                    if (PosterUserUID.equals(userUID)){
+                                        Intent intent2 = new Intent(PosterViewer.this,Myinfo.class);
+                                        startActivity(intent2);
+                                        //같지 않다면 유저프로필로 이동
+                                    }else{
+                                        //유저 피드로 유저 UID보내고 이동하기 -> UserProfile.class
+                                        Intent intent1 = new Intent(PosterViewer.this,UserProfile.class);
+                                        intent1.putExtra("PosterUserUID",PosterUserUID);
+                                        startActivity(intent1);
+                                    }
+
+
                                 }
+                                @Override
+                                public void onCancelled(@NonNull DatabaseError databaseError) {
+                                }
+                            });
 
-                                //유저 피드로 유저 UID보내고 이동하기 -> UserProfile.class
-                                Intent intent1 = new Intent(PosterViewer.this,UserProfile.class);
-                                intent1.putExtra("PosterUserUID",PosterUserUID);
-                                startActivity(intent1);
-                            }
-                            @Override
-                            public void onCancelled(@NonNull DatabaseError databaseError) {
-                            }
-                        });
+
+
+                        //플래그가 2이면 홈이나 서치화면에서 게시물을 보는거기 때문에 전체 게시물 DB 참조
+                        }else if (FLAG ==2){
+                            Log.i("쿼리", "전체 게시물 DB 참조");
+
+
+                            //전체 게시물DB에서 유저 UID가져오기
+                            mdataref.child("PosterList").addListenerForSingleValueEvent(new ValueEventListener() {
+                                @Override
+                                public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+                                    //전체 게시물 노드에서의 유저UID - 클릭한 전체 게시물ID
+                                    String PosterUserUID = dataSnapshot.child(PosterKeyList.get(position)).child("UserUID").getValue().toString();
+                                    //유저 게시물 노드에서의 유저UID - 클릭한 내(로그인한) 게시물ID
+//                              String LoginedUID = dataSnapshot.child(MyPosterKeyList.get(position)).child("UserUID").getValue().toString();
+
+
+                                    //** 가져온 유저UID가 자신의 UID와 같으면 자신의 프로필로 이동 ->Myinfo.class ->게시물 위치 다름 userUID 다시받기 **
+                                    if (PosterUserUID.equals(userUID)){
+                                        Intent intent2 = new Intent(PosterViewer.this,Myinfo.class);
+                                        startActivity(intent2);
+                                    }else{
+                                        //유저 피드로 유저 UID보내고 이동하기 -> UserProfile.class
+                                        Intent intent1 = new Intent(PosterViewer.this,UserProfile.class);
+                                        intent1.putExtra("PosterUserUID",PosterUserUID);
+                                        startActivity(intent1);
+                                    }
+
+
+                                }
+                                @Override
+                                public void onCancelled(@NonNull DatabaseError databaseError) {
+                                }
+                            });
+
+
+                        }
+
                     }
                 });//-------------------------------------------------
 
@@ -558,26 +609,29 @@ public class PosterViewer extends AddingPoster_BaseAct implements SwipyRefreshLa
                 Toast.makeText(getApplicationContext(),"에러발생",Toast.LENGTH_SHORT).show();
                 break;
 
-            //내 프로필 게시물 DB 쿼리
+            //내 프로필 게시물 DB 쿼리 - 유저 게시물 DB
             case 0 : Query fromMyinfo = FirebaseDatabase.getInstance()
                     .getReference()
                     .child("UserList")
                     .child(userUID)
                     .child("UserPosterList");
+            Log.i("쿼리 스위치","0번 내 게시물 쿼리 : 유저 게시물 DB");
             return fromMyinfo;
 
-            //유저피드 게시물 DB 쿼리
+            //유저피드 게시물 DB 쿼리 - 유저 게시물 DB
             case 1 : Query fromUserfeed = FirebaseDatabase.getInstance()
                     .getReference()
                     .child("UserList")
                     .child(PosterUserUID)
                     .child("UserPosterList");
+                Log.i("쿼리 스위치","1번 유저피드 게시물 쿼리 : 유저 게시물 DB");
             return fromUserfeed;
 
-            //검색 게시물 DB 쿼리
+            //검색 게시물 DB 쿼리 - 전체 게시물 DB
             case 2 : Query fromSearch = FirebaseDatabase.getInstance()
                     .getReference()
                     .child("PosterList");
+                Log.i("쿼리 스위치","2번 검색 게시물 쿼리 : 전체 게시물 DB");
             return fromSearch;
         }
         return null;

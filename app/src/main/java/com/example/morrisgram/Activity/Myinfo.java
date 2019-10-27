@@ -256,7 +256,6 @@ public class Myinfo extends AddingPoster_BaseAct implements SwipeRefreshLayout.O
                     //클래스 타입 - 해쉬맵 문제? - PostingDTO라는 모델클래스의 틀에 맞춰서 파베의 데이터를 읽어오는데 그중 long타입을 해쉬맵으로 치환해서 읽어 올 수 없다?
                     PostingDTO postingDTO = snapshot.getValue(PostingDTO.class);
                     String GetKey = snapshot.getKey();
-                    Log.i("포스터키","GetKeyTest : "+GetKey);
 
                     //클래스 주소값?
                     postingDTOS.add(postingDTO);
@@ -513,7 +512,6 @@ public class Myinfo extends AddingPoster_BaseAct implements SwipeRefreshLayout.O
                     .child("UserPosterList")
                     .orderByChild("TimeStemp");
 
-            Log.i("쿼리", "query 경로 확인 : "+query.toString());
 
             //DB에 정보를 받아서 가져오는 스냅샷 - 스트링형식으로 받아와야함
             FirebaseRecyclerOptions<PreView> options =
@@ -554,6 +552,7 @@ public class Myinfo extends AddingPoster_BaseAct implements SwipeRefreshLayout.O
                             Intent intent = new Intent(Myinfo.this,PosterViewer.class);
                             intent.putExtra("FOCUS",position);
                             intent.putExtra("FLAG",FLAG);
+                            intent.putExtra("PosterUserUID",userUID);
 
                             startActivity(intent);
                             overridePendingTransition(0, 0);

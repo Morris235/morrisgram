@@ -218,7 +218,7 @@ public class Search extends AddingPoster_BaseAct implements SwipeRefreshLayout.O
                         Toast.makeText(Search.this, String.valueOf(position), Toast.LENGTH_SHORT).show();
                         Intent intent = new Intent(Search.this, PosterViewer.class);
 
-                        //해당 게시물을 보기 위한 신호
+                        //유저피드에서 해당 게시물 데이터를 받기 위한 쿼리스위치 신호
                         final int FLAG = 2;
                         intent.putExtra("FLAG",FLAG);
                         intent.putExtra("FOCUS", position);

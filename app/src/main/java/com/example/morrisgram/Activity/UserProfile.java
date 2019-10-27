@@ -133,7 +133,6 @@ public class UserProfile extends AddingPoster_BaseAct implements SwipeRefreshLay
                     //클래스 타입 - 해쉬맵 문제? - PostingDTO라는 모델클래스의 틀에 맞춰서 파베의 데이터를 읽어오는데 그중 long타입을 해쉬맵으로 치환해서 읽어 올 수 없다?
                     PostingDTO postingDTO = snapshot.getValue(PostingDTO.class);
                     String GetKey = snapshot.getKey();
-                    Log.i("포스터키","GetKeyTest : "+GetKey);
 
                     //클래스 주소값?
                     postingDTOS.add(postingDTO);
@@ -287,7 +286,7 @@ public class UserProfile extends AddingPoster_BaseAct implements SwipeRefreshLay
 
 
     //----------------------------파이어베이스 어댑터 클래스---------------------------------------
-    private void fetch(String PosterUserUID) {
+    private void fetch(final String PosterUserUID) {
         try {
             Query query = FirebaseDatabase.getInstance()
                     //BaseQuery
@@ -296,8 +295,6 @@ public class UserProfile extends AddingPoster_BaseAct implements SwipeRefreshLay
                     .child(PosterUserUID)
                     .child("UserPosterList")
                     .orderByChild("TimeStemp");
-
-            Log.i("쿼리", "query 경로 확인 : "+query.toString());
 
             //DB에 정보를 받아서 가져오는 스냅샷 - 스트링형식으로 받아와야함
             FirebaseRecyclerOptions<PreView> options =
@@ -336,10 +333,14 @@ public class UserProfile extends AddingPoster_BaseAct implements SwipeRefreshLay
                         public void onClick(View view) {
                             Toast.makeText(UserProfile.this, String.valueOf(position), Toast.LENGTH_SHORT).show();
 
+                            //유저 프로필 -> 포스터뷰어
                             final int FLAG = 1;
                             Intent intent = new Intent(UserProfile.this,PosterViewer.class);
                             intent.putExtra("FOCUS",position);
                             intent.putExtra("FLAG",FLAG);
+
+                            //유저의 UID 보내기
+                            intent.putExtra("PosterUserUID",PosterUserUID);
 
                             startActivity(intent);
                             overridePendingTransition(0, 0);
