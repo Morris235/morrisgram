@@ -23,10 +23,10 @@ import androidx.swiperefreshlayout.widget.SwipeRefreshLayout;
 import com.bumptech.glide.load.engine.DiskCacheStrategy;
 import com.example.morrisgram.Activity.BaseActivity.AddingPoster_BaseAct;
 import com.example.morrisgram.CameraClass.GlideApp;
-import com.example.morrisgram.DTOclass.Firebase.FollowDTO;
+import com.example.morrisgram.DTOclass.Firebase.FollowerDTO;
+import com.example.morrisgram.DTOclass.Firebase.FollowingDTO;
 import com.example.morrisgram.DTOclass.Firebase.PostingDTO;
 import com.example.morrisgram.DTOclass.Firebase.PreView;
-import com.example.morrisgram.DTOclass.Firebase.Users_Signup;
 import com.example.morrisgram.R;
 import com.firebase.ui.database.FirebaseRecyclerAdapter;
 import com.firebase.ui.database.FirebaseRecyclerOptions;
@@ -106,11 +106,17 @@ public class UserProfile extends AddingPoster_BaseAct implements SwipeRefreshLay
         recyclerView.setLayoutManager(gridLayoutManager);
         recyclerView.setHasFixedSize(true);
 
+        //팔로우 & 팔로잉 버튼 바인드
+        final Button followB = findViewById(R.id.followB_user);
+        final Button followingB = findViewById(R.id.followingB_user);
+
+
         //인텐트로 게시물의 유저UID받기
         Intent intent = getIntent();
         final String PosterUserUID = intent.getStringExtra("PosterUserUID");
         Log.i("게시물 유저","게시물 유저 UID : "+PosterUserUID);
 
+        //상대 유저의 정보 스냅샷
         mdataref.child("UserList").child(PosterUserUID).addValueEventListener(new ValueEventListener() {
             @Override
             public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
@@ -123,7 +129,6 @@ public class UserProfile extends AddingPoster_BaseAct implements SwipeRefreshLay
                 website.setText(WebsiteVal);
                 intro.setText(IntroVal);
 
-
                 //게시물,팔로워,팔로잉 카운트
                 String posternum = String.valueOf( (int) dataSnapshot.child("UserPosterList").getChildrenCount());
                 String followernum = String.valueOf((int)dataSnapshot.child("FollowerList").getChildrenCount());
@@ -132,6 +137,24 @@ public class UserProfile extends AddingPoster_BaseAct implements SwipeRefreshLay
                 followernumTV.setText(followernum);
                 forllowingnumTV.setText(followingnum);
 
+
+
+                //팔로워 리스트에서 나의 계정UID가 있다면 팔로잉버튼 처리
+                // 경로 : root/ UserList/ userUID/ FollowerList/ FollowerUserUID/  UID : "UID"
+                try {
+                    String FollowerUID = dataSnapshot.child("FollowerList").child(userUID).child("UID").getValue().toString();
+                    if(userUID.equals(FollowerUID)){
+                        //팔로잉
+                        followB.setVisibility(View.INVISIBLE);
+                        followingB.setVisibility(View.VISIBLE);
+                    }else {
+                        //팔로우
+                        followB.setVisibility(View.VISIBLE);
+                        followingB.setVisibility(View.INVISIBLE);
+                    }
+                }catch (NullPointerException e){
+                    e.getStackTrace();
+                }
 
 
                 //포스터키 수집용 리스트
@@ -229,20 +252,14 @@ public class UserProfile extends AddingPoster_BaseAct implements SwipeRefreshLay
 
 
 //-------------------------팔로우------------------------------회원가입 DTO참조
-        //팔로우 & 팔로잉 버튼 바인드
-        final Button followB = findViewById(R.id.followB_user);
-        final Button followingB = findViewById(R.id.followingB_user);
-
         //팔로우하기 버튼
         followB.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 //팔로우버튼 표시 분기문
 
-                //상대방 팔로워 리스트 DB에 로그인한 유저의 UID 추가
-                mdataref.child("UserList").child(PosterUserUID).child("FollowList").setValue(userUID);
-                //로그인한 유저의 팔로잉 리스트 DB에 상대방 유저의 UID 추가
-                mdataref.child("UserList").child(userUID).child("FollowingList").setValue(userUID);
+                //나와 상대방의 팔로워,팔로잉 리스트 업데이트
+                FirebaseDatabase(true,PosterUserUID);
 
                 //버튼 표시설정
                 followB.setVisibility(View.INVISIBLE);
@@ -253,10 +270,9 @@ public class UserProfile extends AddingPoster_BaseAct implements SwipeRefreshLay
         followingB.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                //상대방 팔로워 리스트 DB에 로그인한 유저의 UID 삭제
-                mdataref.child("UserList").child(PosterUserUID).child("FollowList").child(userUID).setValue(null);
-                //로그인한 유저의 팔로잉 리스트 DB에 상대방 유저의 UID 삭제
-                mdataref.child("UserList").child(userUID).child("FollowingList").child(userUID).setValue(null);
+
+                //나와 상대방의 팔로워,팔로잉 리스트 업데이트
+                FirebaseDatabase(false,PosterUserUID);
 
                 //버튼 표시설정
                 followB.setVisibility(View.VISIBLE);
@@ -424,23 +440,49 @@ public class UserProfile extends AddingPoster_BaseAct implements SwipeRefreshLay
             Log.i("try", "NullPointerException :"+e);
         }
     }//----------------------------파이어베이스 어댑터 클래스---------------------------------------
-    public void FirebaseDatabase(boolean add, String follower, String following, String PosterUserUID){
+    public void FirebaseDatabase(boolean add, String PosterUserUID){
         // Create new post at /user-posts/$userid/$postid and at
         // /posts/$postid simultaneously
 
-        Map<String,Object> childUpdates = new HashMap<>();
-        Map<String,Object> PostValues = null;
+        //팔로워 리스트 맵 - 업데이트
+        Map<String,Object> FollowerUserUID = new HashMap<>();
+        //팔로잉 리스트 맵 - 업데이트
+        Map<String,Object> FollowingUserUID = new HashMap<>();
 
-        if(add){
-            FollowDTO followDTO = new FollowDTO(follower,following);
-            PostValues = followDTO.toMap();
+        Map<String,Object> FollowerValues = null;
+        Map<String,Object> FollowingValues = null;
+
+        //객체 2개 선언
+            FollowingDTO followingDTO = new FollowingDTO(PosterUserUID);
+            FollowerDTO followerDTO = new FollowerDTO(userUID);
+
+            //팔로잉 팔로워 맵 두개 사용
+        FollowerValues = followerDTO.toMap();
+        FollowingValues = followingDTO.toMap();
+
+
+
+        //팔로우 버튼
+        if (add){
+            //<---상대방 팔로워 리스트---> DB에 로그인한 유저의 UID 추가
+            // 경로 : 루트/ UserList/ userUID/ FollowerList/ FollowerUserUID/  UID : "UID"
+            FollowerUserUID.put(userUID,FollowerValues);
+            mdataref.child("UserList").child(PosterUserUID).child("FollowerList").updateChildren(FollowerUserUID);
+
+            //<---내 팔로잉 리스트---> DB에 상대방 유저의 UID 추가
+            // 경로 : 루트/ UserList/ userUID/ FollowingList/ FollowingUserUID/  UID : "UID"
+            FollowingUserUID.put(PosterUserUID,FollowingValues);
+            mdataref.child("UserList").child(userUID).child("FollowingList").updateChildren(FollowingUserUID);
+
+        //언팔로우 버튼
+        }else{
+            //<---상대방 팔로워 리스트---> DB에 로그인한 유저의 UID 삭제
+            mdataref.child("UserList").child(PosterUserUID).child("FollowerList").child(userUID).child("UID").setValue(null);
+
+            //<---내 팔로잉 리스트---> DB에 상대방 유저의 UID 삭제
+            mdataref.child("UserList").child(userUID).child("FollowingList").child(PosterUserUID).child("UID").setValue(null);
         }
 
-        childUpdates.put("UserInfo" ,PostValues);
 
-        //상대방 팔로워 리스트 DB에 로그인한 유저의 UID 추가
-        mdataref.child("UserList").child(PosterUserUID).updateChildren(childUpdates);
-        //로그인한 유저의 팔로잉 리스트 DB에 상대방 유저의 UID 추가
-        mdataref.child("UserList").child(userUID).updateChildren(childUpdates);
     }
 }
