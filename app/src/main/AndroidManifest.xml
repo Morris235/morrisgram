@@ -22,11 +22,10 @@
         <activity
             android:name=".Activity.LikeAlarm"
             android:launchMode="singleTask" />
-        <activity android:name=".Activity.Followers" />
-        <activity android:name=".Activity.Following" />
+        <activity android:name=".Activity.FollowFragment.FollowingPage" />
         <activity android:name=".Activity.PosterViewer" />
         <activity
-            android:name=".Activity.Followers_AND_Following"
+            android:name=".Activity.FollowFragment.FollowPager"
             android:launchMode="singleTask"
             android:windowSoftInputMode="adjustNothing" />
         <activity android:name=".Activity.Posting" />

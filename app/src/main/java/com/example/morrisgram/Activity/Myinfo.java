@@ -29,6 +29,7 @@ import android.widget.Toast;
 
 import com.bumptech.glide.load.engine.DiskCacheStrategy;
 import com.example.morrisgram.Activity.BaseActivity.AddingPoster_BaseAct;
+import com.example.morrisgram.Activity.FollowFragment.FollowPager;
 import com.example.morrisgram.CameraClass.GlideApp;
 import com.example.morrisgram.DTOclass.Firebase.PostingDTO;
 import com.example.morrisgram.DTOclass.Firebase.PreView;
@@ -49,11 +50,7 @@ import com.google.firebase.database.Query;
 import com.google.firebase.database.ValueEventListener;
 import com.google.firebase.storage.FirebaseStorage;
 import com.google.firebase.storage.StorageReference;
-import com.google.gson.Gson;
-import com.google.gson.GsonBuilder;
-import com.google.gson.reflect.TypeToken;
 
-import java.lang.reflect.Type;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -79,7 +76,7 @@ public class Myinfo extends AddingPoster_BaseAct implements SwipeRefreshLayout.O
     private ActionBarDrawerToggle mtoggle;
 
     //데이터베이스의 주소를 지정 필수
-    private DatabaseReference mdataref = FirebaseDatabase.getInstance().getReference("UserList");
+    private DatabaseReference mdataref = FirebaseDatabase.getInstance().getReference();
     //현재 접속중인 유저UID가져오기
     private FirebaseUser uid = FirebaseAuth.getInstance().getCurrentUser();
     private FirebaseAuth firebaseAuth;
@@ -117,6 +114,8 @@ public class Myinfo extends AddingPoster_BaseAct implements SwipeRefreshLayout.O
 
         //CountTV
         posternumTV = (TextView) findViewById(R.id.PosterNum_my);
+        followernumTV = (TextView) findViewById(R.id.FollowersNum_my);
+        forllowingnumTV = (TextView) findViewById(R.id.FollowingsNum_my);
 
 
         profileimg = (ImageView) findViewById(R.id.profileIMG_my);
@@ -125,6 +124,7 @@ public class Myinfo extends AddingPoster_BaseAct implements SwipeRefreshLayout.O
         //네비게이션뷰 리스너
         NavigationView navigationView = (NavigationView) findViewById(R.id.navigationview);
         navigationView.setNavigationItemSelectedListener(this);
+
         //헤더제어
         View nav_header_view = navigationView.getHeaderView(0);
         final TextView hname;
@@ -185,7 +185,7 @@ public class Myinfo extends AddingPoster_BaseAct implements SwipeRefreshLayout.O
         followersB.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                Intent intent = new Intent(Myinfo.this, Followers_AND_Following.class);
+                Intent intent = new Intent(Myinfo.this, FollowPager.class);
                 startActivity(intent);
                 overridePendingTransition(0, 0);
             }
@@ -196,7 +196,7 @@ public class Myinfo extends AddingPoster_BaseAct implements SwipeRefreshLayout.O
         followingsB.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                Intent intent = new Intent(Myinfo.this, Followers_AND_Following.class);
+                Intent intent = new Intent(Myinfo.this, FollowPager.class);
                 startActivity(intent);
                 overridePendingTransition(0, 0);
             }
@@ -220,29 +220,37 @@ public class Myinfo extends AddingPoster_BaseAct implements SwipeRefreshLayout.O
                 goToAlbum();
             }
         });
-//---------------------------------------------------------------------------------
+//-----------------------------------화면이동----------------------------------------
 
 
 
 
         //처음 앱을 실행하고 버튼을 눌렀을 때만 값을 읽어옴 addListenerForSingleValueEvent
         //수시로 해당 디비의 하위값들이 변화를 감지하고 그떄마다 값을 불러오려면 addValueEventListener를 사용
-        mdataref.addValueEventListener(new ValueEventListener() {
+        mdataref.child("UserList").addValueEventListener(new ValueEventListener() {
             @Override
             public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
                 //현재 로그인된 유저 정보와 일치하는 데이터를 가져오기.
                 String NameVal = (String) dataSnapshot.child(userUID).child("UserInfo").child("NickName").getValue();
                 String WebsiteVal = (String) dataSnapshot.child(userUID).child("Profile").child("Website").getValue();
                 String IntroVal = (String) dataSnapshot.child(userUID).child("Profile").child("Introduce").getValue();
-                String posternum = String.valueOf( (int) dataSnapshot.child(userUID).child("UserPosterList").getChildrenCount());
-
-                posternumTV.setText(posternum);
                 hname.setText(NameVal);
                 pname.setText(NameVal);
                 idtv.setText(NameVal);
                 website.setText(WebsiteVal);
                 intro.setText(IntroVal);
 
+                //게시물,팔로워,팔로잉 카운트
+                String posternum = String.valueOf( (int) dataSnapshot.child(userUID).child("UserPosterList").getChildrenCount());
+                String followernum = String.valueOf((int)dataSnapshot.child(userUID).child("FollowerList").getChildrenCount());
+                String followingnum = String.valueOf((int)dataSnapshot.child(userUID).child("FollowingList").getChildrenCount());
+                posternumTV.setText(posternum);
+                followernumTV.setText(followernum);
+                forllowingnumTV.setText(followingnum);
+
+
+                // 경로 : root/ UserList/ userUID/ FollowerList/ FollowerUserUID/  UID : "UID"
+//                String FollowerUID = dataSnapshot.child("FollowerList").child(userUID).child("UID").getValue().toString();
 
                 //포스터키 수집용 리스트
 //                private List<String> PosterKeyList = new ArrayList<>();
@@ -355,7 +363,7 @@ public class Myinfo extends AddingPoster_BaseAct implements SwipeRefreshLayout.O
                         public void onComplete(@NonNull Task<Void> task) {
                             Toast.makeText(Myinfo.this, "계정이 삭제 되었습니다.", Toast.LENGTH_LONG).show();
                             //유저의 DB 모든 데이터 삭제
-                            mdataref.child(userUID).removeValue();
+                            mdataref.child("UserList").child(userUID).removeValue();
 
                             //유저의 프로필 사진 삭제
                             mstorageRef.child(userUID).child("ProfileIMG").child("ProfileIMG").delete();

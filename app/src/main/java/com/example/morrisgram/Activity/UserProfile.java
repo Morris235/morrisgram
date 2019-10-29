@@ -53,7 +53,6 @@ public class UserProfile extends AddingPoster_BaseAct implements SwipeRefreshLay
     private TextView followernumTV;
     private TextView forllowingnumTV;
 
-
     //데이터베이스의 주소를 지정 필수
     private DatabaseReference mdataref = FirebaseDatabase.getInstance().getReference();
     //스토리지 레퍼렌스

@@ -4,7 +4,7 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    tools:context=".Activity.Followers_AND_Following">
+    tools:context=".Activity.FollowFragment.FollowPager">
 
     <ImageButton
         android:id="@+id/backB_follow"
@@ -161,14 +161,5 @@
         app:layout_constraintVertical_bias="0.941"
         app:tabIndicatorColor="@android:color/black">
 
-        <com.google.android.material.tabs.TabItem
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="팔로워" />
-
-        <com.google.android.material.tabs.TabItem
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="팔로잉" />
     </com.google.android.material.tabs.TabLayout>
 </androidx.constraintlayout.widget.ConstraintLayout>

@@ -6,10 +6,10 @@
     android:layout_height="match_parent"
     android:focusable="true"
     android:focusableInTouchMode="true"
-    tools:context=".Activity.Followers">
+    tools:context=".Activity.FollowFragment.FollowingPage">
 
     <com.google.android.material.textfield.TextInputLayout
-        android:id="@+id/searchbarlayout_followers"
+        android:id="@+id/searchbarlayout_following"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_marginStart="8dp"
@@ -22,7 +22,7 @@
         app:layout_constraintVertical_bias="0.0">
 
         <com.google.android.material.textfield.TextInputEditText
-            android:id="@+id/search_bar_followers"
+            android:id="@+id/search_bar_following"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:background="@drawable/rounded_edittext"
@@ -30,7 +30,7 @@
             android:padding="5dip"
             android:drawableLeft="@drawable/ic_search_black_24dp"
             android:inputType="text"
-            android:hint="검색" />
+            android:hint="팔로잉 유저 검색" />
     </com.google.android.material.textfield.TextInputLayout>
 
 <!--    <android.support.v4.widget.SwipeRefreshLayout-->
@@ -60,15 +60,6 @@
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/searchbarlayout_followers" />
+        app:layout_constraintTop_toBottomOf="@+id/searchbarlayout_following" />
 
-    <TextView
-        android:id="@+id/viewtest"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="TextView"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent" />
 </androidx.constraintlayout.widget.ConstraintLayout>
