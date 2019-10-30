@@ -22,7 +22,7 @@
         app:srcCompat="@drawable/ic_keyboard_backspace_black_24dp" />
 
     <TextView
-        android:id="@+id/tv_MSGterminal"
+        android:id="@+id/idtv_followpager"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginStart="8dp"
@@ -56,13 +56,14 @@
 
     <androidx.viewpager.widget.ViewPager
         android:id="@+id/viewpager"
-        android:layout_width="match_parent"
-        android:layout_height="580dp"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
         android:layout_below="@+id/tabs"
         app:layout_constraintBottom_toTopOf="@+id/view2"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintHorizontal_bias="0.5"
-        app:layout_constraintStart_toStartOf="parent" />
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/tabs" />
 
     <ImageButton
         android:id="@+id/homeB_follow"
@@ -153,12 +154,11 @@
         android:id="@+id/tabs"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        app:layout_constraintBottom_toTopOf="@+id/viewpager"
+        app:layout_constraintBottom_toTopOf="@+id/view2"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="0.0"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent"
-        app:layout_constraintVertical_bias="0.941"
+        app:layout_constraintVertical_bias="0.07999998"
         app:tabIndicatorColor="@android:color/black">
 
     </com.google.android.material.tabs.TabLayout>

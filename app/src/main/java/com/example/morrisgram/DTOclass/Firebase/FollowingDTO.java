@@ -7,6 +7,10 @@ import java.util.Map;
 
 public class FollowingDTO {
 
+    public FollowingDTO(){
+
+    }
+
     public FollowingDTO(String UID) {
         this.UID = UID;
     }

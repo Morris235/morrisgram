@@ -7,6 +7,7 @@ import com.example.morrisgram.Activity.Home;
 import com.example.morrisgram.Activity.LikeAlarm;
 import com.example.morrisgram.Activity.Myinfo;
 import com.example.morrisgram.Activity.Search;
+import com.example.morrisgram.DTOclass.Firebase.PostingDTO;
 import com.google.android.material.tabs.TabLayout;
 
 import androidx.annotation.NonNull;
@@ -17,12 +18,28 @@ import android.content.pm.ActivityInfo;
 import android.os.Bundle;
 import android.view.View;
 import android.widget.ImageButton;
+import android.widget.TextView;
 
 import com.example.morrisgram.R;
 import com.example.morrisgram.Adapter.ViewPagerAdapter.ViewPagerAdapter;
+import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.auth.FirebaseUser;
+import com.google.firebase.database.DataSnapshot;
+import com.google.firebase.database.DatabaseError;
+import com.google.firebase.database.DatabaseReference;
+import com.google.firebase.database.FirebaseDatabase;
+import com.google.firebase.database.ValueEventListener;
 
 public class FollowPager extends AddingPoster_BaseAct {
     private ViewPager viewPager;
+
+    //데이터베이스의 주소를 지정 필수
+    private DatabaseReference mdataref = FirebaseDatabase.getInstance().getReference();
+
+    //현재 접속중인 유저UID가져오기
+    private FirebaseUser uid = FirebaseAuth.getInstance().getCurrentUser();
+    private String userUID = uid.getUid();
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -30,8 +47,61 @@ public class FollowPager extends AddingPoster_BaseAct {
         // 화면을 portrait(세로) 화면으로 고정하고 싶은 경우
         setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_PORTRAIT);
         setContentView(R.layout.activity_follow_pager);
+        //닉네임TV
+        final TextView nicknameTV = (TextView) findViewById(R.id.idtv_followpager);
+        //팔로워TV
 
+        //팔로잉TV
 
+        //뷰페이저 바인드
+        viewPager = (ViewPager) findViewById(R.id.viewpager);
+
+        //탭메뉴 바인드
+        final TabLayout mTab = (TabLayout) findViewById(R.id.tabs);
+        mTab.addTab(mTab.newTab().setText("팔로워 0명"));
+        mTab.addTab(mTab.newTab().setText("팔로잉 0명"));
+        mTab.setTabGravity(TabLayout.GRAVITY_FILL);
+
+        //뷰페이저에 어댑터 지정 deprected
+        mTab.addOnTabSelectedListener(new TabLayout.OnTabSelectedListener() {
+            @Override
+            public void onTabSelected(TabLayout.Tab tab) {
+                viewPager.setCurrentItem(tab.getPosition());
+            }
+
+            @Override
+
+            public void onTabUnselected(TabLayout.Tab tab) {
+
+            }
+
+            @Override
+            public void onTabReselected(TabLayout.Tab tab) {
+
+            }
+        });
+
+        ViewPagerAdapter adapter = new ViewPagerAdapter(getSupportFragmentManager(),mTab.getTabCount());
+        viewPager.addOnPageChangeListener(new TabLayout.TabLayoutOnPageChangeListener(mTab));
+        viewPager.setAdapter(adapter);
+//        //뷰페이저 어댑터
+//        mTab.setupWithViewPager(viewPager);
+
+        mdataref.child("UserList").addValueEventListener(new ValueEventListener() {
+            @Override
+            public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+                //현재 로그인된 유저 정보와 일치하는 데이터를 가져오기.
+                String NameVal = (String) dataSnapshot.child(userUID).child("UserInfo").child("NickName").getValue();
+                nicknameTV.setText(NameVal);
+
+                String followernum = String.valueOf((int)dataSnapshot.child(userUID).child("FollowerList").getChildrenCount());
+                String followingnum = String.valueOf((int)dataSnapshot.child(userUID).child("FollowingList").getChildrenCount());
+
+            }
+            @Override
+            public void onCancelled(@NonNull DatabaseError databaseError) {
+            }
+        });
 
 //-----------------------------------화면이동----------------------------------------
 //홈 화면 이동
@@ -85,43 +155,7 @@ public class FollowPager extends AddingPoster_BaseAct {
             }
         });
 //---------------------------------------------------------------------------------
-
-        //뷰페이저 바인드
-        viewPager = (ViewPager) findViewById(R.id.viewpager);
-
-        //탭메뉴 바인드
-        final TabLayout mTab = (TabLayout) findViewById(R.id.tabs);
-        mTab.addTab(mTab.newTab().setText("팔로워 0명"));
-        mTab.addTab(mTab.newTab().setText("팔로잉 0명"));
-        mTab.setTabGravity(TabLayout.GRAVITY_FILL);
-
-
-        //뷰페이저에 어댑터 지정 deprected
-        mTab.addOnTabSelectedListener(new TabLayout.OnTabSelectedListener() {
-            @Override
-            public void onTabSelected(TabLayout.Tab tab) {
-                viewPager.setCurrentItem(tab.getPosition());
-            }
-
-            @Override
-            public void onTabUnselected(TabLayout.Tab tab) {
-
-            }
-
-            @Override
-            public void onTabReselected(TabLayout.Tab tab) {
-
-            }
-        });
-
-        ViewPagerAdapter adapter = new ViewPagerAdapter(getSupportFragmentManager(),mTab.getTabCount());
-        viewPager.addOnPageChangeListener(new TabLayout.TabLayoutOnPageChangeListener(mTab));
-        viewPager.setAdapter(adapter);
-//        //뷰페이저 어댑터
-//        mTab.setupWithViewPager(viewPager);
     }
-
-
     @Override
     public void onPause(){
         super.onPause();

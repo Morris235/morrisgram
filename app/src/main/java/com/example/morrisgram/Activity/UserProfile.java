@@ -143,17 +143,18 @@ public class UserProfile extends AddingPoster_BaseAct implements SwipeRefreshLay
                 try {
                     String FollowerUID = dataSnapshot.child("FollowerList").child(userUID).child("UID").getValue().toString();
                     if(userUID.equals(FollowerUID)){
-                        //팔로잉
+                        //팔로잉 상태
                         followB.setVisibility(View.INVISIBLE);
                         followingB.setVisibility(View.VISIBLE);
                     }else {
-                        //팔로우
+                        //언팔로잉 상태
                         followB.setVisibility(View.VISIBLE);
                         followingB.setVisibility(View.INVISIBLE);
                     }
                 }catch (NullPointerException e){
                     e.getStackTrace();
                 }
+
 
 
                 //포스터키 수집용 리스트
@@ -439,6 +440,8 @@ public class UserProfile extends AddingPoster_BaseAct implements SwipeRefreshLay
             Log.i("try", "NullPointerException :"+e);
         }
     }//----------------------------파이어베이스 어댑터 클래스---------------------------------------
+
+    //팔로우 업데이트 메소드
     public void FirebaseDatabase(boolean add, String PosterUserUID){
         // Create new post at /user-posts/$userid/$postid and at
         // /posts/$postid simultaneously
@@ -484,4 +487,7 @@ public class UserProfile extends AddingPoster_BaseAct implements SwipeRefreshLay
 
 
     }
+
+
+
 }

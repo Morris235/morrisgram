@@ -6,6 +6,7 @@ import androidx.fragment.app.Fragment;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
+import android.content.Context;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -17,6 +18,7 @@ import android.widget.TextView;
 
 import com.bumptech.glide.load.engine.DiskCacheStrategy;
 import com.example.morrisgram.CameraClass.GlideApp;
+import com.example.morrisgram.DTOclass.Firebase.FollowerDTO;
 import com.example.morrisgram.DTOclass.Firebase.FollowingDTO;
 import com.example.morrisgram.DTOclass.Firebase.PostingDTO;
 import com.example.morrisgram.R;
@@ -35,7 +37,9 @@ import com.google.firebase.storage.FirebaseStorage;
 import com.google.firebase.storage.StorageReference;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 public class FollowingPage extends Fragment {
 
@@ -48,215 +52,332 @@ public class FollowingPage extends Fragment {
     private LinearLayoutManager linearLayoutManager;
     private FirebaseRecyclerAdapter adapter;
 
-    //전체 포스터키 수집용 리스트
-    private List<String> PosterKeyList = new ArrayList<>();
-    private List<PostingDTO> postingDTOS = new ArrayList<>();
+    //전체 팔로잉 유저 UID 수집용 리스트
+    private List<String> FollowingUIDList = new ArrayList<>();
+    private List<FollowingDTO> followingDTOS = new ArrayList<>();
 
     //파이어베이스 스토리지 변수
     private StorageReference mstorageRef = FirebaseStorage.getInstance().getReference();
     //데이터베이스 변수
     private DatabaseReference mdataref = FirebaseDatabase.getInstance().getReference();
 
-
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
-        return inflater.inflate(R.layout.activity_following_page, container, false);
+        ViewGroup rootView = (ViewGroup) inflater.inflate(R.layout.activity_following_page, container, false);
 
-//        //레이아웃 매니저 세팅
-//        linearLayoutManager = new LinearLayoutManager();
-//        linearLayoutManager.setReverseLayout(true);
-//        linearLayoutManager.setStackFromEnd(true);
-//
-//        //리사이클러뷰
-//        recyclerView.findViewById(R.id.recyclerView_followers);
-//        recyclerView.setLayoutManager(linearLayoutManager);
-//        recyclerView.setHasFixedSize(true);
+        //레이아웃 매니저 세팅
+        linearLayoutManager = new LinearLayoutManager(getActivity());
+        linearLayoutManager.setReverseLayout(true);
+        linearLayoutManager.setStackFromEnd(true);
 
-//        fetch();
+        //리사이클러뷰 바인드
+        recyclerView = rootView.findViewById(R.id.recyclerView_following);
+        recyclerView.setLayoutManager(linearLayoutManager);
+        recyclerView.setHasFixedSize(true);
+        fetch();
 
-        //------------------------------------------------게시물 키값 수집 데이터 스냅샷--------------------------------------------------
-//        //전체 게시물 키 수집
-//        mdataref.child("PosterList").addValueEventListener(new ValueEventListener() {
-//            @Override
-//            public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
-//                //포스터키 수집용 리스트
-////                private List<String> PosterKeyList = new ArrayList<>();
-////                private List<PostingDTO> postingDTOS = new ArrayList<>();
-//
-//                //포스터키가 리스트에 쌓이지 않도록 클리어하기
-//                postingDTOS.clear();
-//                PosterKeyList.clear();
-//                //유저리스트에 있는 모든 데이터를 읽어온다. 그중에서 파베예외 발생 : Failed to convert a value of type java.util.HashMap to long
-//                //C#의 foreach문과 유사한 배열에 이용되는 for문 ->for(변수:배열) = 배열에 있는 값들을 하나씩 순서대로 변수에 대입시킨다. -배열의 자료형과 for문의 변수 자료형은 같아야 한다.
-//                for (DataSnapshot snapshot : dataSnapshot.getChildren()){
-//                    //파베 스냅샷으로 받아올때 long이나 int형태로는 못받아 오겠다. 왜냐하면 모델클래스가 해쉬맵이여서? =데이터를 모델에 맞게 받는 코드
-//                    PostingDTO postingDTO = snapshot.getValue(PostingDTO.class);
-//                    //게시물 키값 받기
-//                    String GetKey = snapshot.getKey();
-//                    Log.i("포스터키","전체 유저 게시물 키 : "+GetKey);
-//
-//                    //클래스 주소값? 리스트
-//                    postingDTOS.add(postingDTO);
-//                    //키값들을 리스트형태로 저장
-//                    PosterKeyList.add(GetKey);
-//                }
-//            }
-//            @Override
-//            public void onCancelled(@NonNull DatabaseError databaseError) {
-//
-//            }
-//        });
-//------------------------------------------------게시물 키값 수집 데이터 스냅샷--------------------------------------------------
+
+        //------------------------------------------------팔로잉 유저 UID 값 수집 데이터 스냅샷--------------------------------------------------리얼타임이 아닌 한번만 읽어보게 하기
+        mdataref.child("UserList").child(userUID).child("FollowingList").addListenerForSingleValueEvent(new ValueEventListener() {
+            @Override
+            public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+                //포스터키 수집용 리스트
+//                private List<String> PosterKeyList = new ArrayList<>();
+//                private List<PostingDTO> postingDTOS = new ArrayList<>();
+
+                //포스터키가 리스트에 쌓이지 않도록 클리어하기
+                followingDTOS.clear();
+                FollowingUIDList.clear();
+                //C#의 foreach문과 유사한 배열에 이용되는 for문 ->for(변수:배열) = 배열에 있는 값들을 하나씩 순서대로 변수에 대입시킨다. -배열의 자료형과 for문의 변수 자료형은 같아야 한다.
+                for (DataSnapshot snapshot : dataSnapshot.getChildren()){
+                    //파베 스냅샷으로 받아올때 long이나 int형태로는 못받아 오겠다. 왜냐하면 모델클래스가 해쉬맵이여서? = 데이터를 모델에 맞게 받는 코드
+                    FollowingDTO  followingDTO = snapshot.getValue(FollowingDTO.class);
+                    //팔로잉 유저 UID 받기
+                    String GetKey = snapshot.getKey();
+                    Log.i("팔로잉","팔로잉 유저 UID 리스트: "+GetKey);
+
+                    //클래스 주소값? 리스트
+                    followingDTOS.add(followingDTO);
+                    //키값들을 리스트형태로 저장
+                    FollowingUIDList.add(GetKey);
+                }
+            }
+            @Override
+            public void onCancelled(@NonNull DatabaseError databaseError) {
+
+            }
+        });
+        //------------------------------------------------팔로잉 유저 UID 값 수집 데이터 스냅샷--------------------------------------------------
+
+
+
+        return rootView;
     }//------------------------크리에이트-------------------------
-
 
 
     public void onStart() {
         super.onStart();
-//        adapter.startListening();
+        adapter.startListening();
     }
 
     public void onStop() {
         super.onStop();
-//        adapter.stopListening();
+        adapter.stopListening();
     }
 
 
-//    //------------------------뷰홀더------------------------------
-//    public class ViewHolder extends RecyclerView.ViewHolder {
-//        //아이템 레이아웃 뷰 변수 선언
-//        public ConstraintLayout root;
-//        public TextView UserNickName;
-//        public ImageView UserprofileIMG;
-//        public Button FollowB;
-//        public Button FollowingB;
-//
-//
-//        public ViewHolder(@NonNull View itemView) {
-//            //선언한 변수와 아이템 레이아웃의 뷰를 바인드
-//            super(itemView);
-//            root = itemView.findViewById(R.id.preview_userfeed_root);
-//            UserNickName = itemView.findViewById(R.id.idtv_followitem);
-//            UserprofileIMG = itemView.findViewById(R.id.profileIMG_followitem);
-//
-//            FollowB = itemView.findViewById(R.id.followB_followitem);
-//            FollowingB = itemView.findViewById(R.id.followingB_followitem);
-//        }
-//
-//
-//        //팔로잉 유저들의 닉네임 받기
-//        public void setUserNickName(final String uid){
-//
-//            mdataref.child("UserList").addValueEventListener(new ValueEventListener() {
-//                @Override
-//                public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
-//                   String nickname = dataSnapshot.child(uid).child("UserInfo").child("NickName").getValue().toString();
-//                   UserNickName.setText(nickname);
-//                }
-//                @Override
-//                public void onCancelled(@NonNull DatabaseError databaseError) {
-//
-//                }
-//            });
-//        }
-//
-//        //스토리지에서 팔로잉 유저의 프로필 이미지 받기
-//        public void setUserprofileIMG(String uid){
-//            Log.i("파베", "setPic 메소드 작동 확인");
-//            StorageReference imageRef = mstorageRef.child(uid).child("ProfileIMG").child("ProfileIMG");
-//            GlideApp.with(FollowingPage.this)
-//                    .load(imageRef)
-//                    .skipMemoryCache(false)
-//                    .thumbnail()
-//                    .centerCrop()
-//                    .fitCenter()
-//                    .diskCacheStrategy(DiskCacheStrategy.ALL)
-//                    .dontAnimate()
-//                    .placeholder(R.drawable.noimage)
-//                    .into(UserprofileIMG);
-//        }
-//
-//    }//------------------------뷰홀더------------------------------
-//    //----------------------------파이어베이스 어댑터---------------------------------------
-//    private void fetch() {
-//        //BaseQuery - 팔로잉리스트 쿼리
-//        Query query = FirebaseDatabase.getInstance()
-//                //BaseQuery
-//                .getReference()
-//                .child("UserList")
-//                .child(userUID)
-//                .child("FollowingList");
-//
-//        //orderByChild()	지정된 하위 키의 값에 따라 결과를 정렬합니다.
-//        //orderByKey()	    하위 키에 따라 결과를 정렬합니다.
-//        //orderByValue()	하위 값에 따라 결과를 정렬합니다.
-//
-//        Log.i("팔로우", "query 경로 확인 : "+query.toString());
-//
-//        //query를 사용해서 DB의 모든 해당 정보를 받아서 가져오는 스냅샷 - 스트링형식으로 받아와야함 - 팔로잉 유저의 UID만 받아와서 모든걸 해결하자!
-//        FirebaseRecyclerOptions<FollowingDTO> options =
-//                new FirebaseRecyclerOptions.Builder<FollowingDTO>()
-//                        .setQuery(query, new SnapshotParser<FollowingDTO>() {
-//                            @NonNull
-//                            @Override
-//                            public FollowingDTO parseSnapshot(@NonNull DataSnapshot snapshot) {
-//                                return new FollowingDTO(
-//                                        snapshot.child("UID").getValue().toString());  //게시물 이미지
-//                            }
-//                        })
-//                        .build();
-//
-//
-//
-//        //어댑터
-//        adapter = new FirebaseRecyclerAdapter<FollowingDTO, FollowingPage.ViewHolder>(options) {
-//            //리사이클러뷰 아이템 생성
-//            @Override
-//            public FollowingPage.ViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
-//                View view = LayoutInflater.from(parent.getContext())
-//                        .inflate(R.layout.follow_item, parent, false);
-//                return new FollowingPage.ViewHolder(view);
-//            }
-//
-//            @Override                                                                                           //DB 데이터 틀 = DTO 클래스
-//            protected void onBindViewHolder(@NonNull FollowingPage.ViewHolder holder, final int position, @NonNull FollowingDTO following_set) {
-//                //팔로잉 유저닉네임
-//                holder.setUserNickName(following_set.getUID());
-//                //팔로잉 유저프로필 이미지
-//                holder.setUserprofileIMG(following_set.getUID());
-//
-//                //팔로잉, 팔로우 버튼
-////                holder.vetB.setOnClickListener(new View.OnClickListener() {
-////                    @Override
-////                    public void onClick(View v) {
-////                        CharSequence info[] = new CharSequence[] {"삭제","수정" };
-////                        AlertDialog.Builder builder = new AlertDialog.Builder(FollowingPage.this);
-//////                        builder.setTitle()
-////                        builder.setItems(info, new DialogInterface.OnClickListener() {
-////                            @Override
-////                            public void onClick(DialogInterface dialog, int which) {
-////                                if(which == 0){
-//////                                    mdataref.child(userUID).child("UserPosterList").child();
-////                                    Toast.makeText(FollowingPage.this, "옵션 클릭확인", Toast.LENGTH_SHORT).show();
-////                                }
-////                                dialog.dismiss();
-////                            }
-////                        });
-////                        builder.show();
-////                    }
-////                });
-//
-//                //피드이동
-////                holder.root.setOnClickListener(new View.OnClickListener() {
-////                    @Override
-////                    public void onClick(View view) {
-////                        Toast.makeText(FollowingPage.this, String.valueOf(position), Toast.LENGTH_SHORT).show();
-////                        //해당 포지션으로 포커스 주기 - 포스터뷰어로 이동
-////                    }
-////                });
-//
-//            }
-//        };
-//        recyclerView.setAdapter(adapter);
-//    }
+    //------------------------뷰홀더------------------------------
+    public class ViewHolder extends RecyclerView.ViewHolder {
+        //아이템 레이아웃 뷰 변수 선언
+        public ConstraintLayout root;
+        public TextView UserNickName;
+        public ImageView UserprofileIMG;
+        public Button FollowB;
+        public Button FollowingB;
+
+        //팔로잉 유저의 UID받는 변수
+        public String UID;
+
+        public ViewHolder(@NonNull View itemView) {
+            //선언한 변수와 아이템 레이아웃의 뷰를 바인드
+            super(itemView);
+            root = itemView.findViewById(R.id.followitem_root);
+            UserNickName = itemView.findViewById(R.id.idtv_followitem);
+            UserprofileIMG = itemView.findViewById(R.id.profileIMG_followitem);
+
+            FollowB = itemView.findViewById(R.id.followB_followitem);
+            FollowingB = itemView.findViewById(R.id.followingB_followitem);
+        }
+
+
+        //팔로잉 유저들의 닉네임 받기
+        public void setUserNickName(final String uid){
+
+            mdataref.child("UserList").addValueEventListener(new ValueEventListener() {
+                @Override
+                public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+                   String nickname = dataSnapshot.child(uid).child("UserInfo").child("NickName").getValue().toString();
+                   UserNickName.setText(nickname);
+                }
+                @Override
+                public void onCancelled(@NonNull DatabaseError databaseError) {
+
+                }
+            });
+        }
+
+        //스토리지에서 팔로잉 유저의 프로필 이미지 받기
+        public void setUserprofileIMG(String uid){
+            Log.i("파베", "setPic 메소드 작동 확인");
+            StorageReference imageRef = mstorageRef.child(uid).child("ProfileIMG").child("ProfileIMG");
+            GlideApp.with(FollowingPage.this)
+                    .load(imageRef)
+                    .skipMemoryCache(false)
+                    .thumbnail()
+                    .centerCrop()
+                    .fitCenter()
+                    .diskCacheStrategy(DiskCacheStrategy.ALL)
+                    .dontAnimate()
+                    .placeholder(R.drawable.noimage)
+                    .into(UserprofileIMG);
+        }
+
+        public String getFollowingUserUID(String uid){
+            UID = uid;
+            return UID;
+        }
+    }//------------------------뷰홀더------------------------------
+
+
+
+
+
+    //----------------------------파이어베이스 어댑터---------------------------------------
+    private void fetch() {
+        //BaseQuery - 팔로잉리스트 쿼리
+        Query query = FirebaseDatabase.getInstance()
+                //BaseQuery
+                .getReference()
+                .child("UserList")
+                .child(userUID)
+                .child("FollowingList");
+
+        //orderByChild()	지정된 하위 키의 값에 따라 결과를 정렬합니다.
+        //orderByKey()	    하위 키에 따라 결과를 정렬합니다.
+        //orderByValue()	하위 값에 따라 결과를 정렬합니다.
+
+        Log.i("팔로우", "query 경로 확인 : "+query.toString());
+
+        //query를 사용해서 DB의 모든 해당 정보를 받아서 가져오는 스냅샷 - 스트링형식으로 받아와야함 - 팔로잉 유저의 UID만 받아와서 모든걸 해결하자!
+        FirebaseRecyclerOptions<FollowingDTO> options =
+                new FirebaseRecyclerOptions.Builder<FollowingDTO>()
+                        .setQuery(query, new SnapshotParser<FollowingDTO>() {
+                            @NonNull
+                            @Override
+                            public FollowingDTO parseSnapshot(@NonNull DataSnapshot snapshot) {
+                                return new FollowingDTO(
+                                        snapshot.child("UID").getValue().toString());  //게시물 이미지
+                            }
+                        })
+                        .build();
+
+
+
+        //어댑터
+        adapter = new FirebaseRecyclerAdapter<FollowingDTO, FollowingPage.ViewHolder>(options) {
+            //리사이클러뷰 아이템 생성
+            @Override
+            public FollowingPage.ViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
+                View view = LayoutInflater.from(parent.getContext())
+                        .inflate(R.layout.follow_item, parent, false);
+                return new FollowingPage.ViewHolder(view);
+            }
+
+            @Override                                                                                           //DB 데이터 틀 = DTO 클래스
+            protected void onBindViewHolder(@NonNull final FollowingPage.ViewHolder holder, final int position, @NonNull final FollowingDTO following_set) {
+                //팔로잉 유저닉네임
+                holder.setUserNickName(following_set.getUID());
+                //팔로잉 유저프로필 이미지
+                holder.setUserprofileIMG(following_set.getUID());
+
+
+                //아이템 자체에 포지션이 디폴트로 깔려있다.
+                //언팔로우 버튼 - 언팔로우할때 바로 팔로잉 유저가 삭제되면 안된다. - 클릭 버튼 = 팔로우 DB 업데이트
+                holder.FollowingB.setOnClickListener(new View.OnClickListener() {
+                    @Override
+                    public void onClick(View v) {
+                                //해당 포지션의 팔로잉 유저UID 가져오기 - 에러 예상됨
+                                String UserUIDList = FollowingUIDList.get(position);
+                        Log.i("팔로잉", "클릭확인 : "+UserUIDList);
+                                //언팔로우 하기
+                                FirebaseDatabase(false,UserUIDList);
+
+                        //팔로잉 상태
+                        holder.FollowB.setVisibility(View.INVISIBLE);
+                        holder.FollowingB.setVisibility(View.VISIBLE);
+                    }
+                });
+
+                //팔로우 버튼 - 언팔로우할때 바로 팔로잉 유저가 삭제되면 안된다. - 클릭 버튼 = 팔로우 DB 업데이트
+                holder.FollowB.setOnClickListener(new View.OnClickListener() {
+                    @Override
+                    public void onClick(View v) {
+                                //해당 포지션의 팔로잉 유저UID 가져오기
+                                String UserUIDList = FollowingUIDList.get(position);
+                        Log.i("팔로잉", "클릭확인 : "+UserUIDList);
+                                //팔로잉 하기
+                                FirebaseDatabase(true,UserUIDList);
+                        //언팔로잉 상태
+                        holder.FollowB.setVisibility(View.VISIBLE);
+                        holder.FollowingB.setVisibility(View.INVISIBLE);
+                            }
+                });
+
+
+                //버튼 예외처리 - 각 팔로잉 계정의 UID 존재 유무 비교 (해당포지션의 UID) *클릭이 아님* 상태값을 받아야 한다. ->전체 팔로잉 유저의 UID를 받고 해당 포지션에 일치하는 UID가 없으면 버튼처리
+                mdataref.child("UserList").child(userUID).child("FollowingList").addValueEventListener(new ValueEventListener() {
+                    @Override
+                    public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+                        //                //팔로워 리스트에서 나의 계정UID가 있다면 팔로잉버튼 처리
+                // 경로 : root/ UserList/ userUID/ "FollowingList/ FollowerUserUID/  UID : "UID"
+                try {
+//                    String UserUID = holder.getFollowingUserUID(following_set.getUID()); //DB전체 팔로잉 유저의 UID
+                    String UserUID = FollowingUIDList.get(position); //싱글벨류 리스트의 팔로잉 유저의 UID
+                    Log.i("팔로잉", "리스트의 팔로잉 유저UID : "+UserUID);
+
+                    String FollowingUID = dataSnapshot.child(UserUID).child("UID").getValue().toString(); //DB전체 벨류 이벤트 같은 DB에서 가져온 값을 비교한다? 의미 없어보임
+                    Log.i("팔로잉", "FollowingUID 데이터 스냅샷 : "+FollowingUID);
+
+                    //버튼예외처리 팔로잉 리스트 경로에
+                    if(UserUID.equals(FollowingUID)){
+                        //팔로잉 상태 *유저지정 필요??*
+                        holder.FollowB.setVisibility(View.INVISIBLE);
+                        holder.FollowingB.setVisibility(View.VISIBLE);
+                    }else {
+                        //언팔로잉 상태
+                        holder.FollowB.setVisibility(View.VISIBLE);
+                        holder.FollowingB.setVisibility(View.INVISIBLE);
+                    }
+
+
+                }catch (NullPointerException e){
+                    e.getStackTrace();
+                }
+
+                    }
+
+                    @Override
+                    public void onCancelled(@NonNull DatabaseError databaseError) {
+
+                    }
+                });
+
+
+
+
+
+
+                //피드이동
+//                holder.root.setOnClickListener(new View.OnClickListener() {
+//                    @Override
+//                    public void onClick(View view) {
+//                        Toast.makeText(FollowingPage.this, String.valueOf(position), Toast.LENGTH_SHORT).show();
+//                        //해당 포지션으로 포커스 주기 - 포스터뷰어로 이동
+//                    }
+//                });
+
+            }
+        };
+        recyclerView.setAdapter(adapter);
+    }    //----------------------------파이어베이스 어댑터---------------------------------------
+
+
+    //팔로우 업데이트 메소드
+    public void FirebaseDatabase(boolean add, String UID){
+        // Create new post at /user-posts/$userid/$postid and at
+        // /posts/$postid simultaneously
+
+        //팔로워 리스트 맵 - 업데이트
+        Map<String,Object> FollowerUserUID = new HashMap<>();
+        //팔로잉 리스트 맵 - 업데이트
+        Map<String,Object> FollowingUserUID = new HashMap<>();
+
+        Map<String,Object> FollowerValues = null;
+        Map<String,Object> FollowingValues = null;
+
+        //객체 2개 선언
+        FollowingDTO followingDTO = new FollowingDTO(UID);
+        FollowerDTO followerDTO = new FollowerDTO(userUID);
+
+        //팔로잉 팔로워 맵 두개 사용
+        FollowerValues = followerDTO.toMap();
+        FollowingValues = followingDTO.toMap();
+
+
+
+        //팔로우 버튼
+        if (add){
+            //<---상대방 팔로워 리스트---> DB에 로그인한 유저의 UID 추가
+            // 경로 : 루트/ UserList/ userUID/ FollowerList/ FollowerUserUID/  UID : "UID"
+            FollowerUserUID.put(userUID,FollowerValues);
+            mdataref.child("UserList").child(UID).child("FollowerList").updateChildren(FollowerUserUID);
+
+            //<---내 팔로잉 리스트---> DB에 상대방 유저의 UID 추가
+            // 경로 : 루트/ UserList/ userUID/ FollowingList/ FollowingUserUID/  UID : "UID"
+            FollowingUserUID.put(UID,FollowingValues);
+            mdataref.child("UserList").child(userUID).child("FollowingList").updateChildren(FollowingUserUID);
+
+
+            //언팔로우 버튼
+        }else{
+            //<---상대방 팔로워 리스트---> DB에 로그인한 유저의 UID 삭제
+            mdataref.child("UserList").child(UID).child("FollowerList").child(userUID).child("UID").setValue(null);
+
+            //<---내 팔로잉 리스트---> DB에 상대방 유저의 UID 삭제
+            mdataref.child("UserList").child(userUID).child("FollowingList").child(UID).child("UID").setValue(null);
+        }
+
+
+    }
+
 }
