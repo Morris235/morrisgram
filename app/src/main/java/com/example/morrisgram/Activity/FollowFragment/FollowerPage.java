@@ -140,7 +140,7 @@ public class FollowerPage extends Fragment {
 
 
 
-    //------------------------뷰홀더------------------------------
+    //------------------------뷰홀더 클래스------------------------------
     public class ViewHolder extends RecyclerView.ViewHolder {
         //아이템 레이아웃 뷰 변수 선언
         public ConstraintLayout root;
@@ -205,7 +205,7 @@ public class FollowerPage extends Fragment {
             UID = uid;
             return UID;
         }
-    }//------------------------뷰홀더------------------------------
+    }//------------------------뷰홀더 클래스------------------------------
 
 
 

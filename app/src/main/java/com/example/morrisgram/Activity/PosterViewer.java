@@ -284,6 +284,9 @@ public class PosterViewer extends AddingPoster_BaseAct implements SwipyRefreshLa
         public String UserPosterKey;
         public ImageButton likeButton;
 
+        public ImageButton replyB;
+        public ViewGroup replyviewB;
+
         public ViewHolder(@NonNull View itemView) {
             super(itemView);
             root = itemView.findViewById(R.id.poster_posterviewer);
@@ -298,6 +301,7 @@ public class PosterViewer extends AddingPoster_BaseAct implements SwipyRefreshLa
             LocationData = itemView.findViewById(R.id.location_posterviewer);
             vetB = itemView.findViewById(R.id.optionB_idtv_home);
             likeButton = itemView.findViewById(R.id.likeB_posteritem);
+            replyB = itemView.findViewById(R.id.reply_posteritem);
         }
 
         public void setMetadata(String uri){
@@ -384,7 +388,7 @@ public class PosterViewer extends AddingPoster_BaseAct implements SwipyRefreshLa
     //----------------------------파이어베이스 어댑터 메소드---------------------------------------
     private void fetch() {
         //포스트뷰어 게시물 표시 신호
-        Intent intent = getIntent();
+        final Intent intent = getIntent();
         final int FLAG = intent.getIntExtra("FLAG",-1);
 
         //게시물에서 유저UID를 받은 경우
@@ -562,8 +566,26 @@ public class PosterViewer extends AddingPoster_BaseAct implements SwipyRefreshLa
                     }
                 });//-------------------------------------------------
 
+                //댓글달기 화면으로 이동 - 인풋텍스트뷰에 포커스
+                holder.replyB.setOnClickListener(new View.OnClickListener() {
+                    @Override
+                    public void onClick(View v) {
+                        Intent intent1 = new Intent(PosterViewer.this,ReplyDisplay.class);
+                        intent1.putExtra("PosterKey",PosterKeyList.get(position));
+                        startActivity(intent1);
+                    }
+                });
 
 
+                //전체 댓글보기 - 댓글에 포커스
+                holder.replyviewB.setOnClickListener(new View.OnClickListener() {
+                    @Override
+                    public void onClick(View v) {
+                        Intent intent2 = new Intent(PosterViewer.this,ReplyDisplay.class);
+                        intent2.putExtra("PosterKey",PosterKeyList.get(position));
+                        startActivity(intent2);
+                    }
+                });
 
                 //내피드에서 선택한 게시물 포커스 주기 - 액티비티 최초실행시 실행
                 if (FIRST_FOCUS){
