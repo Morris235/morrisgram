@@ -28,6 +28,7 @@ import android.widget.Toast;
 import com.bumptech.glide.load.engine.DiskCacheStrategy;
 import com.example.morrisgram.Activity.BaseActivity.AddingPoster_BaseAct;
 import com.example.morrisgram.CameraClass.GlideApp;
+import com.example.morrisgram.DTOclass.Firebase.FollowingDTO;
 import com.example.morrisgram.DTOclass.Firebase.PostingDTO;
 import com.example.morrisgram.R;
 import com.firebase.ui.database.FirebaseRecyclerAdapter;
@@ -38,15 +39,20 @@ import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.database.DataSnapshot;
+import com.google.firebase.database.DatabaseError;
+import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.Query;
+import com.google.firebase.database.ValueEventListener;
 import com.google.firebase.storage.StorageMetadata;
 import com.google.firebase.storage.StorageReference;
 import com.like.LikeButton;
 import com.orangegangsters.github.swipyrefreshlayout.library.SwipyRefreshLayout;
 import com.orangegangsters.github.swipyrefreshlayout.library.SwipyRefreshLayoutDirection;
 
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 
 public class Home extends AddingPoster_BaseAct implements SwipyRefreshLayout.OnRefreshListener {
     private SwipyRefreshLayout mSwipeRefreshLayout;
@@ -68,6 +74,12 @@ public class Home extends AddingPoster_BaseAct implements SwipyRefreshLayout.OnR
             Manifest.permission.WRITE_CONTACTS,
             Manifest.permission.READ_CONTACTS
     };
+    //데이터베이스의 주소 지정
+    private DatabaseReference mdataref = FirebaseDatabase.getInstance().getReference();
+
+    //팔로잉 유저 UID 수집용 리스트
+    private List<String> MyFollowingUIDList = new ArrayList<>();
+    private List<FollowingDTO> followingDTOS = new ArrayList<>();
 
     //파이어베이스 리사이클러뷰
     private RecyclerView recyclerView;
@@ -96,6 +108,27 @@ public class Home extends AddingPoster_BaseAct implements SwipyRefreshLayout.OnR
         //smooth scrolling
         recyclerView.setNestedScrollingEnabled(false);
 
+        //자신의 팔로잉 리스트 수집 = 내 UID를 자신의 팔로워 리스트에 갖고 있는 유저UID
+        mdataref.child("UserList").child(userUID).child("FollowingList").addValueEventListener(new ValueEventListener() {
+            @Override
+            public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+
+                followingDTOS.clear();
+                MyFollowingUIDList.clear();
+                for (DataSnapshot snapshot : dataSnapshot.getChildren()){
+                    FollowingDTO followingDTO = snapshot.getValue(FollowingDTO.class);
+                    String GetKey = snapshot.getKey();
+
+                    //클래스 주소값?
+                    followingDTOS.add(followingDTO);
+                    MyFollowingUIDList.add(GetKey);
+                }
+            }
+            @Override
+            public void onCancelled(@NonNull DatabaseError databaseError) {
+
+            }
+        });
 
         fetch();
 //-----------------------------------화면이동----------------------------------------
@@ -163,7 +196,7 @@ public class Home extends AddingPoster_BaseAct implements SwipyRefreshLayout.OnR
         mSwipeRefreshLayout.setOnRefreshListener(this);
         mSwipeRefreshLayout.setDirection(SwipyRefreshLayoutDirection.TOP);
 
-    }
+    }//----------------------크리에이트-------------------------------
 
     @Override
     public void onRefresh(SwipyRefreshLayoutDirection direction) {
@@ -350,21 +383,22 @@ public class Home extends AddingPoster_BaseAct implements SwipyRefreshLayout.OnR
     }
     //----------------------------파이어베이스 어댑터---------------------------------------
     private void fetch() {
-        //BaseQuery
-        Query query = FirebaseDatabase.getInstance()
-                .getReference()
-                .child("PosterList");
+//        //BaseQuery
+//        Query query = FirebaseDatabase.getInstance()
+//                .getReference()
+//                .child("PosterList")
+//                .orderByChild("UserUID")
+//                .equalTo(FollowingQuery(MyFollowingUIDList));
 
+        Log.i("쿼리","메소드 리턴 팔로잉 유저 : "+FollowingQuery(MyFollowingUIDList));
         //orderByChild()	지정된 하위 키의 값에 따라 결과를 정렬합니다.
         //orderByKey()	    하위 키에 따라 결과를 정렬합니다.
         //orderByValue()	하위 값에 따라 결과를 정렬합니다.
 
-        Log.i("파베", "홈 뷰어 query 경로 확인 : "+query.toString());
-
         //query를 사용해서 DB의 모든 해당 정보를 받아서 가져오는 스냅샷 - 스트링형식으로 받아와야함
         FirebaseRecyclerOptions<PostingDTO> options =
                 new FirebaseRecyclerOptions.Builder<PostingDTO>()
-                        .setQuery(query, new SnapshotParser<PostingDTO>() {
+                        .setQuery(FollowingQuery(MyFollowingUIDList), new SnapshotParser<PostingDTO>() {
                             @NonNull
                             @Override
                             public PostingDTO parseSnapshot(@NonNull DataSnapshot snapshot) {
@@ -436,5 +470,21 @@ public class Home extends AddingPoster_BaseAct implements SwipyRefreshLayout.OnR
             }
         };
         recyclerView.setAdapter(adapter);
+    }
+
+    //나의 팔로잉 리스트의 유저UID를 얻어서 쿼리 필터링하는 메소드
+    public Query FollowingQuery(List<String> MyFollowingUIDList){
+        Query query = null;
+
+        for (int p = 0; p < MyFollowingUIDList.size(); p++){
+
+            query = FirebaseDatabase.getInstance()
+                    .getReference()
+                    .child("PosterList")
+                    .orderByChild("UserUID")
+                    .equalTo(MyFollowingUIDList.get(p));
+        }
+
+        return query;
     }
 }

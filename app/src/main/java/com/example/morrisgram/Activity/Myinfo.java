@@ -31,6 +31,8 @@ import com.bumptech.glide.load.engine.DiskCacheStrategy;
 import com.example.morrisgram.Activity.BaseActivity.AddingPoster_BaseAct;
 import com.example.morrisgram.Activity.FollowFragment.FollowPager;
 import com.example.morrisgram.CameraClass.GlideApp;
+import com.example.morrisgram.DTOclass.Firebase.FollowerDTO;
+import com.example.morrisgram.DTOclass.Firebase.FollowingDTO;
 import com.example.morrisgram.DTOclass.Firebase.PostingDTO;
 import com.example.morrisgram.DTOclass.Firebase.PreView;
 import com.example.morrisgram.R;
@@ -77,6 +79,7 @@ public class Myinfo extends AddingPoster_BaseAct implements SwipeRefreshLayout.O
 
     //데이터베이스의 주소를 지정 필수
     private DatabaseReference mdataref = FirebaseDatabase.getInstance().getReference();
+
     //현재 접속중인 유저UID가져오기
     private FirebaseUser uid = FirebaseAuth.getInstance().getCurrentUser();
     private FirebaseAuth firebaseAuth;
@@ -86,6 +89,14 @@ public class Myinfo extends AddingPoster_BaseAct implements SwipeRefreshLayout.O
     //포스터키 수집용 리스트
     private List<String> PosterKeyList = new ArrayList<>();
     private List<PostingDTO> postingDTOS = new ArrayList<>();
+
+    //팔로워 유저 UID 수집용 리스트
+    private List<String> MyFollowerUIDList = new ArrayList<>();
+    private List<FollowerDTO> followerDTOS = new ArrayList<>();
+
+    //팔로잉 유저 UID 수집용 리스트
+    private List<String> MyFollowingUIDList = new ArrayList<>();
+    private List<FollowingDTO> followingDTOS = new ArrayList<>();
 
     //파이어베이스 리사이클러뷰
     private RecyclerView recyclerView;
@@ -98,6 +109,8 @@ public class Myinfo extends AddingPoster_BaseAct implements SwipeRefreshLayout.O
         // 화면을 portrait(세로) 화면으로 고정하고 싶은 경우
         setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_PORTRAIT);
         setContentView(R.layout.activity_myinfo);
+
+        Log.i("유저","계정 UID : "+userUID);
 
         //네비게이션 드로우바
         mdrawerLayout = (DrawerLayout) findViewById(R.id.drawer);
@@ -186,6 +199,7 @@ public class Myinfo extends AddingPoster_BaseAct implements SwipeRefreshLayout.O
             @Override
             public void onClick(View v) {
                 Intent intent = new Intent(Myinfo.this, FollowPager.class);
+                intent.putExtra("FLAG",0);
                 startActivity(intent);
                 overridePendingTransition(0, 0);
             }
@@ -197,6 +211,7 @@ public class Myinfo extends AddingPoster_BaseAct implements SwipeRefreshLayout.O
             @Override
             public void onClick(View v) {
                 Intent intent = new Intent(Myinfo.this, FollowPager.class);
+                intent.putExtra("FLAG",0);
                 startActivity(intent);
                 overridePendingTransition(0, 0);
             }
@@ -248,13 +263,65 @@ public class Myinfo extends AddingPoster_BaseAct implements SwipeRefreshLayout.O
                 followernumTV.setText(followernum);
                 forllowingnumTV.setText(followingnum);
 
+            }
+            @Override
+            public void onCancelled(@NonNull DatabaseError databaseError) {
+            }
+        });
 
-                // 경로 : root/ UserList/ userUID/ FollowerList/ FollowerUserUID/  UID : "UID"
-//                String FollowerUID = dataSnapshot.child("FollowerList").child(userUID).child("UID").getValue().toString();
+        //-----------------------------회원탈퇴시 데이터 삭제를 위한 팔로잉 & 팔로워 리스트 수집-----------------------------
+        //자신의 팔로워 리스트 수집 = 내 UID를 자신의 팔로잉 리스트에 갖고 있는 유저UID
+        mdataref.child("UserList").child(userUID).child("FollowerList").addValueEventListener(new ValueEventListener() {
+            @Override
+            public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
 
-                //포스터키 수집용 리스트
-//                private List<String> PosterKeyList = new ArrayList<>();
-//                private List<PostingDTO> postingDTOS = new ArrayList<>();
+                followerDTOS.clear();
+                MyFollowerUIDList.clear();
+                for (DataSnapshot snapshot : dataSnapshot.getChildren()){
+                    FollowerDTO followerDTO = snapshot.getValue(FollowerDTO.class);
+                    String GetKey = snapshot.getKey();
+
+                    //클래스 주소값?
+                    followerDTOS.add(followerDTO);
+                    MyFollowerUIDList.add(GetKey);
+                }
+            }
+
+            @Override
+            public void onCancelled(@NonNull DatabaseError databaseError) {
+
+            }
+        });
+
+        //자신의 팔로잉 리스트 수집 = 내 UID를 자신의 팔로워 리스트에 갖고 있는 유저UID
+        mdataref.child("UserList").child(userUID).child("FollowingList").addValueEventListener(new ValueEventListener() {
+            @Override
+            public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+
+                followingDTOS.clear();
+                MyFollowingUIDList.clear();
+                for (DataSnapshot snapshot : dataSnapshot.getChildren()){
+                    FollowingDTO followingDTO = snapshot.getValue(FollowingDTO.class);
+                    String GetKey = snapshot.getKey();
+
+                    //클래스 주소값?
+                    followingDTOS.add(followingDTO);
+                    MyFollowingUIDList.add(GetKey);
+                }
+            }
+            @Override
+            public void onCancelled(@NonNull DatabaseError databaseError) {
+
+            }
+        });
+        //-----------------------------회원탈퇴시 데이터 삭제를 위한 팔로잉 & 팔로워 리스트 수집-----------------------------
+
+
+        //--------------------게시물 키값 수집-----------------------
+        mdataref.child("UserList").child(userUID).child("UserPosterList").addValueEventListener(new ValueEventListener() {
+            @Override
+            public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+
                 //포스터키가 리스트에 쌓이지 않도록 클리어하기
                 postingDTOS.clear();
                 PosterKeyList.clear();
@@ -270,53 +337,13 @@ public class Myinfo extends AddingPoster_BaseAct implements SwipeRefreshLayout.O
                     PosterKeyList.add(GetKey);
                 }
             }
+
             @Override
             public void onCancelled(@NonNull DatabaseError databaseError) {
+
             }
         });
-
-
-
-
-
-        //-----------현재 접속한 회원의 스토리지 이미지만 삭제 - 회원의 모든 포스터키 데이터 쿼리----------
-
-//        query.addValueEventListener(new ValueEventListener() {
-//            @Override
-//            public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
-//                try {
-//                    String PosterKeyGet = dataSnapshot.getValue().toString();
-//                    Log.i("포스터키","데이터스냅샷 : "+PosterKeyGet);
-//
-//                    PostingDTO posting_dto = gson.fromJson(gson.toJson(PosterKeyGet),PostingDTO.class);
-//                    Log.i("포스터키","posting_dto : "+posting_dto.toString());
-//
-//                    String json = gson.toJson(PosterKeyGet,StringType);
-//                    Log.i("포스터키","json : "+json);
-//
-//                    JSONArray jsonArray = new JSONArray(json);
-//                    Log.i("포스터키","jsonArray : "+jsonArray.getString(0));
-//
-//                    for(int i=0; i<jsonArray.length(); i++){
-//                        String Key = jsonArray.getString(i);
-//                        Log.i("포스터키","jsonArray : "+jsonArray.getString(i));
-//
-//                        JSONObject jsonObject = new JSONObject(Key);
-//
-//                        //종단 처리 되지 않았음. "Key":"value"
-//                        String PosterKey = jsonObject.getString("PosterKey");
-//                        Log.i("포스터키","회원탈퇴 포스터키 삭제 요구 : "+PosterKey);
-//                    }
-//                }catch (NullPointerException | JSONException | TypeNotPresentException e){
-//                    e.getStackTrace();
-//                    Log.i("포스터키","Exception e : "+e);
-//                }
-//            }
-//            @Override
-//            public void onCancelled(@NonNull DatabaseError databaseError) {
-//            }
-//        });//-----------------------------------------------------------------------
-
+        //--------------------게시물 키값 수집-----------------------
     }//------------------크리에이트--------------
 
 
@@ -340,6 +367,7 @@ public class Myinfo extends AddingPoster_BaseAct implements SwipeRefreshLayout.O
 
     @Override
     public boolean onNavigationItemSelected(@NonNull MenuItem item) {
+
         int id = item.getItemId();
         if (id == R.id.logout_navi) {
             //로그아웃
@@ -358,36 +386,55 @@ public class Myinfo extends AddingPoster_BaseAct implements SwipeRefreshLayout.O
                 @Override
                 public void onClick(DialogInterface dialog, int which) {
                     uid = FirebaseAuth.getInstance().getCurrentUser();
+
+                    //로그인 화면으로 이동
+                    uid.delete();
+                    finish();
+                    startActivity(new Intent(getApplicationContext(), MainActivity.class));
+
                     uid.delete().addOnCompleteListener(new OnCompleteListener<Void>() {
                         @Override
                         public void onComplete(@NonNull Task<Void> task) {
                             Toast.makeText(Myinfo.this, "계정이 삭제 되었습니다.", Toast.LENGTH_LONG).show();
-                            //유저의 DB 모든 데이터 삭제
+                            try {
+                                //상대 유저의 팔로워 리스트에서 내 UID 삭제
+                                for (int i=0; i<MyFollowingUIDList.size(); i++){
+                                    mdataref.getDatabase().getReference().child("UserList").child(MyFollowingUIDList.get(i)).child("FollowerList").child(userUID).removeValue();
+                                    Log.i("삭제","내 계정 UID : "+userUID);
+                                    Log.i("삭제","내 팔로잉 계정 리스트 : "+MyFollowingUIDList.get(i));
+                                    Log.i("삭제","상대 유저 팔로워 리스트 경로 : "+mdataref.child("UserList").child(MyFollowerUIDList.get(i)).child("FollowerList").child(userUID).child("UID").toString());
+                                }
+                                //상대 유저의 팔로잉 리스트에서 내 UID 삭제
+                                for (int i=0; i<MyFollowingUIDList.size(); i++){
+                                    mdataref.getDatabase().getReference().child("UserList").child(MyFollowerUIDList.get(i)).child("FollowingList").child(userUID).removeValue();
+                                    Log.i("삭제","내 계정 UID : "+userUID);
+                                    Log.i("삭제","내 팔로워 계정 리스트 : "+MyFollowerUIDList.get(i));
+                                    Log.i("삭제","상대 유저 팔로잉 리스트 경로 : "+mdataref.child("UserList").child(MyFollowerUIDList.get(i)).child("FollowingList").child(userUID).child("UID").toString());
+                                }
+
+                                //-GetPosterKey is ArrayList-
+                                for (int i=0; i<PosterKeyList.size(); i++){
+                                    //스토리지에서 유저의 게시물 이미지 모두 삭제
+                                    mstorageRef.child("PosterPicList").child(PosterKeyList.get(i)).child("PosterIMG").delete();
+                                    //유저의 게시물 전체 DB삭제
+                                    mdataref.getDatabase().getReference("PosterList").child(PosterKeyList.get(i)).removeValue();
+                                    Log.i("삭제","내 게시물 리스트 : "+MyFollowerUIDList.get(i));
+                                }
+
+                                //유저의 프로필 사진 삭제
+                                mstorageRef.child(userUID).child("ProfileIMG").child("ProfileIMG").delete();
+
+                                //유저의 DB 모든 데이터 삭제
                             mdataref.child("UserList").child(userUID).removeValue();
 
-                            //유저의 프로필 사진 삭제
-                            mstorageRef.child(userUID).child("ProfileIMG").child("ProfileIMG").delete();
+                                //회원탈퇴 처리
+                                FirebaseAuth.getInstance().getCurrentUser().delete();
+                                Log.i("삭제","계정삭제 확인 : "+FirebaseAuth.getInstance().getCurrentUser().toString());
 
-                            //-GetPosterKey is ArrayList-
-                            for (int i=0; i<PosterKeyList.size(); i++){
-                                //스토리지에서 유저의 게시물 이미지 모두 삭제
-                                mstorageRef.child("PosterPicList").child(PosterKeyList.get(i)).child("PosterIMG").delete();
-                                //유저의 게시물 전체 DB삭제
-                                mdataref.getDatabase().getReference("PosterList").child(GetPosterKey().get(i).toString()).removeValue();
+
+                            }catch (NullPointerException e){
+                                e.getStackTrace();
                             }
-
-                            //내부 DB의 포스터키 삭제
-                            SharedPreferences MY_POSTER_KEYS = getSharedPreferences("POSTER_KEYS",MODE_PRIVATE);
-                            SharedPreferences.Editor KEY_EDITOR = MY_POSTER_KEYS.edit();
-                            KEY_EDITOR.clear();
-                            KEY_EDITOR.apply();
-
-                            //회원탈퇴 처리
-                            uid.delete();
-
-                            //로그인 화면으로 이동
-                            finish();
-                            startActivity(new Intent(getApplicationContext(), MainActivity.class));
                         }
                     });
                 }

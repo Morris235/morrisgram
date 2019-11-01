@@ -1,30 +1,38 @@
 package com.example.morrisgram.Adapter.ViewPagerAdapter;
 
+import android.util.Log;
+
 import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentManager;
 import androidx.fragment.app.FragmentStatePagerAdapter;
 import com.example.morrisgram.Activity.FollowFragment.FollowerPage;
 import com.example.morrisgram.Activity.FollowFragment.FollowingPage;
+import com.google.firebase.firestore.auth.User;
 
 
 //ViewPager의 경로 및 속성을 설정해주는 PagerAdapter.class
 public class ViewPagerAdapter extends FragmentStatePagerAdapter {
     int mNumOfTabs;
+    String UserUID;
+    int FLAG;
 
     // Context를 전달받아 mContext에 저장하는 생성자 추가.
-    public ViewPagerAdapter(FragmentManager fm, int NumOfTabs){
+    public ViewPagerAdapter(FragmentManager fm, int NumOfTabs, String UserUID, int FLAG){
         super(fm, BEHAVIOR_RESUME_ONLY_CURRENT_FRAGMENT);
         this.mNumOfTabs = NumOfTabs;
+        this.UserUID = UserUID;
+        this.FLAG = FLAG;
     }
+
 
     @Override
     public Fragment getItem(int position) {
         switch (position){
             case 0 :
-                FollowerPage tab1 = new FollowerPage();
+                FollowerPage tab1 = new FollowerPage(FLAG, UserUID);
                 return tab1;
             case 1 :
-                FollowingPage tab2 = new FollowingPage();
+                FollowingPage tab2 = new FollowingPage(FLAG, UserUID);
                 return tab2;
 
                 default:

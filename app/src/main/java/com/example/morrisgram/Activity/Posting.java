@@ -83,7 +83,7 @@ public class Posting extends AddingPoster_BaseAct {
                 .skipMemoryCache(true)
                 .diskCacheStrategy(DiskCacheStrategy.NONE)
                 .dontAnimate()
-                .placeholder(R.drawable.noimage)
+                .placeholder(R.drawable.ic_insert_photo_black_24dp)
                 .into(thumbIMG);
 
         //포스팅 완료 버튼

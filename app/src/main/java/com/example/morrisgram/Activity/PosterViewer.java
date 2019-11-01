@@ -486,11 +486,9 @@ public class PosterViewer extends AddingPoster_BaseAct implements SwipyRefreshLa
                     @Override
                     public void onClick(View v) {
 
-
                         //플래그가 0이나 1이면 프로필에서 게시물을 보는거기 때문에 유저 게시물 DB를 참조
                         if (FLAG == 0 || FLAG == 1){
                             Log.i("쿼리", "로그인한 게시물 DB 참조");
-
 
                             //유저 게시물DB에서 유저 UID가져오기 - 유저피드에서 다시 유저피드로 이동 클릭시 문제 있음
                             mdataref.child("UserList").child(PosterUserUID).child("UserPosterList").addListenerForSingleValueEvent(new ValueEventListener() {

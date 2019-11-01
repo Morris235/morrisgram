@@ -11,7 +11,6 @@ public class FollowerDTO {
 
     }
 
-
     public FollowerDTO(String UID) {
         this.UID = UID;
     }

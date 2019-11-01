@@ -16,6 +16,7 @@ import androidx.viewpager.widget.ViewPager;
 
 import android.content.pm.ActivityInfo;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.View;
 import android.widget.ImageButton;
 import android.widget.TextView;
@@ -40,6 +41,8 @@ public class FollowPager extends AddingPoster_BaseAct {
     private FirebaseUser uid = FirebaseAuth.getInstance().getCurrentUser();
     private String userUID = uid.getUid();
 
+    private String followernum;
+    private String followingnum;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -47,61 +50,66 @@ public class FollowPager extends AddingPoster_BaseAct {
         // 화면을 portrait(세로) 화면으로 고정하고 싶은 경우
         setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_PORTRAIT);
         setContentView(R.layout.activity_follow_pager);
+
+
         //닉네임TV
         final TextView nicknameTV = (TextView) findViewById(R.id.idtv_followpager);
-        //팔로워TV
-
-        //팔로잉TV
-
-        //뷰페이저 바인드
-        viewPager = (ViewPager) findViewById(R.id.viewpager);
-
-        //탭메뉴 바인드
-        final TabLayout mTab = (TabLayout) findViewById(R.id.tabs);
-        mTab.addTab(mTab.newTab().setText("팔로워 0명"));
-        mTab.addTab(mTab.newTab().setText("팔로잉 0명"));
-        mTab.setTabGravity(TabLayout.GRAVITY_FILL);
-
-        //뷰페이저에 어댑터 지정 deprected
-        mTab.addOnTabSelectedListener(new TabLayout.OnTabSelectedListener() {
-            @Override
-            public void onTabSelected(TabLayout.Tab tab) {
-                viewPager.setCurrentItem(tab.getPosition());
-            }
-
-            @Override
-
-            public void onTabUnselected(TabLayout.Tab tab) {
-
-            }
-
-            @Override
-            public void onTabReselected(TabLayout.Tab tab) {
-
-            }
-        });
-
-        ViewPagerAdapter adapter = new ViewPagerAdapter(getSupportFragmentManager(),mTab.getTabCount());
-        viewPager.addOnPageChangeListener(new TabLayout.TabLayoutOnPageChangeListener(mTab));
-        viewPager.setAdapter(adapter);
-//        //뷰페이저 어댑터
-//        mTab.setupWithViewPager(viewPager);
-
-        mdataref.child("UserList").addValueEventListener(new ValueEventListener() {
+        mdataref.child("UserList").addListenerForSingleValueEvent(new ValueEventListener() {
             @Override
             public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
                 //현재 로그인된 유저 정보와 일치하는 데이터를 가져오기.
                 String NameVal = (String) dataSnapshot.child(userUID).child("UserInfo").child("NickName").getValue();
                 nicknameTV.setText(NameVal);
 
-                String followernum = String.valueOf((int)dataSnapshot.child(userUID).child("FollowerList").getChildrenCount());
-                String followingnum = String.valueOf((int)dataSnapshot.child(userUID).child("FollowingList").getChildrenCount());
+                followernum = String.valueOf((int)dataSnapshot.child(userUID).child("FollowerList").getChildrenCount());
+                followingnum = String.valueOf((int)dataSnapshot.child(userUID).child("FollowingList").getChildrenCount());
 
+                //뷰페이저 바인드
+                viewPager = (ViewPager) findViewById(R.id.viewpager);
+
+                //탭메뉴 바인드
+                final TabLayout mTab = (TabLayout) findViewById(R.id.tabs);
+                mTab.addTab(mTab.newTab().setText("팔로워 "+""+followernum+"명"));
+                mTab.addTab(mTab.newTab().setText("팔로잉 "+""+followingnum+"명"));
+                mTab.setTabGravity(TabLayout.GRAVITY_FILL);
+
+                //뷰페이저에 어댑터 지정 deprected
+                mTab.addOnTabSelectedListener(new TabLayout.OnTabSelectedListener() {
+                    @Override
+                    public void onTabSelected(TabLayout.Tab tab) {
+                        viewPager.setCurrentItem(tab.getPosition());
+                    }
+
+                    @Override
+
+                    public void onTabUnselected(TabLayout.Tab tab) {
+
+                    }
+
+                    @Override
+                    public void onTabReselected(TabLayout.Tab tab) {
+
+                    }
+                });
+
+                //팔러워 & 팔로잉의 쿼리를 위한 유저UID
+                Intent intent = getIntent();
+
+                String UserUID = intent.getStringExtra("PoseterUserUID");
+                int FLAG = intent.getIntExtra("FLAG",-1);
+                Log.i("뷰페이저","유저UID 확인 : "+UserUID);
+                Log.i("뷰페이저","플래그 확인 : "+FLAG);
+
+                ViewPagerAdapter adapter = new ViewPagerAdapter(getSupportFragmentManager(),mTab.getTabCount(),UserUID,FLAG);
+                viewPager.addOnPageChangeListener(new TabLayout.TabLayoutOnPageChangeListener(mTab));
+                viewPager.setAdapter(adapter);
             }
             @Override
             public void onCancelled(@NonNull DatabaseError databaseError) {
             }
         });
+
+
 
 //-----------------------------------화면이동----------------------------------------
 //홈 화면 이동

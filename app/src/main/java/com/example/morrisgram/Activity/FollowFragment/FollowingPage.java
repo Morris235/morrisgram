@@ -7,6 +7,7 @@ import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import android.content.Context;
+import android.content.Intent;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -15,8 +16,10 @@ import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.bumptech.glide.load.engine.DiskCacheStrategy;
+import com.example.morrisgram.Activity.UserProfile;
 import com.example.morrisgram.CameraClass.GlideApp;
 import com.example.morrisgram.DTOclass.Firebase.FollowerDTO;
 import com.example.morrisgram.DTOclass.Firebase.FollowingDTO;
@@ -61,6 +64,14 @@ public class FollowingPage extends Fragment {
     //데이터베이스 변수
     private DatabaseReference mdataref = FirebaseDatabase.getInstance().getReference();
 
+    private String UserUID;
+    private int FLAG;
+
+    public FollowingPage(int FLAG, String UserUID) {
+        this.FLAG = FLAG;
+        this.UserUID = UserUID;
+    }
+
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         ViewGroup rootView = (ViewGroup) inflater.inflate(R.layout.activity_following_page, container, false);
@@ -74,11 +85,12 @@ public class FollowingPage extends Fragment {
         recyclerView = rootView.findViewById(R.id.recyclerView_following);
         recyclerView.setLayoutManager(linearLayoutManager);
         recyclerView.setHasFixedSize(true);
-        fetch();
 
+        Log.i("뷰페이저","팔로잉 유저UID 확인 : "+UserUID);
+        Log.i("뷰페이저","팔로잉 플래그 확인 : "+FLAG);
 
         //------------------------------------------------팔로잉 유저 UID 값 수집 데이터 스냅샷--------------------------------------------------리얼타임이 아닌 한번만 읽어보게 하기
-        mdataref.child("UserList").child(userUID).child("FollowingList").addListenerForSingleValueEvent(new ValueEventListener() {
+        mdataref.child("UserList").child(UserUIDSwitch(FLAG,UserUID)).child("FollowingList").addValueEventListener(new ValueEventListener() {
             @Override
             public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
                 //포스터키 수집용 리스트
@@ -109,7 +121,7 @@ public class FollowingPage extends Fragment {
         });
         //------------------------------------------------팔로잉 유저 UID 값 수집 데이터 스냅샷--------------------------------------------------
 
-
+        fetch();
 
         return rootView;
     }//------------------------크리에이트-------------------------
@@ -156,8 +168,12 @@ public class FollowingPage extends Fragment {
             mdataref.child("UserList").addValueEventListener(new ValueEventListener() {
                 @Override
                 public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
-                   String nickname = dataSnapshot.child(uid).child("UserInfo").child("NickName").getValue().toString();
-                   UserNickName.setText(nickname);
+                    try {
+                        String nickname = dataSnapshot.child(uid).child("UserInfo").child("NickName").getValue().toString();
+                        UserNickName.setText(nickname);
+                    }catch (NullPointerException e){
+                        e.getStackTrace();
+                    }
                 }
                 @Override
                 public void onCancelled(@NonNull DatabaseError databaseError) {
@@ -194,24 +210,23 @@ public class FollowingPage extends Fragment {
 
     //----------------------------파이어베이스 어댑터---------------------------------------
     private void fetch() {
-        //BaseQuery - 팔로잉리스트 쿼리
-        Query query = FirebaseDatabase.getInstance()
-                //BaseQuery
-                .getReference()
-                .child("UserList")
-                .child(userUID)
-                .child("FollowingList");
+//        //BaseQuery - 팔로잉리스트 쿼리
+//        Query query = FirebaseDatabase.getInstance()
+//                //BaseQuery
+//                .getReference()
+//                .child("UserList")
+//                .child(userUID)
+//                .child("FollowingList");
 
         //orderByChild()	지정된 하위 키의 값에 따라 결과를 정렬합니다.
         //orderByKey()	    하위 키에 따라 결과를 정렬합니다.
         //orderByValue()	하위 값에 따라 결과를 정렬합니다.
 
-        Log.i("팔로우", "query 경로 확인 : "+query.toString());
 
         //query를 사용해서 DB의 모든 해당 정보를 받아서 가져오는 스냅샷 - 스트링형식으로 받아와야함 - 팔로잉 유저의 UID만 받아와서 모든걸 해결하자!
         FirebaseRecyclerOptions<FollowingDTO> options =
                 new FirebaseRecyclerOptions.Builder<FollowingDTO>()
-                        .setQuery(query, new SnapshotParser<FollowingDTO>() {
+                        .setQuery(QuerySwitch(FLAG,UserUID), new SnapshotParser<FollowingDTO>() {
                             @NonNull
                             @Override
                             public FollowingDTO parseSnapshot(@NonNull DataSnapshot snapshot) {
@@ -247,14 +262,14 @@ public class FollowingPage extends Fragment {
                     @Override
                     public void onClick(View v) {
                                 //해당 포지션의 팔로잉 유저UID 가져오기 - 에러 예상됨
-                                String UserUIDList = FollowingUIDList.get(position);
+                                String UserUIDList =  holder.getFollowingUserUID(following_set.getUID());
                         Log.i("팔로잉", "클릭확인 : "+UserUIDList);
                                 //언팔로우 하기
                                 FirebaseDatabase(false,UserUIDList);
 
                         //팔로잉 상태
-                        holder.FollowB.setVisibility(View.INVISIBLE);
-                        holder.FollowingB.setVisibility(View.VISIBLE);
+                        holder.FollowB.setVisibility(View.VISIBLE);
+                        holder.FollowingB.setVisibility(View.INVISIBLE);
                     }
                 });
 
@@ -263,26 +278,28 @@ public class FollowingPage extends Fragment {
                     @Override
                     public void onClick(View v) {
                                 //해당 포지션의 팔로잉 유저UID 가져오기
-                                String UserUIDList = FollowingUIDList.get(position);
+                                String UserUIDList = holder.getFollowingUserUID(following_set.getUID());
                         Log.i("팔로잉", "클릭확인 : "+UserUIDList);
                                 //팔로잉 하기
                                 FirebaseDatabase(true,UserUIDList);
                         //언팔로잉 상태
-                        holder.FollowB.setVisibility(View.VISIBLE);
-                        holder.FollowingB.setVisibility(View.INVISIBLE);
+                        holder.FollowB.setVisibility(View.INVISIBLE);
+                        holder.FollowingB.setVisibility(View.VISIBLE);
                             }
                 });
 
 
+
+
                 //버튼 예외처리 - 각 팔로잉 계정의 UID 존재 유무 비교 (해당포지션의 UID) *클릭이 아님* 상태값을 받아야 한다. ->전체 팔로잉 유저의 UID를 받고 해당 포지션에 일치하는 UID가 없으면 버튼처리
-                mdataref.child("UserList").child(userUID).child("FollowingList").addValueEventListener(new ValueEventListener() {
+                mdataref.child("UserList").child(UserUIDSwitch(FLAG,UserUID)).child("FollowingList").addValueEventListener(new ValueEventListener() {
                     @Override
                     public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
                         //                //팔로워 리스트에서 나의 계정UID가 있다면 팔로잉버튼 처리
                 // 경로 : root/ UserList/ userUID/ "FollowingList/ FollowerUserUID/  UID : "UID"
                 try {
-//                    String UserUID = holder.getFollowingUserUID(following_set.getUID()); //DB전체 팔로잉 유저의 UID
-                    String UserUID = FollowingUIDList.get(position); //싱글벨류 리스트의 팔로잉 유저의 UID
+                    String UserUID = holder.getFollowingUserUID(following_set.getUID()); //DB전체 팔로잉 유저의 UID
+//                    String UserUID = FollowingUIDList.get(position); //싱글벨류 리스트의 팔로잉 유저의 UID
                     Log.i("팔로잉", "리스트의 팔로잉 유저UID : "+UserUID);
 
                     String FollowingUID = dataSnapshot.child(UserUID).child("UID").getValue().toString(); //DB전체 벨류 이벤트 같은 DB에서 가져온 값을 비교한다? 의미 없어보임
@@ -290,6 +307,7 @@ public class FollowingPage extends Fragment {
 
                     //버튼예외처리 팔로잉 리스트 경로에
                     if(UserUID.equals(FollowingUID)){
+
                         //팔로잉 상태 *유저지정 필요??*
                         holder.FollowB.setVisibility(View.INVISIBLE);
                         holder.FollowingB.setVisibility(View.VISIBLE);
@@ -300,7 +318,7 @@ public class FollowingPage extends Fragment {
                     }
 
 
-                }catch (NullPointerException e){
+                }catch (NullPointerException | IndexOutOfBoundsException e){
                     e.getStackTrace();
                 }
 
@@ -317,14 +335,20 @@ public class FollowingPage extends Fragment {
 
 
 
-                //피드이동
-//                holder.root.setOnClickListener(new View.OnClickListener() {
-//                    @Override
-//                    public void onClick(View view) {
-//                        Toast.makeText(FollowingPage.this, String.valueOf(position), Toast.LENGTH_SHORT).show();
-//                        //해당 포지션으로 포커스 주기 - 포스터뷰어로 이동
-//                    }
-//                });
+                //팔로잉 유저의 피드로 이동
+                holder.root.setOnClickListener(new View.OnClickListener() {
+                    @Override
+                    public void onClick(View view) {
+                        try {
+                            String UserUID = FollowingUIDList.get(position);
+                            Intent intent = new Intent(getActivity(), UserProfile.class);
+                            intent.putExtra("PosterUserUID",UserUID);
+                            startActivity(intent);
+                        }catch (IndexOutOfBoundsException e){
+                            e.getStackTrace();
+                        }
+                    }
+                });
 
             }
         };
@@ -378,6 +402,48 @@ public class FollowingPage extends Fragment {
         }
 
 
+    }
+
+    //포스터뷰어 클래스에 가져올 데이터 쿼리 스위치
+    public Query QuerySwitch(int FLAG, String PosterUserUID){
+        switch (FLAG){
+            case -1:
+                Toast.makeText(getActivity(),"에러발생",Toast.LENGTH_SHORT).show();
+                break;
+
+            //내 프로필 팔로우 DB 쿼리 - 유저 게시물 DB
+            case 0 : Query fromMyinfo = FirebaseDatabase.getInstance()
+                    .getReference()
+                    .child("UserList")
+                    .child(userUID)
+                    .child("FollowingList");
+                Log.i("쿼리 스위치","0번 내 게시물 쿼리 : 유저 게시물 DB");
+                return fromMyinfo;
+
+            //유저피드 팔로우 DB 쿼리 - 유저 게시물 DB
+            case 1 : Query fromUserfeed = FirebaseDatabase.getInstance()
+                    .getReference()
+                    .child("UserList")
+                    .child(PosterUserUID)
+                    .child("FollowingList");
+                Log.i("쿼리 스위치","1번 유저피드 게시물 쿼리 : 유저 게시물 DB");
+                return fromUserfeed;
+        }
+        return null;
+    }
+
+    public String UserUIDSwitch(int FLAG, String UserProfileUID){
+        switch (FLAG){
+            case -1 :
+                Toast.makeText(getActivity(),"에러발생",Toast.LENGTH_SHORT).show();
+                break;
+
+            //나의 UID 반환
+            case 0 : return userUID;
+            //유저들의 UID 봔환
+            case 1 : return UserProfileUID;
+        }
+        return null;
     }
 
 }

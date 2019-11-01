@@ -22,6 +22,7 @@ import androidx.swiperefreshlayout.widget.SwipeRefreshLayout;
 
 import com.bumptech.glide.load.engine.DiskCacheStrategy;
 import com.example.morrisgram.Activity.BaseActivity.AddingPoster_BaseAct;
+import com.example.morrisgram.Activity.FollowFragment.FollowPager;
 import com.example.morrisgram.CameraClass.GlideApp;
 import com.example.morrisgram.DTOclass.Firebase.FollowerDTO;
 import com.example.morrisgram.DTOclass.Firebase.FollowingDTO;
@@ -73,6 +74,7 @@ public class UserProfile extends AddingPoster_BaseAct implements SwipeRefreshLay
     private TextView intro;
     private TextView website;
     private ImageView profileimg;
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -242,6 +244,44 @@ public class UserProfile extends AddingPoster_BaseAct implements SwipeRefreshLay
             @Override
             public void onClick(View v) {
                 goToAlbum();
+            }
+        });
+
+        //팔로워 버튼 페이지 이동 - 포커스 주기
+        final ViewGroup followerTV = findViewById(R.id.FollowerTV_user);
+        followerTV.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Intent intent = new Intent(UserProfile.this, FollowPager.class);
+                intent.putExtra("PosterUserUID",PosterUserUID);
+                intent.putExtra("FLAG",1);
+
+                Log.i("뷰페이저","유저프로필 유저UID 확인 : "+PosterUserUID);
+                startActivity(intent);
+                overridePendingTransition(0, 0);
+            }
+        });
+        //팔로잉 버튼 페이지 이동 - 포커스 주기
+        final ViewGroup followingTV = findViewById(R.id.FollowingTV_user);
+        followingTV.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Intent intent = new Intent(UserProfile.this, FollowPager.class);
+                intent.putExtra("PosterUserUID",PosterUserUID);
+                intent.putExtra("FLAG",1);
+
+                Log.i("뷰페이저","유저프로필 유저UID 확인 : "+PosterUserUID);
+
+                startActivity(intent);
+                overridePendingTransition(0, 0);
+            }
+        });
+        //뒤로가기
+        final ImageButton backB = findViewById(R.id.backB_userprofile);
+        backB.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                finish();
             }
         });
 //-----------------------------------화면이동----------------------------------------

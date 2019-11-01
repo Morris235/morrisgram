@@ -104,7 +104,7 @@ public class SignUp extends AppCompatActivity {
                     case R.id.female_signup : chosex="여자";
                     break;
 
-                    case R.id.NotToSay_signup : chosex="";
+                    case R.id.NotToSay_signup : chosex="밝히지 않음";
                     break;
                 }
             }
@@ -298,18 +298,7 @@ public class SignUp extends AppCompatActivity {
                     });
             }
         });
-//        // Read from the database
-//        DBref.addValueEventListener(new ValueEventListener() {
-//            @Override
-//            public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
-//
-//            }
-//
-//            @Override
-//            public void onCancelled(@NonNull DatabaseError databaseError) {
-//
-//            }
-//        });
+
 
         //로그인 화면으로 이동 버튼
         gotologin.setOnClickListener(new View.OnClickListener() {
