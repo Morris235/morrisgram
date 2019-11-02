@@ -110,7 +110,8 @@ public class ReplyDisplay extends AppCompatActivity {
 
 
         //댓글 UID 수집 데이터 스냅샷
-        ReplyKeyListReSizing(PosterKey,0);
+        ReplyKeyListReSizing(PosterKey);
+
 //        //------------------------------------------------댓글 UID 수집 데이터 스냅샷--------------------------------------------------
 //        mdataref.child("Reply").child(PosterKey).addValueEventListener(new ValueEventListener() {
 //            @Override
@@ -329,9 +330,8 @@ public class ReplyDisplay extends AppCompatActivity {
                     @Override
                     public void onClick(View v) {
                         //IndexOutOfBoundsException
+
                         try {
-                            //삭제할 때마다 댓글 키 리스트를 재설정
-                            ReplyKeyListReSizing(PosterKey,position);
                             mdataref.child("Reply").child(PosterKey).child(ReplyKeyList.get(position)).removeValue();
                         }catch (IndexOutOfBoundsException e){
                             e.getStackTrace();
@@ -341,12 +341,14 @@ public class ReplyDisplay extends AppCompatActivity {
                 });
 
 
-//                //자신의 계정이 쓴 댓글 지우기 버튼 가시화
-//                if (ReplyDTOS.get(position).getReplyUseruid().equals(userUID)){
-//                    holder.delete.setVisibility(View.VISIBLE);
-//                }else {
-//                    holder.delete.setVisibility(View.INVISIBLE);
-//                }
+
+                //자신의 계정이 쓴 댓글 지우기 버튼 가시화
+                if (replyDTO_set.getReplyUseruid().contains(userUID)){
+                    holder.delete.setVisibility(View.VISIBLE);
+                }else {
+                    holder.delete.setVisibility(View.INVISIBLE);
+                }
+
 
 
             }
@@ -355,7 +357,7 @@ public class ReplyDisplay extends AppCompatActivity {
     }    //----------------------------파이어베이스 어댑터---------------------------------------
 
     //댓글 키 리스트 리사이즈 메소드
-    public void ReplyKeyListReSizing(String PosterKey, final int position){
+    public void ReplyKeyListReSizing(String PosterKey){
         //------------------------------------------------댓글 UID 수집 데이터 스냅샷--------------------------------------------------
         mdataref.child("Reply").child(PosterKey).addValueEventListener(new ValueEventListener() {
             @Override
@@ -375,9 +377,11 @@ public class ReplyDisplay extends AppCompatActivity {
                     ReplyDTOS.add(replyDTO);
                     //키값들을 리스트형태로 저장
                     ReplyKeyList.add(GetKey);
+
+                    Log.i("댓글","useruid : "+userUID);
                     Log.i("댓글","ReplyKeyListReSizing : "+ReplyKeyList.size());
                     Log.i("댓글","ReplyDTOS 사이즈 : "+ReplyDTOS.size());
-                    Log.i("댓글","ReplyDTOS userUID : "+ReplyDTOS.get(position).getReplyUseruid());
+
                 }
             }
             @Override

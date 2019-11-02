@@ -87,8 +87,8 @@ public class Home extends AddingPoster_BaseAct implements SwipyRefreshLayout.OnR
     private FirebaseRecyclerAdapter adapter;
 
     //전체 포스터키 수집용 리스트
-    private List<String> PosterKeyList = new ArrayList<>();
-    private List<PostingDTO> postingDTOS = new ArrayList<>();
+    public List<String> PosterKeyList = new ArrayList<>();
+    public List<PostingDTO> postingDTOS = new ArrayList<>();
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -476,85 +476,45 @@ public class Home extends AddingPoster_BaseAct implements SwipyRefreshLayout.OnR
 
 
 
-//                //------------유저 피드로 이동하기 클릭---------------
-//                holder.profileIMG.setOnClickListener(new View.OnClickListener() {
-//
-//                    @Override
-//                    public void onClick(View v) {
-//
-//                        //플래그가 0이나 1이면 프로필에서 게시물을 보는거기 때문에 유저 게시물 DB를 참조
-//                        if (FLAG == 0 || FLAG == 1){
-//                            Log.i("쿼리", "로그인한 게시물 DB 참조");
-//
-//                            //유저 게시물DB에서 유저 UID가져오기 - 유저피드에서 다시 유저피드로 이동 클릭시 문제 있음
-//                            mdataref.child("UserList").child(PosterUserUID).child("UserPosterList").addListenerForSingleValueEvent(new ValueEventListener() {
-//                                @Override
-//                                public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
-//
-//                                    //전체 게시물 노드에서의 유저UID - 클릭한 전체 게시물ID
-//                                    String PosterUserUID = dataSnapshot.child(MyPosterKeyList.get(position)).child("UserUID").getValue().toString();
-//                                    //유저 게시물 노드에서의 유저UID - 클릭한 내(로그인한) 게시물ID
-////                              String LoginedUID = dataSnapshot.child(MyPosterKeyList.get(position)).child("UserUID").getValue().toString();
-//
-//
-//
-//                                    //** 가져온 유저UID가 자신의 UID와 같으면 자신의 프로필로 이동 ->Myinfo.class ->게시물 위치 다름 userUID 다시받기 **
-//                                    if (PosterUserUID.equals(userUID)){
-//                                        Intent intent2 = new Intent(Home.this,Myinfo.class);
-//                                        startActivity(intent2);
-//                                        //같지 않다면 유저프로필로 이동
-//                                    }else{
-//                                        //유저 피드로 유저 UID보내고 이동하기 -> UserProfile.class
-//                                        Intent intent1 = new Intent(Home.this,UserProfile.class);
-//                                        intent1.putExtra("PosterUserUID",PosterUserUID);
-//                                        startActivity(intent1);
-//                                    }
-//
-//
-//                                }
-//                                @Override
-//                                public void onCancelled(@NonNull DatabaseError databaseError) {
-//                                }
-//                            });
-//
-//                            //플래그가 2이면 홈이나 서치화면에서 게시물을 보는거기 때문에 전체 게시물 DB 참조
-//                        }else if (FLAG ==2){
-//                            Log.i("쿼리", "전체 게시물 DB 참조");
-//
-//
-//                            //전체 게시물DB에서 유저 UID가져오기
-//                            mdataref.child("PosterList").addListenerForSingleValueEvent(new ValueEventListener() {
-//                                @Override
-//                                public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
-//                                    //전체 게시물 노드에서의 유저UID - 클릭한 전체 게시물ID
-//                                    String PosterUserUID = dataSnapshot.child(PosterKeyList.get(position)).child("UserUID").getValue().toString();
-//                                    //유저 게시물 노드에서의 유저UID - 클릭한 내(로그인한) 게시물ID
-////                              String LoginedUID = dataSnapshot.child(MyPosterKeyList.get(position)).child("UserUID").getValue().toString();
-//
-//
-//                                    //** 가져온 유저UID가 자신의 UID와 같으면 자신의 프로필로 이동 ->Myinfo.class ->게시물 위치 다름 userUID 다시받기 **
-//                                    if (PosterUserUID.equals(userUID)){
-//                                        Intent intent2 = new Intent(Home.this,Myinfo.class);
-//                                        startActivity(intent2);
-//                                    }else{
-//                                        //유저 피드로 유저 UID보내고 이동하기 -> UserProfile.class
-//                                        Intent intent1 = new Intent(Home.this,UserProfile.class);
-//                                        intent1.putExtra("PosterUserUID",PosterUserUID);
-//                                        startActivity(intent1);
-//                                    }
-//
-//
-//                                }
-//                                @Override
-//                                public void onCancelled(@NonNull DatabaseError databaseError) {
-//                                }
-//                            });
-//
-//
-//                        }
-//
-//                    }
-//                });//-------------------------------------------------
+                //------------유저 피드로 이동하기 클릭---------------
+                holder.profileIMG.setOnClickListener(new View.OnClickListener() {
+
+                    @Override
+                    public void onClick(View v) {
+
+                            //전체 게시물DB에서 유저 UID가져오기
+                            mdataref.child("PosterList").addListenerForSingleValueEvent(new ValueEventListener() {
+                                @Override
+                                public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+                                    //전체 게시물 노드에서의 유저UID - 클릭한 전체 게시물ID
+                                    String PosterUserUID = dataSnapshot.child(PosterKeyList.get(position)).child("UserUID").getValue().toString();
+                                    //유저 게시물 노드에서의 유저UID - 클릭한 내(로그인한) 게시물ID
+//                              String LoginedUID = dataSnapshot.child(MyPosterKeyList.get(position)).child("UserUID").getValue().toString();
+
+
+                                    //** 가져온 유저UID가 자신의 UID와 같으면 자신의 프로필로 이동 ->Myinfo.class ->게시물 위치 다름 userUID 다시받기 **
+                                    if (PosterUserUID.equals(userUID)){
+                                        Intent intent2 = new Intent(Home.this,Myinfo.class);
+                                        startActivity(intent2);
+                                    }else{
+                                        //유저 피드로 유저 UID보내고 이동하기 -> UserProfile.class
+                                        Intent intent1 = new Intent(Home.this,UserProfile.class);
+                                        intent1.putExtra("PosterUserUID",PosterUserUID);
+                                        startActivity(intent1);
+                                    }
+
+
+                                }
+                                @Override
+                                public void onCancelled(@NonNull DatabaseError databaseError) {
+                                }
+                            });
+
+
+
+
+                    }
+                });//-------------------------------------------------
 
 
 
