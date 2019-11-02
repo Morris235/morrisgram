@@ -133,6 +133,8 @@ public class PosterViewer extends AddingPoster_BaseAct implements SwipyRefreshLa
             }
         });
 
+
+
         //전체 게시물 키 수집
         mdataref.child("PosterList").addValueEventListener(new ValueEventListener() {
             @Override
@@ -165,6 +167,7 @@ public class PosterViewer extends AddingPoster_BaseAct implements SwipyRefreshLa
             }
         });
 //------------------------------------------------게시물 키값 수집 데이터 스냅샷--------------------------------------------------
+
 
 
 
@@ -280,6 +283,8 @@ public class PosterViewer extends AddingPoster_BaseAct implements SwipyRefreshLa
         public ImageView PosterKey;
         public ImageView vetB;
 
+        public TextView ReplyCount;
+
         //유저 게시물키 받기용
         public String UserPosterKey;
         public ImageButton likeButton;
@@ -293,8 +298,10 @@ public class PosterViewer extends AddingPoster_BaseAct implements SwipyRefreshLa
             UserNicName = itemView.findViewById(R.id.nicknameTV_posteritem);
             Body = itemView.findViewById(R.id.bodyTV);
             PostedTime = itemView.findViewById(R.id.timeTV);
+
             LikeCount = itemView.findViewById(R.id.like_counter);
-//            ReplyCount = itemView.findViewById(R.id.reply_counter);
+            ReplyCount = itemView.findViewById(R.id.reply_counter);
+
             PosterKey = itemView.findViewById(R.id.imageView_posteritem);
             profileIMG = itemView.findViewById(R.id.profileIMG_posteritem);
             NickName_Reply = itemView.findViewById(R.id.nicknameTV_posteritem_body);
@@ -302,6 +309,7 @@ public class PosterViewer extends AddingPoster_BaseAct implements SwipyRefreshLa
             vetB = itemView.findViewById(R.id.optionB_idtv_home);
             likeButton = itemView.findViewById(R.id.likeB_posteritem);
             replyB = itemView.findViewById(R.id.reply_posteritem);
+            replyviewB = itemView.findViewById(R.id.reply_layout);
         }
 
         public void setMetadata(String uri){
@@ -353,9 +361,9 @@ public class PosterViewer extends AddingPoster_BaseAct implements SwipyRefreshLa
             LikeCount.setText(string);
         }
 
-//        public void setReplyCount(String string) {
-//            ReplyCount.setText(string);
-//        }
+        public void setReplyCount(String string) {
+            ReplyCount.setText(string);
+        }
 
         public void setPosterKey(String uri){
             //스토리지에서 이미지 받아오기 mstorageRef.child("PosterPicList").child(userUID).child(uri).child("PosterIMG");
@@ -447,6 +455,24 @@ public class PosterViewer extends AddingPoster_BaseAct implements SwipyRefreshLa
                 holder.setMetadata(posting_set.getPosterkey());
 //                //클릭한 포스터의 키값 받기
 //                final String Key = holder.getUserPosterKey(posting_set.getPosterkey());
+
+
+
+
+
+                //댓글 개수 스냅샷
+                mdataref.child("Reply").child(PosterKeyList.get(position)).addValueEventListener(new ValueEventListener() {
+                    @Override
+                    public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+                       String replycount = String.valueOf(dataSnapshot.getChildrenCount());
+                        holder.setReplyCount(replycount);
+                    }
+
+                    @Override
+                    public void onCancelled(@NonNull DatabaseError databaseError) {
+
+                    }
+                });
 
 
 
@@ -586,6 +612,7 @@ public class PosterViewer extends AddingPoster_BaseAct implements SwipyRefreshLa
                         startActivity(intent2);
                     }
                 });
+
 
                 //내피드에서 선택한 게시물 포커스 주기 - 액티비티 최초실행시 실행
                 if (FIRST_FOCUS){

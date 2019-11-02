@@ -17,7 +17,10 @@
         android:screenOrientation="portrait"
         android:supportsRtl="true"
         android:theme="@style/AppTheme">
-        <activity android:name=".Activity.ReplyDisplay"></activity>
+        <activity android:name=".Activity.ReplyDisplay"
+            android:launchMode="singleTask"
+            android:windowSoftInputMode="adjustResize">
+        </activity>
         <activity android:name=".Activity.Option" />
         <activity
             android:name=".Activity.LikeAlarm"

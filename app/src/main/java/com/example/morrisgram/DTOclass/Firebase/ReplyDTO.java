@@ -1,12 +1,16 @@
 package com.example.morrisgram.DTOclass.Firebase;
 
 import com.google.firebase.database.Exclude;
+import com.google.firebase.database.IgnoreExtraProperties;
 
 import java.util.HashMap;
 import java.util.Map;
 
+@IgnoreExtraProperties
 public class ReplyDTO {
 
+    public ReplyDTO(){
+    }
 
     public ReplyDTO(String replyBody, String replyUseruid) {
         this.replyBody = replyBody;
@@ -29,8 +33,8 @@ public class ReplyDTO {
         this.replyUseruid = replyUseruid;
     }
 
-    String replyBody;
-    String replyUseruid;
+   private String replyBody;
+   private String replyUseruid;
 
     //파베에 업드로할 해쉬맵 틀
     @Exclude

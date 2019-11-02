@@ -6,36 +6,6 @@
     android:layout_height="match_parent"
     tools:context=".Activity.ReplyDisplay">
 
-    <de.hdodenhof.circleimageview.CircleImageView
-        android:id="@+id/profileIMG_reply"
-        android:layout_width="40dp"
-        android:layout_height="40dp"
-        android:layout_marginStart="8dp"
-        android:layout_marginTop="8dp"
-        android:layout_marginEnd="8dp"
-        android:layout_marginBottom="8dp"
-        android:src="@drawable/person3"
-        app:civ_border_color="#000000"
-        app:civ_border_width="2dp"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="0.0"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/view6" />
-
-    <View
-        android:id="@+id/view6"
-        android:layout_width="match_parent"
-        android:layout_height="1dp"
-        android:layout_marginBottom="8dp"
-        android:background="#50000000"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="0.0"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent"
-        app:layout_constraintVertical_bias="0.94" />
-
     <TextView
         android:id="@+id/replyTV"
         android:layout_width="wrap_content"
@@ -83,49 +53,78 @@
         app:layout_constraintTop_toTopOf="parent"
         app:srcCompat="@drawable/ic_keyboard_backspace_black_24dp" />
 
-    <com.google.android.material.textfield.TextInputLayout
-        android:id="@+id/textInputLayout13"
-        android:layout_width="300dp"
-        android:layout_height="wrap_content"
-        android:layout_marginStart="8dp"
-        android:layout_marginEnd="8dp"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="0.0"
-        app:layout_constraintStart_toEndOf="@+id/profileIMG_reply"
-        app:layout_constraintTop_toBottomOf="@+id/view6">
-
-        <com.google.android.material.textfield.TextInputEditText
-            android:id="@+id/inputreply_reply"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:hint="hint" />
-    </com.google.android.material.textfield.TextInputLayout>
-
-    <TextView
-        android:id="@+id/postB_replydisplay"
-        android:layout_width="wrap_content"
-        android:layout_height="0dp"
-        android:layout_marginStart="8dp"
-        android:layout_marginTop="8dp"
-        android:layout_marginEnd="8dp"
-        android:layout_marginBottom="8dp"
-        android:text="게시"
-        android:textSize="50px"
-        android:textColor="#0067a3"
-        android:gravity="center_vertical"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toEndOf="@+id/textInputLayout13"
-        app:layout_constraintTop_toBottomOf="@+id/view6" />
-
     <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/recyclerView_reply"
-        android:layout_width="0dp"
-        android:layout_height="628dp"
-        app:layout_constraintBottom_toTopOf="@+id/textInputLayout13"
+        android:layout_width="match_parent"
+        android:layout_height="615dp"
+        android:layout_marginTop="8dp"
+        android:layout_marginBottom="8dp"
+        app:layout_constraintBottom_toTopOf="@+id/linearLayout2"
         app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.51"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/view3"
-        tools:listitem="@layout/reply_item"/>
+        app:layout_constraintVertical_bias="0.0" />
+
+    <LinearLayout
+        android:id="@+id/linearLayout2"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:background="#F9F9F9"
+        android:gravity="bottom"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintVertical_bias="1.0">
+
+        <de.hdodenhof.circleimageview.CircleImageView
+            android:id="@+id/profileIMG_reply"
+            android:layout_width="50dp"
+            android:layout_height="40dp"
+            android:layout_marginStart="8dp"
+            android:layout_marginEnd="8dp"
+            android:layout_marginBottom="8dp"
+            android:background="#F9F9F9"
+            android:src="@drawable/person3"
+            app:civ_border_color="#000000"
+            app:civ_border_width="2dp"
+
+            />
+
+        <com.google.android.material.textfield.TextInputLayout
+            android:id="@+id/textInputLayout13"
+            android:layout_width="260dp"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="8dp"
+            android:layout_marginEnd="8dp"
+            android:background="#F9F9F9">
+
+            <com.google.android.material.textfield.TextInputEditText
+                android:id="@+id/inputreply_reply"
+
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:imeOptions="actionDone"
+                android:inputType="text"
+                android:maxLines="5"
+                android:minLines="2"
+                android:paddingLeft="5dp"
+                android:scrollbars="vertical"
+                android:singleLine="false"
+                android:textSize="15sp" />
+        </com.google.android.material.textfield.TextInputLayout>
+
+        <TextView
+            android:id="@+id/postB_replydisplay"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:gravity="center"
+            android:text="게시"
+            android:textColor="#0067a3"
+            android:textSize="50px" />
+
+    </LinearLayout>
+
 </androidx.constraintlayout.widget.ConstraintLayout>
