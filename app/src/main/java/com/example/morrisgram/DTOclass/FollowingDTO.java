@@ -1,17 +1,17 @@
-package com.example.morrisgram.DTOclass.Firebase;
+package com.example.morrisgram.DTOclass;
 
 import com.google.firebase.database.Exclude;
 
 import java.util.HashMap;
 import java.util.Map;
 
-public class FollowerDTO {
+public class FollowingDTO {
 
-    public FollowerDTO(){
+    public FollowingDTO(){
 
     }
 
-    public FollowerDTO(String UID) {
+    public FollowingDTO(String UID) {
         this.UID = UID;
     }
 
@@ -32,5 +32,4 @@ public class FollowerDTO {
         result.put("UID",UID);
         return result;
     }
-
 }

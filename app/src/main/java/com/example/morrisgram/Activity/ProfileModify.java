@@ -35,7 +35,7 @@ import com.drew.metadata.Metadata;
 import com.drew.metadata.exif.GpsDirectory;
 import com.example.morrisgram.CameraClass.GlideApp;
 import com.example.morrisgram.CameraClass.ImageResizeUtils;
-import com.example.morrisgram.DTOclass.Firebase.Users_ProfileModify;
+import com.example.morrisgram.DTOclass.Users_ProfileModify;
 import com.example.morrisgram.R;
 import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;

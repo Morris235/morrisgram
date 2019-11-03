@@ -28,8 +28,8 @@ import android.widget.Toast;
 import com.bumptech.glide.load.engine.DiskCacheStrategy;
 import com.example.morrisgram.Activity.BaseActivity.AddingPoster_BaseAct;
 import com.example.morrisgram.CameraClass.GlideApp;
-import com.example.morrisgram.DTOclass.Firebase.FollowingDTO;
-import com.example.morrisgram.DTOclass.Firebase.PostingDTO;
+import com.example.morrisgram.DTOclass.FollowingDTO;
+import com.example.morrisgram.DTOclass.PostingDTO;
 import com.example.morrisgram.R;
 import com.firebase.ui.database.FirebaseRecyclerAdapter;
 import com.firebase.ui.database.FirebaseRecyclerOptions;
@@ -51,7 +51,6 @@ import com.orangegangsters.github.swipyrefreshlayout.library.SwipyRefreshLayout;
 import com.orangegangsters.github.swipyrefreshlayout.library.SwipyRefreshLayoutDirection;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
 
 public class Home extends AddingPoster_BaseAct implements SwipyRefreshLayout.OnRefreshListener {

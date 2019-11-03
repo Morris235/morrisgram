@@ -3,11 +3,9 @@ package com.example.morrisgram.Activity;
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.constraintlayout.widget.ConstraintLayout;
-import androidx.recyclerview.widget.GridLayoutManager;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
-import android.content.Context;
 import android.content.Intent;
 import android.content.pm.ActivityInfo;
 import android.os.Bundle;
@@ -17,8 +15,6 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.inputmethod.EditorInfo;
-import android.view.inputmethod.InputMethodManager;
-import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageButton;
 import android.widget.ImageView;
@@ -26,17 +22,13 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import com.bumptech.glide.load.engine.DiskCacheStrategy;
-import com.example.morrisgram.Activity.FollowFragment.FollowerPage;
 import com.example.morrisgram.CameraClass.GlideApp;
-import com.example.morrisgram.DTOclass.Firebase.FollowerDTO;
-import com.example.morrisgram.DTOclass.Firebase.FollowingDTO;
-import com.example.morrisgram.DTOclass.Firebase.ReplyDTO;
-import com.example.morrisgram.DTOclass.Firebase.Users_Signup;
+import com.example.morrisgram.DTOclass.ReplyDTO;
 import com.example.morrisgram.R;
 import com.firebase.ui.database.FirebaseRecyclerAdapter;
 import com.firebase.ui.database.FirebaseRecyclerOptions;
 import com.firebase.ui.database.SnapshotParser;
-import com.google.android.material.textfield.TextInputEditText;
+import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.database.DataSnapshot;
@@ -90,6 +82,8 @@ public class ReplyDisplay extends AppCompatActivity {
         linearLayoutManager = new LinearLayoutManager(this);
         linearLayoutManager.setReverseLayout(true);
         linearLayoutManager.setStackFromEnd(true);
+
+
 
         recyclerView = findViewById(R.id.recyclerView_reply);
         recyclerView.setLayoutManager(linearLayoutManager);
@@ -176,6 +170,9 @@ public class ReplyDisplay extends AppCompatActivity {
         });
 
         fetch(PosterKey);
+        //삭제시 데이터 갱신
+//        adapter.notifyDataSetChanged();
+
     }//-------------------크리에이트-----------------------------
     public void onStart() {
         super.onStart();
@@ -315,6 +312,15 @@ public class ReplyDisplay extends AppCompatActivity {
                 return new ReplyDisplay.ViewHolder(view);
             }
 
+            @Override
+            public long getItemId(int position) {
+                return super.getItemId(position);
+            }
+
+            @Override
+            public int getItemCount() {
+                return ReplyKeyList.size();
+            }
 
             @Override                                                                                           //DB 데이터 틀 = DTO 클래스
             protected void onBindViewHolder(@NonNull final ReplyDisplay.ViewHolder holder, final int position, @NonNull final ReplyDTO replyDTO_set) {
@@ -330,16 +336,36 @@ public class ReplyDisplay extends AppCompatActivity {
                     @Override
                     public void onClick(View v) {
                         //IndexOutOfBoundsException
-
                         try {
-                            mdataref.child("Reply").child(PosterKey).child(ReplyKeyList.get(position)).removeValue();
+                            final int count=adapter.getItemCount();
+                            if (position > -1 && position < count){
+                                    mdataref.child("Reply").child(PosterKey).child(ReplyKeyList.get(position)).removeValue().addOnSuccessListener(new OnSuccessListener<Void>() {
+                                        @Override
+                                        public void onSuccess(Void aVoid) {
+                                            //DB에서의 해당 데이터 삭제가 <감지>되면 ReplyKeyList와 adapter의 포지션을 바로 동기화 시켜주기 클릭하고 실시간으로 리사이클러뷰에 데이터변경 내용을 반영하기 위함
+                                            // Adapter에 저장된 리스트의 내용을 추가,수정,삭제한 다음,
+                                            // 데이터가 변경되었음을 알려주어 RecyclerView로 하여금 다시 그리도록 만들기
+                                            notifyItemRemoved(ReplyKeyList.size()+1);
+                                            notifyDataSetChanged();
+                                        }
+                                    });
+                            }
                         }catch (IndexOutOfBoundsException e){
                             e.getStackTrace();
-                            Log.i("댓글","에러발생 : "+e.getStackTrace());
+                            Log.i("포지션","에러발생 : "+e);
                         }
                     }
                 });
 
+                //댓글 클릭 - 댓글을 쓴 계정의 피드로 이동
+                holder.root.setOnClickListener(new View.OnClickListener() {
+                    @Override
+                    public void onClick(View v) {
+                        //댓글 DB로부터 유저UID를 얻기
+
+                        //
+                    }
+                });
 
 
                 //자신의 계정이 쓴 댓글 지우기 버튼 가시화
@@ -350,11 +376,18 @@ public class ReplyDisplay extends AppCompatActivity {
                 }
 
 
-
             }
         };
+        //댓글창이 실행될때 어댑터 갱신됨
+        //setHasStableds(true)를 설정해주면 Adapter가 각 Item들을 추적할 수 있고 ViewHolder를 새로 매칭시키는 일이 사라진다
+        //어댑터를 리사이클러뷰에 지정 하기 전에 설정 해야한다.
+        //대신 아이템을 추적하기 때문인지 아이템이 화면을 벗어나면 댓글의 순서가 뒤섞인다.
+        Log.i("포지션","흐름파악 : 어댑터 갱신");
+        adapter.setHasStableIds(false);
         recyclerView.setAdapter(adapter);
     }    //----------------------------파이어베이스 어댑터---------------------------------------
+
+
 
     //댓글 키 리스트 리사이즈 메소드
     public void ReplyKeyListReSizing(String PosterKey){
@@ -378,10 +411,9 @@ public class ReplyDisplay extends AppCompatActivity {
                     //키값들을 리스트형태로 저장
                     ReplyKeyList.add(GetKey);
 
+                    //DB의 값을 바로바로 읽어온다 따라서 삭제클릭과의 값과 사이즈가 같다.
                     Log.i("댓글","useruid : "+userUID);
-                    Log.i("댓글","ReplyKeyListReSizing : "+ReplyKeyList.size());
-                    Log.i("댓글","ReplyDTOS 사이즈 : "+ReplyDTOS.size());
-
+//                    Log.i("포지션","ReplyKeyListReSizing : "+ReplyKeyList.size());
                 }
             }
             @Override

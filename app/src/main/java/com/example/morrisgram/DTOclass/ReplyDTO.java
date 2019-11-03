@@ -1,4 +1,4 @@
-package com.example.morrisgram.DTOclass.Firebase;
+package com.example.morrisgram.DTOclass;
 
 import com.google.firebase.database.Exclude;
 import com.google.firebase.database.IgnoreExtraProperties;

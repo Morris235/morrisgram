@@ -7,11 +7,9 @@ import com.example.morrisgram.Activity.Home;
 import com.example.morrisgram.Activity.LikeAlarm;
 import com.example.morrisgram.Activity.Myinfo;
 import com.example.morrisgram.Activity.Search;
-import com.example.morrisgram.DTOclass.Firebase.PostingDTO;
 import com.google.android.material.tabs.TabLayout;
 
 import androidx.annotation.NonNull;
-import androidx.viewpager.widget.PagerAdapter;
 import androidx.viewpager.widget.ViewPager;
 
 import android.content.pm.ActivityInfo;

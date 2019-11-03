@@ -12,7 +12,6 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.annotation.NonNull;
-import androidx.annotation.Nullable;
 import androidx.constraintlayout.widget.ConstraintLayout;
 import androidx.fragment.app.Fragment;
 import androidx.recyclerview.widget.LinearLayoutManager;
@@ -21,8 +20,8 @@ import androidx.recyclerview.widget.RecyclerView;
 import com.bumptech.glide.load.engine.DiskCacheStrategy;
 import com.example.morrisgram.Activity.UserProfile;
 import com.example.morrisgram.CameraClass.GlideApp;
-import com.example.morrisgram.DTOclass.Firebase.FollowerDTO;
-import com.example.morrisgram.DTOclass.Firebase.FollowingDTO;
+import com.example.morrisgram.DTOclass.FollowerDTO;
+import com.example.morrisgram.DTOclass.FollowingDTO;
 import com.example.morrisgram.R;
 import com.firebase.ui.database.FirebaseRecyclerAdapter;
 import com.firebase.ui.database.FirebaseRecyclerOptions;
