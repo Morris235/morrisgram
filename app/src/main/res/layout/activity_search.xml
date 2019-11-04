@@ -8,41 +8,30 @@
     android:focusableInTouchMode="true"
     tools:context=".Activity.Search">
 
-    <Button
-        android:id="@+id/searchB_search"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginStart="8dp"
-        android:layout_marginTop="8dp"
-        android:layout_marginEnd="8dp"
-        android:layout_marginBottom="8dp"
-        android:text="검색"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="1.0"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent"
-        app:layout_constraintVertical_bias="0.0" />
-
     <com.google.android.material.textfield.TextInputLayout
         android:id="@+id/textInputLayout_search"
-        android:layout_width="310dp"
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
+        android:layout_marginStart="8dp"
+        android:layout_marginEnd="8dp"
         android:layout_marginBottom="8dp"
         app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintEnd_toStartOf="@+id/searchB_search"
-        app:layout_constraintHorizontal_bias="0.0"
+        app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent"
         app:layout_constraintVertical_bias="0.001">
 
         <com.google.android.material.textfield.TextInputEditText
+            android:id="@+id/searchbar_search"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:inputType="text"
-            android:imeOptions="actionDone"
+            android:background="@drawable/rounded_edittext"
             android:drawableLeft="@drawable/ic_search_black_24dp"
-            android:hint="검색" />
+            android:gravity="center_vertical"
+            android:hint="게시물 검색"
+            android:imeOptions="actionSearch"
+            android:inputType="text"
+            android:padding="5dip" />
     </com.google.android.material.textfield.TextInputLayout>
 
     <View

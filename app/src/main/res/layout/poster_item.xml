@@ -63,7 +63,7 @@
     <ImageView
         android:id="@+id/imageView_posteritem"
         android:layout_width="match_parent"
-        android:layout_height="400dp"
+        android:layout_height="380dp"
         android:scaleType="centerCrop"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
@@ -207,7 +207,8 @@
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintHorizontal_bias="0.0"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/reply_layout" />
+        app:layout_constraintTop_toBottomOf="@+id/reply_layout"
+        app:layout_constraintVertical_bias="0.2" />
 
     <androidx.constraintlayout.widget.Guideline
         android:id="@+id/guideline2"
@@ -255,8 +256,8 @@
 
     <ImageButton
         android:id="@+id/reply_posteritem"
-        android:layout_width="35dp"
-        android:layout_height="35dp"
+        android:layout_width="33dp"
+        android:layout_height="33dp"
         android:layout_gravity="center_vertical"
         android:layout_marginStart="8dp"
         android:layout_marginTop="8dp"

@@ -88,21 +88,16 @@
     <com.orangegangsters.github.swipyrefreshlayout.library.SwipyRefreshLayout
         android:id="@+id/refresh_posterviewer"
         android:layout_width="match_parent"
-        android:layout_height="620dp"
+        android:layout_height="600dp"
         app:layout_constraintBottom_toTopOf="@+id/linearLayout3"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/linearLayout4"
-        app:layout_constraintVertical_bias="0.86">
+        app:layout_constraintTop_toBottomOf="@+id/linearLayout4">
 
         <androidx.recyclerview.widget.RecyclerView
             android:id="@+id/recyclerView_posterviewer"
             android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            app:layout_constraintBottom_toTopOf="parent"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="parent" />
+            android:layout_height="match_parent" />
 
     </com.orangegangsters.github.swipyrefreshlayout.library.SwipyRefreshLayout>
 

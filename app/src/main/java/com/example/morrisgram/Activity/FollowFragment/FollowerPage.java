@@ -7,6 +7,8 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
+import android.widget.Filter;
+import android.widget.Filterable;
 import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -34,6 +36,7 @@ import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.Query;
 import com.google.firebase.database.ValueEventListener;
+import com.google.firebase.firestore.auth.User;
 import com.google.firebase.storage.FirebaseStorage;
 import com.google.firebase.storage.StorageReference;
 
@@ -42,7 +45,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-public class FollowerPage extends Fragment {
+public class FollowerPage extends Fragment{
     //현재 접속중인 유저UID가져오기
     private FirebaseUser uid = FirebaseAuth.getInstance().getCurrentUser();
     private String userUID = uid.getUid();
@@ -88,8 +91,8 @@ public class FollowerPage extends Fragment {
         Log.i("뷰페이저","팔로워 유저UID 확인 : "+UserUID);
         Log.i("뷰페이저","팔로워 플래그 확인 : "+FLAG);
 
-        //------------------------------------------------팔로잉 유저 UID 값 수집 데이터 스냅샷--------------------------------------------------리얼타임이 아닌 한번만 읽어보게 하기
-        mdataref.child("UserList").child(UserUIDSwitch(FLAG,UserUID)).child("FollowingList").addListenerForSingleValueEvent(new ValueEventListener() {
+        //------------------------------------------------팔로워 유저 UID 값 수집 데이터 스냅샷--------------------------------------------------리얼타임이 아닌 한번만 읽어보게 하기
+        mdataref.child("UserList").child(UserUIDSwitch(FLAG,UserUID)).child("FollowerList").addListenerForSingleValueEvent(new ValueEventListener() {
             @Override
             public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
                 //포스터키 수집용 리스트
@@ -134,9 +137,6 @@ public class FollowerPage extends Fragment {
         super.onStop();
         adapter.stopListening();
     }
-
-
-
 
 
     //------------------------뷰홀더 클래스------------------------------
@@ -249,6 +249,8 @@ public class FollowerPage extends Fragment {
             }
 
 
+
+
             @Override                                                                                           //DB 데이터 틀 = DTO 클래스
             protected void onBindViewHolder(@NonNull final FollowerPage.ViewHolder holder, final int position, @NonNull final FollowerDTO follower_set) {
                 //팔로잉 유저닉네임
@@ -345,6 +347,8 @@ public class FollowerPage extends Fragment {
                     public void onClick(View view) {
                         try {
                             String UserUID = FollowerUIDList.get(position);
+                            Log.i("팔로워","유저UID 확인 : "+UserUID+" 포지션 : "+position);
+
                             Intent intent = new Intent(getActivity(), UserProfile.class);
                             intent.putExtra("PosterUserUID",UserUID);
                             startActivity(intent);
@@ -357,6 +361,8 @@ public class FollowerPage extends Fragment {
 
             }
         };
+
+//        adapter.notifyDataSetChanged();
         recyclerView.setAdapter(adapter);
     }    //----------------------------파이어베이스 어댑터---------------------------------------
 

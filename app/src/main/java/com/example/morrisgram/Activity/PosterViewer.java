@@ -331,8 +331,24 @@ public class PosterViewer extends AddingPoster_BaseAct implements SwipyRefreshLa
             });
         }
 
-        public void setUserNickName(String string) {
-            UserNicName.setText(string);
+        public void setUserNickName(String useruid) {
+            mdataref.child("UserList").child(useruid).child("UserInfo").child("NickName").addValueEventListener(new ValueEventListener() {
+                @Override
+                public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+                    try {
+                        String name = dataSnapshot.getValue().toString();
+                        UserNicName.setText(name);
+                    }catch (NullPointerException e){
+                        e.getStackTrace();
+                    }
+                }
+
+                @Override
+                public void onCancelled(@NonNull DatabaseError databaseError) {
+
+                }
+            });
+
         }
 
         public void setUserUID(String uri) {
@@ -379,8 +395,23 @@ public class PosterViewer extends AddingPoster_BaseAct implements SwipyRefreshLa
                     .into(PosterKey);
         }
 
-        public void setNickName_Reply(String string){
-            NickName_Reply.setText(string);
+        public void setNickName_Reply(String useruid){
+            mdataref.child("UserList").child(useruid).child("UserInfo").child("NickName").addValueEventListener(new ValueEventListener() {
+                @Override
+                public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+                    try {
+                        String name = dataSnapshot.getValue().toString();
+                        NickName_Reply.setText(name);
+                    }catch (NullPointerException e){
+                        e.getStackTrace();
+                    }
+                }
+
+                @Override
+                public void onCancelled(@NonNull DatabaseError databaseError) {
+
+                }
+            });
         }
 
         //유저 게시물 키 받기
@@ -416,7 +447,6 @@ public class PosterViewer extends AddingPoster_BaseAct implements SwipyRefreshLa
 
                                 return new PostingDTO(
                                         snapshot.child("UserUID").getValue().toString(),     //프로필 이미지
-                                        snapshot.child("UserNickName").getValue().toString(), //유저 닉네임
                                         snapshot.child("Body").getValue().toString(),        //게시물 글
                                         snapshot.child("PostedTime").getValue().toString(),  //게시물 만든 시간
 
@@ -445,12 +475,12 @@ public class PosterViewer extends AddingPoster_BaseAct implements SwipyRefreshLa
             protected void onBindViewHolder(final PosterViewer.ViewHolder holder, final int position, final PostingDTO posting_set) {
                 holder.setPosterKey(posting_set.getPosterkey());
                 holder.setBody(posting_set.getBody());
-                holder.setUserNickName(posting_set.getUserNickName());
+                holder.setUserNickName(posting_set.getUserUID());
                 holder.setUserUID(posting_set.getUserUID());
                 //정수를 스트링 타입으로
 //                holder.setLikeCount(String.valueOf(posting_set.getLikeCount()));
                 holder.setPostedTime(posting_set.getPostedtime());
-                holder.setNickName_Reply(posting_set.getUserNickName());
+                holder.setNickName_Reply(posting_set.getUserUID());
                 //위치 메타데이터
                 holder.setMetadata(posting_set.getPosterkey());
 //                //클릭한 포스터의 키값 받기

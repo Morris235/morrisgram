@@ -350,6 +350,7 @@ public class FollowingPage extends Fragment {
 
             }
         };
+//        adapter.notifyDataSetChanged();
         recyclerView.setAdapter(adapter);
     }    //----------------------------파이어베이스 어댑터---------------------------------------
 

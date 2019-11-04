@@ -104,7 +104,7 @@ public class ReplyDisplay extends AppCompatActivity {
 
 
         //댓글 UID 수집 데이터 스냅샷
-        ReplyKeyListReSizing(PosterKey);
+        ReplyKeyListCollector(PosterKey);
 
 //        //------------------------------------------------댓글 UID 수집 데이터 스냅샷--------------------------------------------------
 //        mdataref.child("Reply").child(PosterKey).addValueEventListener(new ValueEventListener() {
@@ -271,126 +271,169 @@ public class ReplyDisplay extends AppCompatActivity {
 
     //----------------------------파이어베이스 어댑터---------------------------------------
     private void fetch(final String PosterKey) {
-        //BaseQuery - 댓글 쿼리
-        Query query = FirebaseDatabase.getInstance()
-                //BaseQuery
-                .getReference()
-                .child("Reply")
-                .child(PosterKey);
+        try {
+            //BaseQuery - 댓글 쿼리
+            Query query = FirebaseDatabase.getInstance()
+                    //BaseQuery
+                    .getReference()
+                    .child("Reply")
+                    .child(PosterKey);
 
-        Log.i("댓글","쿼리 경로 : "+query.toString());
-        Log.i("댓글","게시물 키값 : "+PosterKey);
+            Log.i("댓글","쿼리 경로 : "+query.toString());
+            Log.i("댓글","게시물 키값 : "+PosterKey);
 
-        //orderByChild()	지정된 하위 키의 값에 따라 결과를 정렬합니다.
-        //orderByKey()	    하위 키에 따라 결과를 정렬합니다.
-        //orderByValue()	하위 값에 따라 결과를 정렬합니다.
+            //orderByChild()	지정된 하위 키의 값에 따라 결과를 정렬합니다.
+            //orderByKey()	    하위 키에 따라 결과를 정렬합니다.
+            //orderByValue()	하위 값에 따라 결과를 정렬합니다.
 
-        //query를 사용해서 DB의 모든 해당 정보를 받아서 가져오는 스냅샷 - 스트링형식으로 받아와야함 - 팔로잉 유저의 UID만 받아와서 모든걸 해결하자!
-        FirebaseRecyclerOptions<ReplyDTO> options =
-                new FirebaseRecyclerOptions.Builder<ReplyDTO>()
-                        .setQuery(query, new SnapshotParser<ReplyDTO>() {
-                            @NonNull
-                            @Override
-                            public ReplyDTO parseSnapshot(@NonNull DataSnapshot snapshot) {
-                                Log.i("댓글","댓글 내용 스냅샷 : "+snapshot.child("ReplyBody").getValue().toString());
-                                Log.i("댓글","댓글 유저UID 스냅샷 : "+snapshot.child("ReplyUserUid").getValue().toString());
-                                return new ReplyDTO(
-                                        snapshot.child("ReplyBody").getValue().toString(),
-                                        snapshot.child("ReplyUserUid").getValue().toString());  //게시물 이미지
-                            }
-                        })
-                        .build();
+            //query를 사용해서 DB의 모든 해당 정보를 받아서 가져오는 스냅샷 - 스트링형식으로 받아와야함 - 팔로잉 유저의 UID만 받아와서 모든걸 해결하자!
+            FirebaseRecyclerOptions<ReplyDTO> options =
+                    new FirebaseRecyclerOptions.Builder<ReplyDTO>()
+                            .setQuery(query, new SnapshotParser<ReplyDTO>() {
+                                @NonNull
+                                @Override
+                                public ReplyDTO parseSnapshot(@NonNull DataSnapshot snapshot) {
+                                    Log.i("댓글","댓글 내용 스냅샷 : "+snapshot.child("ReplyBody").getValue().toString());
+                                    Log.i("댓글","댓글 유저UID 스냅샷 : "+snapshot.child("ReplyUserUid").getValue().toString());
+                                    return new ReplyDTO(
+                                            snapshot.child("ReplyBody").getValue().toString(),
+                                            snapshot.child("ReplyUserUid").getValue().toString());  //게시물 이미지
+                                }
+                            })
+                            .build();
 
 
-        //어댑터
-        adapter = new FirebaseRecyclerAdapter<ReplyDTO, ReplyDisplay.ViewHolder>(options) {
-            //리사이클러뷰 아이템 생성
-            @Override
-            public ReplyDisplay.ViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
-                View view = LayoutInflater.from(parent.getContext())
-                        .inflate(R.layout.reply_item, parent, false);
-                return new ReplyDisplay.ViewHolder(view);
-            }
+            //어댑터
+            adapter = new FirebaseRecyclerAdapter<ReplyDTO, ReplyDisplay.ViewHolder>(options) {
+                //리사이클러뷰 아이템 생성
+                @Override
+                public ReplyDisplay.ViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
+                    View view = LayoutInflater.from(parent.getContext())
+                            .inflate(R.layout.reply_item, parent, false);
+                    return new ReplyDisplay.ViewHolder(view);
+                }
 
-            @Override
-            public long getItemId(int position) {
-                return super.getItemId(position);
-            }
+                @Override
+                public long getItemId(int position) {
+                    return super.getItemId(position);
+                }
 
-            @Override
-            public int getItemCount() {
-                return ReplyKeyList.size();
-            }
+                @Override
+                public int getItemCount() {
+                    return ReplyKeyList.size();
+                }
 
-            @Override                                                                                           //DB 데이터 틀 = DTO 클래스
-            protected void onBindViewHolder(@NonNull final ReplyDisplay.ViewHolder holder, final int position, @NonNull final ReplyDTO replyDTO_set) {
-                //팔로잉 유저닉네임
-                holder.setUserNickName(replyDTO_set.getReplyUseruid());
-                //팔로잉 유저프로필 이미지
-                holder.setReplyUserIMG(replyDTO_set.getReplyUseruid());
-                //댓글 내용
-                holder.setReplyBody(replyDTO_set.getReplyBody());
+                @Override                                                                                           //DB 데이터 틀 = DTO 클래스
+                protected void onBindViewHolder(@NonNull final ReplyDisplay.ViewHolder holder, final int position, @NonNull final ReplyDTO replyDTO_set) {
+                    //팔로잉 유저닉네임
+                    holder.setUserNickName(replyDTO_set.getReplyUseruid());
+                    //팔로잉 유저프로필 이미지
+                    holder.setReplyUserIMG(replyDTO_set.getReplyUseruid());
+                    //댓글 내용
+                    holder.setReplyBody(replyDTO_set.getReplyBody());
 
-                //자신의 댓글만 선택해서 지우기
-                holder.delete.setOnClickListener(new View.OnClickListener() {
-                    @Override
-                    public void onClick(View v) {
-                        //IndexOutOfBoundsException
-                        try {
-                            final int count=adapter.getItemCount();
-                            if (position > -1 && position < count){
+                    //자신의 댓글만 선택해서 지우기
+                    holder.delete.setOnClickListener(new View.OnClickListener() {
+                        @Override
+                        public void onClick(View v) {
+                            //IndexOutOfBoundsException
+                            try {
+                                final int count=adapter.getItemCount();
+                                if (position > -1 && position < count){
                                     mdataref.child("Reply").child(PosterKey).child(ReplyKeyList.get(position)).removeValue().addOnSuccessListener(new OnSuccessListener<Void>() {
                                         @Override
                                         public void onSuccess(Void aVoid) {
                                             //DB에서의 해당 데이터 삭제가 <감지>되면 ReplyKeyList와 adapter의 포지션을 바로 동기화 시켜주기 클릭하고 실시간으로 리사이클러뷰에 데이터변경 내용을 반영하기 위함
                                             // Adapter에 저장된 리스트의 내용을 추가,수정,삭제한 다음,
                                             // 데이터가 변경되었음을 알려주어 RecyclerView로 하여금 다시 그리도록 만들기
-                                            notifyItemRemoved(ReplyKeyList.size()+1);
+//                                            notifyItemRemoved(ReplyKeyList.size()+1);
                                             notifyDataSetChanged();
                                         }
                                     });
+                                }
+                            }catch (IndexOutOfBoundsException e){
+                                e.getStackTrace();
+                                Log.i("포지션","에러발생 : "+e);
                             }
-                        }catch (IndexOutOfBoundsException e){
-                            e.getStackTrace();
-                            Log.i("포지션","에러발생 : "+e);
                         }
+                    });
+
+                    //댓글 클릭 - 댓글을 쓴 계정의 피드로 이동
+                    holder.root.setOnClickListener(new View.OnClickListener() {
+                        @Override
+                        public void onClick(View v) {
+                            //댓글 DB로부터 유저UID를 얻기
+                            // root/ Rely/ PosterKey(현재 게시물)/ ReplyKey/ ReplyUserUid : "UserUID"
+                            try {
+                                mdataref.child("Reply").child(PosterKey).child(ReplyKeyList.get(position)).addValueEventListener(new ValueEventListener() {
+                                    @Override
+                                    public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+                                        try {
+                                            String UserReplyUID = dataSnapshot.child("ReplyUserUid").getValue().toString();
+
+                                            //클릭한 댓글이 내가 쓴 댓글이라면 내 프로필로 이동
+                                            if (UserReplyUID.equals(userUID)){
+                                                Intent intent1 = new Intent(ReplyDisplay.this, Myinfo.class);
+                                                startActivity(intent1);
+                                                finish();
+                                                Log.i("댓글","내가쓴 댓글");
+                                            }else {
+                                                //유저 uid를 UserProfile로 넘기기
+                                                Intent intent = new Intent(ReplyDisplay.this, UserProfile.class);
+                                                intent.putExtra("PosterUserUID",UserReplyUID);
+                                                startActivity(intent);
+                                                finish();
+                                                Log.i("댓글","다른 유저가 쓴 댓글");
+                                            }
+                                        }catch (NullPointerException e){
+                                            e.getStackTrace();
+                                            Log.i("댓글","에러발생 : "+e);
+                                        }
+                                    }
+
+                                    @Override
+                                    public void onCancelled(@NonNull DatabaseError databaseError) {
+
+                                    }
+                                });
+                            }catch (IndexOutOfBoundsException e){
+                                e.getStackTrace();
+                                Log.i("포지션","에러발생 : "+e);
+                            }
+
+                        }
+                    });
+
+
+                    //자신의 계정이 쓴 댓글 지우기 버튼 가시화
+                    if (replyDTO_set.getReplyUseruid().contains(userUID)){
+                        holder.delete.setVisibility(View.VISIBLE);
+                    }else {
+                        holder.delete.setVisibility(View.INVISIBLE);
                     }
-                });
-
-                //댓글 클릭 - 댓글을 쓴 계정의 피드로 이동
-                holder.root.setOnClickListener(new View.OnClickListener() {
-                    @Override
-                    public void onClick(View v) {
-                        //댓글 DB로부터 유저UID를 얻기
-
-                        //
-                    }
-                });
 
 
-                //자신의 계정이 쓴 댓글 지우기 버튼 가시화
-                if (replyDTO_set.getReplyUseruid().contains(userUID)){
-                    holder.delete.setVisibility(View.VISIBLE);
-                }else {
-                    holder.delete.setVisibility(View.INVISIBLE);
                 }
+            };
+            //댓글창이 실행될때 어댑터 갱신됨
+            //setHasStableds(true)를 설정해주면 Adapter가 각 Item들을 추적할 수 있고 ViewHolder를 새로 매칭시키는 일이 사라진다
+            //어댑터를 리사이클러뷰에 지정 하기 전에 설정 해야한다.
+            //대신 아이템을 추적하기 때문인지 아이템이 화면을 벗어나면 댓글의 순서가 뒤섞인다.
+            Log.i("포지션","흐름파악 : 어댑터 갱신");
+            adapter.setHasStableIds(false);
+            recyclerView.setAdapter(adapter);
 
+        }catch (NullPointerException | IndexOutOfBoundsException e){
+            e.getStackTrace();
+            Log.i("포지션","에러발생 : "+e);
+        }
 
-            }
-        };
-        //댓글창이 실행될때 어댑터 갱신됨
-        //setHasStableds(true)를 설정해주면 Adapter가 각 Item들을 추적할 수 있고 ViewHolder를 새로 매칭시키는 일이 사라진다
-        //어댑터를 리사이클러뷰에 지정 하기 전에 설정 해야한다.
-        //대신 아이템을 추적하기 때문인지 아이템이 화면을 벗어나면 댓글의 순서가 뒤섞인다.
-        Log.i("포지션","흐름파악 : 어댑터 갱신");
-        adapter.setHasStableIds(false);
-        recyclerView.setAdapter(adapter);
     }    //----------------------------파이어베이스 어댑터---------------------------------------
 
 
 
-    //댓글 키 리스트 리사이즈 메소드
-    public void ReplyKeyListReSizing(String PosterKey){
+    //해당 게시물에 있는 모든 댓글 키 리스트 수집 메소드
+    public void ReplyKeyListCollector(String PosterKey){
         //------------------------------------------------댓글 UID 수집 데이터 스냅샷--------------------------------------------------
         mdataref.child("Reply").child(PosterKey).addValueEventListener(new ValueEventListener() {
             @Override

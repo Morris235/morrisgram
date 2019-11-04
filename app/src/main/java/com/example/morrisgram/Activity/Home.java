@@ -369,8 +369,23 @@ public class Home extends AddingPoster_BaseAct implements SwipyRefreshLayout.OnR
         }
 
         //유저 닉네임
-        public void setUserNickName(String string) {
-            UserNicName.setText(string);
+        public void setUserNickName(String useruid) {
+            mdataref.child("UserList").child(useruid).child("UserInfo").child("NickName").addValueEventListener(new ValueEventListener() {
+                @Override
+                public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+                    try {
+                        String name = dataSnapshot.getValue().toString();
+                        UserNicName.setText(name);
+                    }catch (NullPointerException e){
+                        e.getStackTrace();
+                    }
+                }
+
+                @Override
+                public void onCancelled(@NonNull DatabaseError databaseError) {
+
+                }
+            });
         }
 
         //유저 UID - 프로필 사진
@@ -422,8 +437,23 @@ public class Home extends AddingPoster_BaseAct implements SwipyRefreshLayout.OnR
         }
 
         //게시물 내용 - 유저 닉네임
-        public void setNickName_Reply(String string){
-            NickName_Reply.setText(string);
+        public void setNickName_Reply(String useruid){
+            mdataref.child("UserList").child(useruid).child("UserInfo").child("NickName").addValueEventListener(new ValueEventListener() {
+                @Override
+                public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+                    try {
+                        String name = dataSnapshot.getValue().toString();
+                        NickName_Reply.setText(name);
+                    }catch (NullPointerException e){
+                        e.getStackTrace();
+                    }
+                }
+
+                @Override
+                public void onCancelled(@NonNull DatabaseError databaseError) {
+
+                }
+            });
         }
     }
     //----------------------------파이어베이스 어댑터---------------------------------------
@@ -447,7 +477,6 @@ public class Home extends AddingPoster_BaseAct implements SwipyRefreshLayout.OnR
                             public PostingDTO parseSnapshot(@NonNull DataSnapshot snapshot) {
                                 return new PostingDTO(
                                         snapshot.child("UserUID").getValue().toString(),     //프로필 이미지
-                                        snapshot.child("UserNickName").getValue().toString(), //유저 닉네임
                                         snapshot.child("Body").getValue().toString(),        //게시물 글
                                         snapshot.child("PostedTime").getValue().toString(),  //게시물 만든 시간
 //                                        (HashMap<String, Long>) snapshot.child("like").getChildren().iterator().next().child("Count").getValue(),   //좋아요 개수
@@ -462,13 +491,13 @@ public class Home extends AddingPoster_BaseAct implements SwipyRefreshLayout.OnR
             protected void onBindViewHolder(@NonNull final ViewHolder holder, final int position, @NonNull PostingDTO posting_set) {
                 holder.setPosterKey(posting_set.getPosterkey());
                 holder.setBody(posting_set.getBody());
-                holder.setUserNickName(posting_set.getUserNickName());
+                holder.setUserNickName(posting_set.getUserUID());
                 holder.setUserUID(posting_set.getUserUID());
 
 //                holder.setLikeCount(String.valueOf(posting_set.getLikeCount()));
 
                 holder.setPostedTime(posting_set.getPostedtime());
-                holder.setNickName_Reply(posting_set.getUserNickName());
+                holder.setNickName_Reply(posting_set.getUserUID());
                 //위치 메타데이터
                 holder.setMetadata(posting_set.getPosterkey());
 

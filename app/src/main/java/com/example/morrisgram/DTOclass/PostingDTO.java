@@ -22,9 +22,9 @@ public class PostingDTO {
 //        this.tImeStemp = timestemp;
 //    }
 
-    public PostingDTO(String userUID, String userNickName, String body, String postedTime, String posterKey, Object timestemp) {
+    public PostingDTO(String userUID, String body, String postedTime, String posterKey, Object timestemp) {
         this.userUID = userUID;
-        this.userNickName = userNickName;
+//        this.userNickName = userNickName;
         this.body = body;
         this.postedtime = postedTime;
 //        this.likeCount = likeCount;
@@ -37,12 +37,12 @@ public class PostingDTO {
     public void setUserUID(String userUID) {
         this.userUID = userUID;
     }
-    public String getUserNickName() {
-        return userNickName;
-    }
-    public void setUserNickName(String userNickName) {
-        this.userNickName = userNickName;
-    }
+//    public String getUserNickName() {
+//        return userNickName;
+//    }
+//    public void setUserNickName(String userNickName) {
+//        this.userNickName = userNickName;
+//    }
 
     public String getBody() {
         return body;
@@ -84,7 +84,7 @@ public class PostingDTO {
 //    }
 
     private String userUID; //유저 프로필 사진 Uri
-    private String userNickName; //유저 닉네임
+//    private String userNickName; //유저 닉네임
     private String body; //게시물 글 내용
     private String postedtime; //게시물 게시 시간
     private String posterkey; //게시물 사진 uri
@@ -108,7 +108,7 @@ public class PostingDTO {
     public Map<String,Object> toMap() {
         HashMap<String,Object> result = new HashMap<>();
         result.put("UserUID",userUID);
-        result.put("UserNickName",userNickName);
+//        result.put("UserNickName",userNickName);
         result.put("Body",body);
         result.put("PostedTime",postedtime);
         result.put("PosterKey",posterkey);
