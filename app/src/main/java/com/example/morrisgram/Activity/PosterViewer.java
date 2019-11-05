@@ -416,7 +416,7 @@ public class PosterViewer extends AddingPoster_BaseAct implements SwipyRefreshLa
 
         //유저 게시물 키 받기
         public String getUserPosterKey(String Key){
-            UserPosterKey = Key;
+//            UserPosterKey = Key;
             return Key;
         }
     }//------------------------뷰홀더 클래스------------------------------
@@ -485,7 +485,6 @@ public class PosterViewer extends AddingPoster_BaseAct implements SwipyRefreshLa
                 holder.setMetadata(posting_set.getPosterkey());
 //                //클릭한 포스터의 키값 받기
 //                final String Key = holder.getUserPosterKey(posting_set.getPosterkey());
-
 
 
 

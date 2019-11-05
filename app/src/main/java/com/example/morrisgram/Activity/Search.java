@@ -40,12 +40,15 @@ import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.database.DataSnapshot;
+import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.Query;
+import com.google.firebase.database.ValueEventListener;
 import com.google.firebase.storage.StorageReference;
 
 import java.util.ArrayList;
+import java.util.List;
 
 public class Search extends AddingPoster_BaseAct implements SwipeRefreshLayout.OnRefreshListener {
     private SwipeRefreshLayout mSwipeRefreshLayout;
@@ -54,11 +57,15 @@ public class Search extends AddingPoster_BaseAct implements SwipeRefreshLayout.O
     private long   backPressedTime = 0;
 
     //파이어베이스 리사이클러뷰
+    //데이터베이스의 주소 지정
+    private DatabaseReference mdataref = FirebaseDatabase.getInstance().getReference();
     private RecyclerView recyclerView;
     private GridLayoutManager gridLayoutManager;
     private FirebaseRecyclerAdapter adapter;
-
     private FirebaseRecyclerAdapter SearchAdapter;
+
+    //검색된 게시물의 UID값 받기
+    private List<String> SearchPosterKeyList = new ArrayList<>();
 
     //파이어베이스 유저 정보
     private FirebaseAuth firebaseAuth;
@@ -88,26 +95,66 @@ public class Search extends AddingPoster_BaseAct implements SwipeRefreshLayout.O
         //smooth scrolling
         recyclerView.setNestedScrollingEnabled(false);
 
+
+
+
+//
+//        if (searchbar != null){
+//            Log.i("검색","검색중"+SearchWord);
+//            FirebaseUserSearch(SearchWord);
+//            SearchAdapter.startListening();
+//        }else {
+//            try {
+//                Log.i("검색","비어있음");
+//                SearchAdapter.stopListening();
+//                adapter.startListening();
+//            }catch (NullPointerException e){
+//                e.getStackTrace();
+//            }
+//        }
+
         //데이터 검색바 바인드
         searchbar = (EditText) findViewById(R.id.searchbar_search);
+
+
         //게시물 검색
-        searchbar.setOnEditorActionListener(new TextView.OnEditorActionListener() {
+//        searchbar.setOnEditorActionListener(new TextView.OnEditorActionListener() {
+//            @Override
+//            public boolean onEditorAction(TextView v, int actionId, KeyEvent event) {
+//                if (actionId == EditorInfo.IME_ACTION_SEARCH){
+//                    String SearchWord = searchbar.getText().toString();
+//                    if (SearchWord.equals("")){
+//                        Toast.makeText(getApplicationContext(),"내용을 입력해주세요",Toast.LENGTH_SHORT).show();
+//                    }else {
+//                        Log.i("검색","검색어 확인 : "+SearchWord);
+//                        FirebaseUserSearch(SearchWord);
+//                        SearchAdapter.startListening();
+//                        searchbar.setText("");
+//                    }
+//                }
+//                return true;
+//            }
+//        });
+
+        searchbar.addTextChangedListener(new TextWatcher() {
             @Override
-            public boolean onEditorAction(TextView v, int actionId, KeyEvent event) {
-                if (actionId == EditorInfo.IME_ACTION_SEARCH){
-                    String SearchWord = searchbar.getText().toString();
-                    if (SearchWord.equals("")){
-                        Toast.makeText(getApplicationContext(),"내용을 입력해주세요",Toast.LENGTH_SHORT).show();
-                    }else {
-                        Log.i("검색","검색어 확인 : "+SearchWord);
-                        FirebaseUserSearch(SearchWord);
-                        SearchAdapter.startListening();
-                        searchbar.setText("");
-                    }
-                }
-                return true;
+            public void beforeTextChanged(CharSequence s, int start, int count, int after) {
+
+            }
+
+            @Override
+            public void onTextChanged(CharSequence s, int start, int before, int count) {
+                String SearchWord = searchbar.getText().toString();
+                FirebaseUserSearch(s.toString());
+                SearchAdapter.startListening();
+            }
+
+            @Override
+            public void afterTextChanged(Editable s) {
+
             }
         });
+
         //리사이클러뷰 어댑터 클래스
         fetch();
 
@@ -191,33 +238,11 @@ public class Search extends AddingPoster_BaseAct implements SwipeRefreshLayout.O
     }
 
     //뒤로가기 제어
-    @Override
-    public void onBackPressed() {
-        try {
-            long tempTime = System.currentTimeMillis();
-            long intervalTime = tempTime - backPressedTime;
-
-            //처음눌렀을 때
-            if (0 <= intervalTime && FINISH_INTERVAL_TIME >= intervalTime)
-            {
-                //뒤로가기 대기
-                super.onBackPressed();
+//    @Override
+//    public void onBackPressed() {
 //
-//                //전체 게시물 표시
-//                SearchAdapter.stopListening();
-//                adapter.startListening();
-//                fetch();
-            }
-            else
-            {
-                //시간안에 클릭하면 첫번째 조건식 회피를 위해 정수 대입
-                backPressedTime = tempTime;
-            }
+//    }
 
-        }catch (NullPointerException e){
-            e.getStackTrace();
-        }
-    }
 //    //어댑터 필터링
 //        @Override
 //        public Filter getFilter() {
@@ -335,7 +360,6 @@ public class Search extends AddingPoster_BaseAct implements SwipeRefreshLayout.O
                 holder.root.setOnClickListener(new View.OnClickListener() {
                     @Override
                     public void onClick(View view) {
-                        Toast.makeText(Search.this, String.valueOf(position), Toast.LENGTH_SHORT).show();
                         Intent intent = new Intent(Search.this, PosterViewer.class);
 
                         //유저피드에서 해당 게시물 데이터를 받기 위한 쿼리스위치 신호
@@ -362,6 +386,9 @@ public class Search extends AddingPoster_BaseAct implements SwipeRefreshLayout.O
         public ConstraintLayout root;
         public ImageView PosterKey;
 
+        //게시물 키값 받는 변수
+        public String UserPosterKey;
+
         public UserViewHolder(@NonNull View itemView) {
             super(itemView);
 
@@ -384,13 +411,17 @@ public class Search extends AddingPoster_BaseAct implements SwipeRefreshLayout.O
                     .placeholder(R.drawable.ic_insert_photo_black_24dp)
                     .into(PosterKey);
         }
+
+        public String getPosterKey(String Key){
+            return Key;
+        }
     }
 
     //검색 어댑터
-    private void FirebaseUserSearch(String SearchWord){
+    private void FirebaseUserSearch(final String SearchWord){
         Log.i("검색","게시물 검색 메소드 동작");
         //BaseQuery
-        Query query = FirebaseDatabase.getInstance()
+        final Query query = FirebaseDatabase.getInstance()
                 .getReference()
                 .child("PosterList")
                 .orderByChild("Body")
@@ -411,24 +442,47 @@ public class Search extends AddingPoster_BaseAct implements SwipeRefreshLayout.O
                         })
                         .build();
 
+
+
+
         SearchAdapter = new FirebaseRecyclerAdapter<PreView, UserViewHolder>(options) {
             @Override
             protected void onBindViewHolder(@NonNull UserViewHolder holder, final int position, @NonNull PreView preView) {
                 holder.setPosterKey(preView.getPosterKey());
 
+                //검색한 게시물의 키값 얻기
+               final String PosterKey = holder.getPosterKey(preView.getPosterKey());
+
+
+
                 //클릭한 이미지의 포스트뷰어로 이동하기
                 holder.root.setOnClickListener(new View.OnClickListener() {
                     @Override
                     public void onClick(View view) {
-                        Toast.makeText(Search.this, String.valueOf(position), Toast.LENGTH_SHORT).show();
-                        Intent intent = new Intent(Search.this, PosterViewer.class);
 
-                        //유저피드에서 해당 게시물 데이터를 받기 위한 쿼리스위치 신호
-                        final int FLAG = 2;
-                        intent.putExtra("FLAG",FLAG);
-                        intent.putExtra("FOCUS", position);
-                        startActivity(intent);
-                        overridePendingTransition(0, 0);
+                        mdataref.child("PosterList").child(PosterKey).child("Position").addValueEventListener(new ValueEventListener() {
+                            @Override
+                            public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+                                //DB에서 포지션값 얻기
+                                String PosterPosition = String.valueOf(dataSnapshot.getValue());
+
+                                Log.i("포지션","DB에서 받아온 포지션값 확인 : "+PosterPosition);
+                                //유저피드에서 해당 게시물 데이터를 받기 위한 쿼리스위치 신호
+                                final int FLAG = 2;
+                                //포스터뷰어로 DB에서 받아온 포지션값 보내기
+                                final Intent intent = new Intent(Search.this, PosterViewer.class);
+                                intent.putExtra("FLAG",FLAG);
+                                intent.putExtra("FOCUS", Integer.valueOf(PosterPosition));
+                                startActivity(intent);
+                                overridePendingTransition(0, 0);
+                            }
+
+                            @Override
+                            public void onCancelled(@NonNull DatabaseError databaseError) {
+
+                            }
+                        });
+
                     }
                 });
             }

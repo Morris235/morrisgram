@@ -151,8 +151,9 @@ public class Home extends AddingPoster_BaseAct implements SwipyRefreshLayout.OnR
                     PostingDTO postingDTO = snapshot.getValue(PostingDTO.class);
                     //게시물 키값 받기
                     String GetKey = snapshot.getKey();
+                    String getValue = snapshot.child("Body").getValue().toString();
                     Log.i("포스터키","전체 유저 게시물 키 : "+GetKey);
-
+                    Log.i("포지션","전체 유저 게시물의 특정 값 : "+getValue);
                     //클래스 주소값? 리스트
                     postingDTOS.add(postingDTO);
                     //키값들을 리스트형태로 저장
@@ -489,6 +490,11 @@ public class Home extends AddingPoster_BaseAct implements SwipyRefreshLayout.OnR
         adapter = new FirebaseRecyclerAdapter<PostingDTO, Home.ViewHolder>(options) {
             @Override
             protected void onBindViewHolder(@NonNull final ViewHolder holder, final int position, @NonNull PostingDTO posting_set) {
+
+                //각 게시물에 포지션값 업데이트 - 검색 액티비티에서 게시물을 클릭해서 인텐트로 업로드한 포지션을 다운받아 포스터뷰어로 이동할 때 포지션값을 받아
+                //스크롤을 움직여 해당 게시물에 포커스를 주기위함
+                mdataref.child("PosterList").child(PosterKeyList.get(position)).child("Position").setValue(position);
+
                 holder.setPosterKey(posting_set.getPosterkey());
                 holder.setBody(posting_set.getBody());
                 holder.setUserNickName(posting_set.getUserUID());
