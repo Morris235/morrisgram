@@ -195,7 +195,7 @@ public class Home extends AddingPoster_BaseAct implements SwipyRefreshLayout.OnR
         likealarmB.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                Intent intent = new Intent(Home.this, LikeAlarm.class);
+                Intent intent = new Intent(Home.this, Alarm.class);
                 startActivity(intent);
                 overridePendingTransition(0, 0);
             }
@@ -491,10 +491,6 @@ public class Home extends AddingPoster_BaseAct implements SwipyRefreshLayout.OnR
             @Override
             protected void onBindViewHolder(@NonNull final ViewHolder holder, final int position, @NonNull PostingDTO posting_set) {
 
-                //각 게시물에 포지션값 업데이트 - 검색 액티비티에서 게시물을 클릭해서 인텐트로 업로드한 포지션을 다운받아 포스터뷰어로 이동할 때 포지션값을 받아
-                //스크롤을 움직여 해당 게시물에 포커스를 주기위함
-                mdataref.child("PosterList").child(PosterKeyList.get(position)).child("Position").setValue(position);
-
                 holder.setPosterKey(posting_set.getPosterkey());
                 holder.setBody(posting_set.getBody());
                 holder.setUserNickName(posting_set.getUserUID());
@@ -597,19 +593,24 @@ public class Home extends AddingPoster_BaseAct implements SwipyRefreshLayout.OnR
                 });
 
 
-                //댓글 개수 스냅샷
-                mdataref.child("Reply").child(PosterKeyList.get(position)).addValueEventListener(new ValueEventListener() {
-                    @Override
-                    public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
-                        String replycount = String.valueOf(dataSnapshot.getChildrenCount());
-                        holder.setReplyCount(replycount);
-                    }
+                //댓글 개수 스냅샷 -IndexOutOfBoundsException: Index: 21, Size: 12
+                try {
+                    mdataref.child("Reply").child(PosterKeyList.get(position)).addValueEventListener(new ValueEventListener() {
+                        @Override
+                        public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+                            String replycount = String.valueOf(dataSnapshot.getChildrenCount());
+                            holder.setReplyCount(replycount);
+                        }
 
-                    @Override
-                    public void onCancelled(@NonNull DatabaseError databaseError) {
+                        @Override
+                        public void onCancelled(@NonNull DatabaseError databaseError) {
 
-                    }
-                });
+                        }
+                    });
+                }catch (IndexOutOfBoundsException e){
+                    e.getStackTrace();
+                }
+
 
 
                 holder.root.setOnClickListener(new View.OnClickListener() {

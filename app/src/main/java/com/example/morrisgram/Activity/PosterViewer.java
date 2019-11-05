@@ -69,8 +69,10 @@ public class PosterViewer extends AddingPoster_BaseAct implements SwipyRefreshLa
     private List<PostingDTO> postingDTOS = new ArrayList<>();
 
     //내 포스터키 수집용 리스트
-    private List<String> MyPosterKeyList = new ArrayList<>();
-    private List<PostingDTO> MypostingDTOS = new ArrayList<>();
+    private List<String> UserPosterKeyList = new ArrayList<>();
+    private List<PostingDTO> UserpostingDTOS = new ArrayList<>();
+
+
     //포커스
     public boolean FIRST_FOCUS = false;
 
@@ -96,46 +98,55 @@ public class PosterViewer extends AddingPoster_BaseAct implements SwipyRefreshLa
         mSwipeRefreshLayout.setOnRefreshListener(this);
         mSwipeRefreshLayout.setDirection(SwipyRefreshLayoutDirection.TOP);
 
-        //포커스 boolean
-        FIRST_FOCUS = true;
-        fetch();
+
+        //포스트뷰어 게시물 표시 신호 플래그 인텐트
+        final Intent intent = getIntent();
+        final int FLAG = intent.getIntExtra("FLAG",-1);
+
+        //게시물에서 유저UID를 받은 경우 유저UID 인텐트
+        final String PosterUserUID = intent.getStringExtra("PosterUserUID");
 
 //------------------------------------------------게시물 키값 수집 데이터 스냅샷--------------------------------------------------
-        //내 게시물 키 수집
-        mdataref.child("UserList").child(userUID).child("UserPosterList").addValueEventListener(new ValueEventListener() {
-            @Override
-            public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
-                //포스터키 수집용 리스트
+        //내 게시물 키 수집 - 나와 타 유저가 포스터뷰어에 접근 했을 때 사용할 포스터키
+        try {
+            mdataref.child("UserList").child(PosterUserUID).child("UserPosterList").addValueEventListener(new ValueEventListener() {
+                @Override
+                public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+                    //포스터키 수집용 리스트
 //                private List<String> PosterKeyList = new ArrayList<>();
 //                private List<PostingDTO> postingDTOS = new ArrayList<>();
 
-                //포스터키가 리스트에 쌓이지 않도록 클리어하기
-                MypostingDTOS.clear();
-                MyPosterKeyList.clear();
-                //유저리스트에 있는 모든 데이터를 읽어온다. 그중에서 파베예외 발생 : Failed to convert a value of type java.util.HashMap to long
-                //C#의 foreach문과 유사한 배열에 이용되는 for문 ->for(변수:배열) = 배열에 있는 값들을 하나씩 순서대로 변수에 대입시킨다. -배열의 자료형과 for문의 변수 자료형은 같아야 한다.
-                for (DataSnapshot snapshot : dataSnapshot.getChildren()){
-                    //파베 스냅샷으로 받아올때 long이나 int형태로는 못받아 오겠다. 왜냐하면 모델클래스가 해쉬맵이여서? =데이터를 모델에 맞게 받는 코드
-                    PostingDTO postingDTO = snapshot.getValue(PostingDTO.class);
-                    //게시물 키값 받기
-                    String GetKey = snapshot.getKey();
-                    Log.i("포스터키","로그인한 유저 게시물 키 : "+GetKey);
+                    //포스터키가 리스트에 쌓이지 않도록 클리어하기
+                    UserpostingDTOS.clear();
+                    UserPosterKeyList.clear();
+                    //유저리스트에 있는 모든 데이터를 읽어온다. 그중에서 파베예외 발생 : Failed to convert a value of type java.util.HashMap to long
+                    //C#의 foreach문과 유사한 배열에 이용되는 for문 ->for(변수:배열) = 배열에 있는 값들을 하나씩 순서대로 변수에 대입시킨다. -배열의 자료형과 for문의 변수 자료형은 같아야 한다.
+                    for (DataSnapshot snapshot : dataSnapshot.getChildren()){
+                        //파베 스냅샷으로 받아올때 long이나 int형태로는 못받아 오겠다. 왜냐하면 모델클래스가 해쉬맵이여서? =데이터를 모델에 맞게 받는 코드
+                        PostingDTO postingDTO = snapshot.getValue(PostingDTO.class);
+                        //게시물 키값 받기
+                        String GetKey = snapshot.getKey();
+                        Log.i("포스터키","로그인한 유저 게시물 키 : "+GetKey);
 
-                    //클래스 주소값? 리스트
-                    MypostingDTOS.add(postingDTO);
-                    //키값들을 리스트형태로 저장
-                    MyPosterKeyList.add(GetKey);
+                        //클래스 주소값? 리스트
+                        UserpostingDTOS.add(postingDTO);
+                        //키값들을 리스트형태로 저장
+                        UserPosterKeyList.add(GetKey);
+                    }
                 }
-            }
-            @Override
-            public void onCancelled(@NonNull DatabaseError databaseError) {
+                @Override
+                public void onCancelled(@NonNull DatabaseError databaseError) {
 
-            }
-        });
+                }
+            });
+        }catch (RuntimeException e){
+            e.getStackTrace();
+        }
 
 
 
-        //전체 게시물 키 수집
+
+        //전체 게시물 키 수집 - 서치Act로부터 포스터뷰어에 접근했을 떄 사용할 게시물UID
         mdataref.child("PosterList").addValueEventListener(new ValueEventListener() {
             @Override
             public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
@@ -170,6 +181,12 @@ public class PosterViewer extends AddingPoster_BaseAct implements SwipyRefreshLa
 
 
 
+        //포커스 boolean
+        FIRST_FOCUS = true;
+        //리사이클러뷰 전개
+        fetch(FLAG,PosterUserUID);
+
+
 
 //----------------------------------화면이동----------------------------------------
 //홈 화면 이동
@@ -198,7 +215,7 @@ public class PosterViewer extends AddingPoster_BaseAct implements SwipyRefreshLa
         likealarmB.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                Intent intent = new Intent(PosterViewer.this, LikeAlarm.class);
+                Intent intent = new Intent(PosterViewer.this, Alarm.class);
                 startActivity(intent);
             }
         });
@@ -253,7 +270,15 @@ public class PosterViewer extends AddingPoster_BaseAct implements SwipyRefreshLa
     @Override
     public void onRefresh(SwipyRefreshLayoutDirection direction) {
         mSwipeRefreshLayout.setRefreshing(false);
-        fetch();
+
+        //포스트뷰어 게시물 표시 신호 플래그 인텐트
+        final Intent intent = getIntent();
+        final int FLAG = intent.getIntExtra("FLAG",-1);
+
+        //게시물에서 유저UID를 받은 경우 유저UID 인텐트
+        final String PosterUserUID = intent.getStringExtra("PosterUserUID");
+
+        fetch(FLAG,PosterUserUID);
         adapter.startListening();
     }
     @Override
@@ -425,18 +450,13 @@ public class PosterViewer extends AddingPoster_BaseAct implements SwipyRefreshLa
 
 
     //----------------------------파이어베이스 어댑터 메소드---------------------------------------
-    private void fetch() {
-        //포스트뷰어 게시물 표시 신호
-        final Intent intent = getIntent();
-        final int FLAG = intent.getIntExtra("FLAG",-1);
+    private void fetch(final int FLAG, final String PosterUserUID) {
 
-        //게시물에서 유저UID를 받은 경우
-        final String PosterUserUID = intent.getStringExtra("PosterUserUID");
 
         //DB에 정보를 받아서 가져오는 스냅샷 - 스트링형식으로 받아와야함
         FirebaseRecyclerOptions<PostingDTO> options =
                 new FirebaseRecyclerOptions.Builder<PostingDTO>()
-                        .setQuery(QuerySwitch(FLAG,PosterUserUID), new SnapshotParser<PostingDTO>() {
+                        .setQuery(       QuerySwitch(FLAG,PosterUserUID),    new SnapshotParser<PostingDTO>() {
                             @NonNull
                             @Override
                             public PostingDTO parseSnapshot(@NonNull DataSnapshot snapshot) {
@@ -488,20 +508,37 @@ public class PosterViewer extends AddingPoster_BaseAct implements SwipyRefreshLa
 
 
 
+                //----------------------------댓글 개수 스냅샷----------------------------
+                if (FLAG <= 1){
+                    //유저 포스터키 참조
+                    mdataref.child("Reply").child(UserPosterKeyList.get(position)).addValueEventListener(new ValueEventListener() {
+                        @Override
+                        public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+                            String replycount = String.valueOf(dataSnapshot.getChildrenCount());
+                            holder.setReplyCount(replycount);
+                        }
 
-                //댓글 개수 스냅샷
-                mdataref.child("Reply").child(PosterKeyList.get(position)).addValueEventListener(new ValueEventListener() {
-                    @Override
-                    public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
-                       String replycount = String.valueOf(dataSnapshot.getChildrenCount());
-                        holder.setReplyCount(replycount);
-                    }
+                        @Override
+                        public void onCancelled(@NonNull DatabaseError databaseError) {
 
-                    @Override
-                    public void onCancelled(@NonNull DatabaseError databaseError) {
+                        }
+                    });
+                }else{
+                    //전체 포스터키 참조
+                    mdataref.child("Reply").child(PosterKeyList.get(position)).addValueEventListener(new ValueEventListener() {
+                        @Override
+                        public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+                            String replycount = String.valueOf(dataSnapshot.getChildrenCount());
+                            holder.setReplyCount(replycount);
+                        }
 
-                    }
-                });
+                        @Override
+                        public void onCancelled(@NonNull DatabaseError databaseError) {
+
+                        }
+                    });
+                }//----------------------------댓글 개수 스냅샷----------------------------
+
 
 
 
@@ -526,6 +563,8 @@ public class PosterViewer extends AddingPoster_BaseAct implements SwipyRefreshLa
                                     mdataref.child("UserList").child(userUID).child("UserPosterList").child(Key).removeValue();
                                     //PosterList 에서의 삭제
                                     mdataref.getDatabase().getReference("PosterList").child(Key).removeValue();
+                                    //댓글 DB 삭제
+                                    mdataref.getDatabase().getReference("Reply").child(Key).removeValue();
                                     //스토리지에서의 게시물 이미지 삭제
                                     mstorageRef.child("PosterPicList").child(Key).child("PosterIMG").delete();
                                 }
@@ -539,14 +578,14 @@ public class PosterViewer extends AddingPoster_BaseAct implements SwipyRefreshLa
 
 
 
-                //------------유저 피드로 이동하기 클릭---------------
+                //-----------------------------유저 피드로 이동하기 클릭-----------------------------
                 holder.profileIMG.setOnClickListener(new View.OnClickListener() {
 
                     @Override
                     public void onClick(View v) {
 
                         //플래그가 0이나 1이면 프로필에서 게시물을 보는거기 때문에 유저 게시물 DB를 참조
-                        if (FLAG == 0 || FLAG == 1){
+                        if (FLAG<=1){
                             Log.i("쿼리", "로그인한 게시물 DB 참조");
 
                             //유저 게시물DB에서 유저 UID가져오기 - 유저피드에서 다시 유저피드로 이동 클릭시 문제 있음
@@ -554,17 +593,14 @@ public class PosterViewer extends AddingPoster_BaseAct implements SwipyRefreshLa
                                 @Override
                                 public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
 
-                                    //전체 게시물 노드에서의 유저UID - 클릭한 전체 게시물ID
-                                    String PosterUserUID = dataSnapshot.child(MyPosterKeyList.get(position)).child("UserUID").getValue().toString();
-                                    //유저 게시물 노드에서의 유저UID - 클릭한 내(로그인한) 게시물ID
-//                              String LoginedUID = dataSnapshot.child(MyPosterKeyList.get(position)).child("UserUID").getValue().toString();
-
-
+                                    //전체 게시물 (홈,서치Act) 노드에서의 유저UID 얻기 - 클릭한 전체 게시물ID
+                                    String PosterUserUID = dataSnapshot.child(UserPosterKeyList.get(position)).child("UserUID").getValue().toString();
 
                                     //** 가져온 유저UID가 자신의 UID와 같으면 자신의 프로필로 이동 ->Myinfo.class ->게시물 위치 다름 userUID 다시받기 **
                                     if (PosterUserUID.equals(userUID)){
                                         Intent intent2 = new Intent(PosterViewer.this,Myinfo.class);
                                         startActivity(intent2);
+
                                         //같지 않다면 유저프로필로 이동
                                     }else{
                                         //유저 피드로 유저 UID보내고 이동하기 -> UserProfile.class
@@ -583,18 +619,16 @@ public class PosterViewer extends AddingPoster_BaseAct implements SwipyRefreshLa
 
 
                         //플래그가 2이면 홈이나 서치화면에서 게시물을 보는거기 때문에 전체 게시물 DB 참조
-                        }else if (FLAG ==2){
+                        }else {
                             Log.i("쿼리", "전체 게시물 DB 참조");
 
 
-                            //전체 게시물DB에서 유저 UID가져오기
+                            //전체 게시물DB에서 유저 UID가져오기 -홈,서치Act에서 접근
                             mdataref.child("PosterList").addListenerForSingleValueEvent(new ValueEventListener() {
                                 @Override
                                 public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
                                     //전체 게시물 노드에서의 유저UID - 클릭한 전체 게시물ID
                                     String PosterUserUID = dataSnapshot.child(PosterKeyList.get(position)).child("UserUID").getValue().toString();
-                                    //유저 게시물 노드에서의 유저UID - 클릭한 내(로그인한) 게시물ID
-//                              String LoginedUID = dataSnapshot.child(MyPosterKeyList.get(position)).child("UserUID").getValue().toString();
 
 
                                     //** 가져온 유저UID가 자신의 UID와 같으면 자신의 프로필로 이동 ->Myinfo.class ->게시물 위치 다름 userUID 다시받기 **
@@ -619,28 +653,53 @@ public class PosterViewer extends AddingPoster_BaseAct implements SwipyRefreshLa
                         }
 
                     }
-                });//-------------------------------------------------
+                });//-----------------------------유저 피드로 이동하기 클릭-----------------------------
 
-                //댓글달기 화면으로 이동 - 인풋텍스트뷰에 포커스
+
+
+
+
+                //댓글달기 화면으로 이동 - (인풋텍스트뷰에 포커스 작업해야함) 말풍선 버튼
                 holder.replyB.setOnClickListener(new View.OnClickListener() {
                     @Override
                     public void onClick(View v) {
-                        Intent intent1 = new Intent(PosterViewer.this,ReplyDisplay.class);
-                        intent1.putExtra("PosterKey",PosterKeyList.get(position));
-                        startActivity(intent1);
+                        //유저의 포스터키 보내기
+                        if (FLAG <= 1){
+                            Intent intent1 = new Intent(PosterViewer.this,ReplyDisplay.class);
+                            intent1.putExtra("PosterKey", UserPosterKeyList.get(position)); //전체 DB PosterKey를 보냄
+                            startActivity(intent1);
+                        }else {
+                            //전체 DB 포스터키 보내기
+                            Intent intent2 = new Intent(PosterViewer.this,ReplyDisplay.class);
+                            intent2.putExtra("PosterKey", PosterKeyList.get(position)); //전체 DB PosterKey를 보냄
+                            startActivity(intent2);
+                        }
+
                     }
                 });
 
 
-                //전체 댓글보기 - 댓글에 포커스
+                //전체 댓글보기버튼
                 holder.replyviewB.setOnClickListener(new View.OnClickListener() {
                     @Override
                     public void onClick(View v) {
-                        Intent intent2 = new Intent(PosterViewer.this,ReplyDisplay.class);
-                        intent2.putExtra("PosterKey",PosterKeyList.get(position));
-                        startActivity(intent2);
+                        //유저의 포스터키 보내기
+                        if (FLAG <= 1){
+                            Intent intent1 = new Intent(PosterViewer.this,ReplyDisplay.class);
+                            intent1.putExtra("PosterKey", UserPosterKeyList.get(position)); //전체 DB PosterKey를 보냄
+                            startActivity(intent1);
+                        }else {
+                            //전체 DB 포스터키 보내기
+                            Intent intent2 = new Intent(PosterViewer.this,ReplyDisplay.class);
+                            intent2.putExtra("PosterKey", PosterKeyList.get(position)); //전체 DB PosterKey를 보냄
+                            startActivity(intent2);
+                        }
                     }
                 });
+
+
+
+
 
 
                 //내피드에서 선택한 게시물 포커스 주기 - 액티비티 최초실행시 실행
@@ -703,7 +762,7 @@ public class PosterViewer extends AddingPoster_BaseAct implements SwipyRefreshLa
                 Log.i("쿼리 스위치","1번 유저피드 게시물 쿼리 : 유저 게시물 DB");
             return fromUserfeed;
 
-            //검색 게시물 DB 쿼리 - 전체 게시물 DB
+            //검색 또는 홈 게시물 DB 쿼리 - 전체 게시물 DB
             case 2 : Query fromSearch = FirebaseDatabase.getInstance()
                     .getReference()
                     .child("PosterList");

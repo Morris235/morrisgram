@@ -213,7 +213,7 @@ public class UserProfile extends AddingPoster_BaseAct implements SwipeRefreshLay
         likealarmB.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                Intent intent = new Intent(UserProfile.this, LikeAlarm.class);
+                Intent intent = new Intent(UserProfile.this, Alarm.class);
                 startActivity(intent);
                 overridePendingTransition(0,0);
             }
@@ -456,11 +456,14 @@ public class UserProfile extends AddingPoster_BaseAct implements SwipeRefreshLay
 
                             //유저 프로필 -> 포스터뷰어
                             final int FLAG = 1;
+
+                            //포지션으로 포커스 주기
                             Intent intent = new Intent(UserProfile.this,PosterViewer.class);
                             intent.putExtra("FOCUS",position);
                             intent.putExtra("FLAG",FLAG);
 
-                            //유저의 UID 보내기
+
+                            //유저의 UID 보내기- UserPosterList의 게시물 키값을 얻기 위함
                             intent.putExtra("PosterUserUID",PosterUserUID);
 
                             startActivity(intent);

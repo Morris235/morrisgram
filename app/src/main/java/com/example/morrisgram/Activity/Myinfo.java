@@ -187,7 +187,7 @@ public class Myinfo extends AddingPoster_BaseAct implements SwipeRefreshLayout.O
         likealarmB.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                Intent intent = new Intent(Myinfo.this, LikeAlarm.class);
+                Intent intent = new Intent(Myinfo.this, Alarm.class);
                 startActivity(intent);
                 overridePendingTransition(0, 0);
             }

@@ -4,7 +4,7 @@ import android.content.Intent;
 
 import com.example.morrisgram.Activity.BaseActivity.AddingPoster_BaseAct;
 import com.example.morrisgram.Activity.Home;
-import com.example.morrisgram.Activity.LikeAlarm;
+import com.example.morrisgram.Activity.Alarm;
 import com.example.morrisgram.Activity.Myinfo;
 import com.example.morrisgram.Activity.Search;
 import com.google.android.material.tabs.TabLayout;
@@ -136,7 +136,7 @@ public class FollowPager extends AddingPoster_BaseAct {
         likealarmB.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                Intent intent = new Intent(FollowPager.this, LikeAlarm.class);
+                Intent intent = new Intent(FollowPager.this, Alarm.class);
                 startActivity(intent);
             }
         });

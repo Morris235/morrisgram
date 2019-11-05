@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     package="com.example.morrisgram">
+
     <!-- camera, gallery -->
     <uses-permission android:name="android.permission.CAMERA" />
     <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" />
@@ -17,13 +18,19 @@
         android:screenOrientation="portrait"
         android:supportsRtl="true"
         android:theme="@style/AppTheme">
-        <activity android:name=".Activity.ReplyDisplay"
+
+        <service
+            android:name=".Activity.MyFirebaseMessagingService"
+            android:enabled="true"
+            android:exported="true"></service>
+
+        <activity
+            android:name=".Activity.ReplyDisplay"
             android:launchMode="singleTask"
-            android:windowSoftInputMode="adjustResize">
-        </activity>
+            android:windowSoftInputMode="adjustResize"></activity>
         <activity android:name=".Activity.Option" />
         <activity
-            android:name=".Activity.LikeAlarm"
+            android:name=".Activity.Alarm"
             android:launchMode="singleTask" />
         <activity android:name=".Activity.FollowFragment.FollowingPage" />
         <activity android:name=".Activity.PosterViewer" />
@@ -58,9 +65,10 @@
         <activity
             android:name=".Activity.MainActivity"
             android:launchMode="singleTask">
+
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
-
+                <action android:name="com.google.firebase.MESSAGING_EVENT" />
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
