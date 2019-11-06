@@ -30,10 +30,10 @@ import com.bumptech.glide.load.engine.DiskCacheStrategy;
 import com.example.morrisgram.Activity.BaseActivity.AddingPoster_BaseAct;
 import com.example.morrisgram.Activity.FollowFragment.FollowPager;
 import com.example.morrisgram.CameraClass.GlideApp;
-import com.example.morrisgram.DTOclass.FollowerDTO;
-import com.example.morrisgram.DTOclass.FollowingDTO;
-import com.example.morrisgram.DTOclass.PostingDTO;
-import com.example.morrisgram.DTOclass.PreView;
+import com.example.morrisgram.DTOclass.FollowDTO.FollowerDTO;
+import com.example.morrisgram.DTOclass.FollowDTO.FollowingDTO;
+import com.example.morrisgram.DTOclass.PosterDTO.PostingDTO;
+import com.example.morrisgram.DTOclass.PosterDTO.PreView;
 import com.example.morrisgram.R;
 import com.firebase.ui.database.FirebaseRecyclerAdapter;
 import com.firebase.ui.database.FirebaseRecyclerOptions;
@@ -409,6 +409,12 @@ public class Myinfo extends AddingPoster_BaseAct implements SwipeRefreshLayout.O
                                     Log.i("삭제","내 계정 UID : "+userUID);
                                     Log.i("삭제","내 팔로워 계정 리스트 : "+MyFollowerUIDList.get(i));
                                     Log.i("삭제","상대 유저 팔로잉 리스트 경로 : "+mdataref.child("UserList").child(MyFollowerUIDList.get(i)).child("FollowingList").child(userUID).child("UID").toString());
+                                }
+
+                                //내가 쓴 댓글 삭제
+                                for(int i=0; i<PosterKeyList.size(); i++){
+                                    //자신의 포스터키 리스트
+                                    mdataref.getDatabase().getReference().child("Reply").child(PosterKeyList.get(i)).removeValue();
                                 }
 
                                 //-GetPosterKey is ArrayList-

@@ -7,8 +7,6 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
-import android.widget.Filter;
-import android.widget.Filterable;
 import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -22,8 +20,8 @@ import androidx.recyclerview.widget.RecyclerView;
 import com.bumptech.glide.load.engine.DiskCacheStrategy;
 import com.example.morrisgram.Activity.UserProfile;
 import com.example.morrisgram.CameraClass.GlideApp;
-import com.example.morrisgram.DTOclass.FollowerDTO;
-import com.example.morrisgram.DTOclass.FollowingDTO;
+import com.example.morrisgram.DTOclass.FollowDTO.FollowerDTO;
+import com.example.morrisgram.DTOclass.FollowDTO.FollowingDTO;
 import com.example.morrisgram.R;
 import com.firebase.ui.database.FirebaseRecyclerAdapter;
 import com.firebase.ui.database.FirebaseRecyclerOptions;
@@ -36,7 +34,6 @@ import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.Query;
 import com.google.firebase.database.ValueEventListener;
-import com.google.firebase.firestore.auth.User;
 import com.google.firebase.storage.FirebaseStorage;
 import com.google.firebase.storage.StorageReference;
 
@@ -88,8 +85,11 @@ public class FollowerPage extends Fragment{
         recyclerView.setLayoutManager(linearLayoutManager);
         recyclerView.setHasFixedSize(true);
 
+        //FLAG 0 = 내 팔로우 창, FLAG 1 = 유저 팔로우창
         Log.i("뷰페이저","팔로워 유저UID 확인 : "+UserUID);
         Log.i("뷰페이저","팔로워 플래그 확인 : "+FLAG);
+
+
 
         //------------------------------------------------팔로워 유저 UID 값 수집 데이터 스냅샷--------------------------------------------------리얼타임이 아닌 한번만 읽어보게 하기
         mdataref.child("UserList").child(UserUIDSwitch(FLAG,UserUID)).child("FollowerList").addListenerForSingleValueEvent(new ValueEventListener() {
@@ -121,7 +121,7 @@ public class FollowerPage extends Fragment{
 
             }
         });
-        //------------------------------------------------팔로잉 유저 UID 값 수집 데이터 스냅샷--------------------------------------------------
+        //------------------------------------------------팔로워 유저 UID 값 수집 데이터 스냅샷--------------------------------------------------
 
         fetch();
 
@@ -148,7 +148,7 @@ public class FollowerPage extends Fragment{
         public Button FollowB;
         public Button FollowingB;
 
-        //팔로잉 유저의 UID받는 변수
+        //팔로워 유저의 UID받는 변수
         public String UID;
 
         public ViewHolder(@NonNull View itemView) {
@@ -163,7 +163,7 @@ public class FollowerPage extends Fragment{
         }
 
 
-        //팔로잉 유저들의 닉네임 받기
+        //팔로워 유저들의 닉네임 받기
         public void setUserNickName(final String uid){
 
             mdataref.child("UserList").addValueEventListener(new ValueEventListener() {
@@ -184,7 +184,7 @@ public class FollowerPage extends Fragment{
             });
         }
 
-        //스토리지에서 팔로잉 유저의 프로필 이미지 받기
+        //스토리지에서 팔로워 유저의 프로필 이미지 받기
         public void setUserprofileIMG(String uid){
             Log.i("파베", "setPic 메소드 작동 확인");
             StorageReference imageRef = mstorageRef.child(uid).child("ProfileIMG").child("ProfileIMG");
@@ -253,9 +253,9 @@ public class FollowerPage extends Fragment{
 
             @Override                                                                                           //DB 데이터 틀 = DTO 클래스
             protected void onBindViewHolder(@NonNull final FollowerPage.ViewHolder holder, final int position, @NonNull final FollowerDTO follower_set) {
-                //팔로잉 유저닉네임
+                //팔로워 유저닉네임
                 holder.setUserNickName(follower_set.getUID());
-                //팔로잉 유저프로필 이미지
+                //팔로워 유저프로필 이미지
                 holder.setUserprofileIMG(follower_set.getUID());
 
 
@@ -265,7 +265,7 @@ public class FollowerPage extends Fragment{
                     @Override
                     public void onClick(View v) {
 
-                        //해당 포지션의 팔로잉 유저UID 가져오기 - 에러 예상됨
+                        //해당 포지션의 팔로워 유저UID 가져오기 - 에러 예상됨
                         String UserUIDList = holder.getFollowingUserUID(follower_set.getUID());
                         Log.i("팔로워", "클릭확인 : "+UserUIDList);
 

@@ -1,4 +1,4 @@
-package com.example.morrisgram.DTOclass;
+package com.example.morrisgram.DTOclass.FollowDTO;
 
 import com.google.firebase.database.Exclude;
 

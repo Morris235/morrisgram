@@ -23,7 +23,8 @@ import android.widget.Toast;
 
 import com.bumptech.glide.load.engine.DiskCacheStrategy;
 import com.example.morrisgram.CameraClass.GlideApp;
-import com.example.morrisgram.DTOclass.ReplyDTO;
+import com.example.morrisgram.DTOclass.AlarmDTO.AlarmDTO;
+import com.example.morrisgram.DTOclass.PosterDTO.ReplyDTO;
 import com.example.morrisgram.R;
 import com.firebase.ui.database.FirebaseRecyclerAdapter;
 import com.firebase.ui.database.FirebaseRecyclerOptions;
@@ -55,9 +56,10 @@ public class ReplyDisplay extends AppCompatActivity {
 
     //현재 접속중인 유저UID가져오기
     private FirebaseUser uid = FirebaseAuth.getInstance().getCurrentUser();
-    private FirebaseAuth firebaseAuth;
-    private StorageReference mstorageRef = FirebaseStorage.getInstance().getReference();
     private String userUID = uid.getUid();
+
+    //스토리지
+    private StorageReference mstorageRef = FirebaseStorage.getInstance().getReference();
 
     //파이어베이스 리사이클러뷰
     private RecyclerView recyclerView;
@@ -139,12 +141,33 @@ public class ReplyDisplay extends AppCompatActivity {
         postingB.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                String ReplyText = inputreply.getText().toString();
+                final String ReplyText = inputreply.getText().toString();
                 if (ReplyText.equals("")){
                     Toast.makeText(getApplicationContext(),"내용을 입력해주세요",Toast.LENGTH_SHORT).show();
+
                 }else {
-                    Log.i("댓글","댓글 입력 클릭 확인");
+                    //댓글 DB 업데이트
                     ReplyUpDatabase(true,PosterKey,ReplyText);
+
+                    //해당게시물의 유저UID 얻기 -> 알람DB업데이트
+                    mdataref.child("PosterList").child(PosterKey).child("UserUID").addValueEventListener(new ValueEventListener() {
+                        @Override
+                        public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+                            String PosterUserUID = dataSnapshot.getValue().toString();
+                            //본인이 본인 게시물에 댓글을 남기는건 알람DB에 올리지 않기
+                            if (!PosterUserUID.equals(userUID)){
+                                ReplyAlarmUpDate(true,PosterUserUID,ReplyText,PosterKey);
+                            }
+
+                        }
+
+                        @Override
+                        public void onCancelled(@NonNull DatabaseError databaseError) {
+
+                        }
+                    });
+
+
                     inputreply.setText("");
                 }
 
@@ -242,7 +265,7 @@ public class ReplyDisplay extends AppCompatActivity {
             });
         }
 
-        //스토리지에서 팔로잉 유저의 프로필 이미지 받기
+        //스토리지에서 댓글쓴 유저의 프로필 이미지 받기
         public void setReplyUserIMG(String uid){
             Log.i("댓글","댓글 유저 UID 확인 : "+uid);
             StorageReference imageRef = mstorageRef.child(uid).child("ProfileIMG").child("ProfileIMG");
@@ -467,7 +490,7 @@ public class ReplyDisplay extends AppCompatActivity {
         //------------------------------------------------댓글 UID 수집 데이터 스냅샷--------------------------------------------------
     }
 
-    //댓글 업데이트 메소드
+    //댓글 업데이트 메소드 - 댓글 작성 -
     public void ReplyUpDatabase(boolean submit,String posterkey, String InputReply){
         // Create new post at /user-posts/$userid/$postid and at
         // /posts/$postid simultaneously
@@ -481,12 +504,36 @@ public class ReplyDisplay extends AppCompatActivity {
 
         //댓글 버튼 - 댓글 달기 버튼 누른 아이템의 게시물 키값
         if (submit) {
-            // 경로 : 루트/ Reply/ PosterKey/ ReplyKey/  ReplyBody : "v", UID : "UserUID"
             //replykey 생성
            String ReplyKey = mdataref.push().getKey();
-            Reply.put(ReplyKey, PostValues);
-            Log.i("댓글","실행확인");
+
+            if (ReplyKey != null) {
+                Reply.put(ReplyKey, PostValues);
+            }
+
+            // 경로 : 루트/ Reply/ PosterKey/ (map)ReplyKey/  ReplyBody : "v", UID : "UserUID"
             mdataref.getDatabase().getReference().child("Reply").child(posterkey).updateChildren(Reply);
+        }
+    }
+
+    //댓글 알람 업데이트 -(댓글알람 DB가 작성될때 FCM 푸쉬알람도 생성되야한다.)
+    public void ReplyAlarmUpDate(boolean submit, String UserUID, String Body, String PosterKey){
+        Map<String,Object> ReplyAlarmMap = new HashMap<>();
+        Map<String,Object> Values = null;
+
+        AlarmDTO alarmDTO = new AlarmDTO(userUID,Body,PosterKey);
+        Values = alarmDTO.toMap();
+
+        if (submit){
+            //alarmkey 생성
+            String ReplyAlarmKey = mdataref.push().getKey();
+
+            if (ReplyAlarmKey != null) {
+                ReplyAlarmMap.put(ReplyAlarmKey,Values);
+            }
+
+            //경로 : 루트/ AlarmList/ UserUID/ ReplyAlarm/ (map)ReplyKey/ AlarmUserUID : "v", AlarmBody : "v", AlarmPosterUID : "v"
+            mdataref.getDatabase().getReference().child("AlarmList").child(UserUID).child("ReplyAlarm").updateChildren(ReplyAlarmMap);
         }
     }
 }
